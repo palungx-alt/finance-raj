@@ -188,10 +188,10 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         
-        // ⚠️ GANTI DENGAN URL WEB APP TERBARU ANDA ⚠️
+        // ️ URL WEB APP BARU ANDA ️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
-        let cashFlowChartInstance = null; // Variabel global untuk menyimpan instance chart
+        let cashFlowChartInstance = null; 
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
@@ -210,58 +210,26 @@
 
         async function loadTransactionsFromSheets() {
             try {
-                const response = await fetch(`${GAS_URL}?action=getJurnal`);
-                const result = await response.json();
+                // 1. Ambil Ringkasan Angka yang Sudah Dihitung Backend (Akurat Sesuai COA)
+                const summaryRes = await fetch(`${GAS_URL}?action=getDashboardSummary`);
+                const summaryData = await summaryRes.json();
                 
-                if (result.status !== 'success') throw new Error(result.message);
+                if (summaryData.status === 'success') {
+                    const s = summaryData.summary;
+                    document.getElementById('totalAsset').textContent = formatRupiah(s.asset);
+                    document.getElementById('totalLiab').textContent = formatRupiah(s.liability);
+                    document.getElementById('totalEquity').textContent = formatRupiah(s.equity);
+                    document.getElementById('totalRev').textContent = formatRupiah(s.revenue);
+                    document.getElementById('totalExp').textContent = formatRupiah(s.expense);
+                }
 
-                const transactions = result.journals || [];
+                // 2. Ambil Data Transaksi untuk Tabel & Grafik
+                const txRes = await fetch(`${GAS_URL}?action=getJurnal`);
+                const txData = await txRes.json();
+                const transactions = txData.journals || [];
                 
-                // Variabel Akumulasi Sesuai Standar Akuntansi
-                let assetBalance = 0;   // Aset: Debit (+), Kredit (-)
-                let liabBalance = 0;    // Liabilitas: Kredit (+), Debit (-)
-                let equityBalance = 0;  // Ekuitas: Kredit (+), Debit (-)
-                let revenue = 0;        // Pendapatan: Kredit (+)
-                let expense = 0;        // Beban: Debit (+)
-                const validTransactions = [];
-
-                transactions.forEach(tx => {
-                    // Struktur data sheets yang BENAR setelah fix:
-                    // [0]ID, [1]Tanggal, [2]NoBukti, [3]Ket, [4]Email, [5]Nama, [6]KodeAkun, [7]NamaAkun, [8]Debit, [9]Kredit
-                    
-                    const code = String(tx[6] || '').trim();
-                    const debit = Number(tx[8]) || 0;
-                    const credit = Number(tx[9]) || 0;
-                    
-                    // Validasi sederhana: Kode akun harus mulai dengan angka dan strip (contoh: 1-1100)
-                    if (!code.match(/^\d+-\d+$/)) return; 
-
-                    // LOGIKA AKUNTANSI YANG BENAR
-                    if (code.startsWith('1-')) {
-                        assetBalance += (debit - credit);
-                    } else if (code.startsWith('2-')) {
-                        liabBalance += (credit - debit);
-                    } else if (code.startsWith('3-')) {
-                        equityBalance += (credit - debit);
-                    } else if (code.startsWith('4-')) {
-                        revenue += credit;
-                    } else if (code.startsWith('5-')) {
-                        expense += debit;
-                    }
-
-                    // Hanya simpan transaksi valid untuk tabel & grafik
-                    validTransactions.push(tx);
-                });
-
-                // Update UI Cards
-                document.getElementById('totalAsset').textContent = formatRupiah(assetBalance);
-                document.getElementById('totalLiab').textContent = formatRupiah(liabBalance);
-                document.getElementById('totalEquity').textContent = formatRupiah(equityBalance);
-                document.getElementById('totalRev').textContent = formatRupiah(revenue);
-                document.getElementById('totalExp').textContent = formatRupiah(expense);
-
-                renderTable(validTransactions.slice(-10).reverse());
-                renderChart(validTransactions);
+                renderTable(transactions.slice(-10).reverse());
+                renderChart(transactions);
 
             } catch (e) {
                 console.error(e);
@@ -297,7 +265,7 @@
         function renderChart(transactions) {
             const ctx = document.getElementById('cashFlowChart').getContext('2d');
             
-            // FIX: Hancurkan chart lama jika sudah ada untuk mencegah error "Canvas is already in use"
+            // FIX: Hancurkan chart lama jika sudah ada
             if (cashFlowChartInstance) {
                 cashFlowChartInstance.destroy();
             }
