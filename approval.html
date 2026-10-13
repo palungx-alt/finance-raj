@@ -18,7 +18,6 @@
             --border: #e2e8f0;
             --success: #10b981;
             --danger: #ef4444;
-            --warning: #f59e0b;
             --radius: 16px;
             --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
         }
@@ -27,14 +26,20 @@
         
         body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
 
-        /* HEADER */
+        /* HEADER WITH BACK BUTTON */
         .top-bar { 
             background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100;
             border-bottom: 1px solid var(--border); backdrop-filter: blur(10px);
             display: flex; align-items: center; justify-content: space-between;
         }
         .brand-area { display: flex; align-items: center; gap: 12px; }
-        .brand-logo { width: 32px; height: auto; }
+        .btn-back { 
+            background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; 
+            cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px; 
+            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-back:hover { background: var(--border); }
+        
         .page-title h1 { font-size: 18px; font-weight: 700; margin: 0; }
         .page-title p { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
         
@@ -93,7 +98,7 @@
         .btn-approve { background: var(--success); color: white; border: none; }
         .btn-approve:hover { background: #059669; color: white; }
 
-        /* MODAL */
+        /* MODAL & SIGNATURE PAD */
         .modal-overlay { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
             background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
@@ -120,7 +125,7 @@
         
         .signature-pad { 
             border: 2px dashed var(--border); border-radius: 10px; background: #f8fafc; 
-            height: 150px; cursor: crosshair; touch-action: none;
+            height: 150px; width: 100%; cursor: crosshair; touch-action: none;
         }
 
         @media (max-width: 600px) {
@@ -134,7 +139,10 @@
 <body>
     <div class="top-bar">
         <div class="brand-area">
-            <img src="assets/logo.png" alt="Logo" class="brand-logo" onerror="this.style.display='none'">
+            <!-- TOMBOL KEMBALI -->
+            <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i></button>
+            
+            <img src="assets/logo.png" alt="Logo" style="width:32px; height:auto;" onerror="this.style.display='none'">
             <div class="page-title">
                 <h1>Approval Form</h1>
                 <p>Kasbon, Pembelian Aset & Operasional</p>
@@ -251,13 +259,15 @@
         let currentFilter = '';
         let currentFormId = null;
 
-        // SIGNATURE PAD LOGIC
+        // SIGNATURE PAD LOGIC (FIXED FOR MOBILE & MODAL)
         function initSignature(canvasId) {
             const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
             const ctx = canvas.getContext('2d');
             let isDrawing = false;
 
-            // Resize canvas to fit container
+            // Resize canvas to fit container properly
             const resize = () => {
                 const rect = canvas.parentElement.getBoundingClientRect();
                 canvas.width = rect.width;
@@ -265,9 +275,12 @@
                 ctx.strokeStyle = "#0f172a";
                 ctx.lineWidth = 2;
                 ctx.lineCap = "round";
+                ctx.lineJoin = "round";
             };
+            
+            // Initial resize and resize on window change
+            setTimeout(resize, 50);
             window.addEventListener('resize', resize);
-            setTimeout(resize, 100);
 
             function getPos(e) {
                 const r = canvas.getBoundingClientRect();
@@ -276,8 +289,20 @@
                 return { x: clientX - r.left, y: clientY - r.top };
             }
 
-            function start(e) { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }
-            function draw(e) { if(!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }
+            function start(e) { 
+                isDrawing = true; 
+                const p = getPos(e); 
+                ctx.beginPath(); 
+                ctx.moveTo(p.x, p.y); 
+                e.preventDefault(); 
+            }
+            function draw(e) { 
+                if(!isDrawing) return; 
+                const p = getPos(e); 
+                ctx.lineTo(p.x, p.y); 
+                ctx.stroke(); 
+                e.preventDefault(); 
+            }
             function stop() { isDrawing = false; }
 
             canvas.addEventListener('mousedown', start);
@@ -292,8 +317,24 @@
             const user = JSON.parse(localStorage.getItem('financeRajUser'));
             if (!user) window.location.href = 'index.html';
             
+            // Init signatures immediately
             initSignature('sigCanvasNew');
             initSignature('sigCanvasApp');
+            
+            // Re-init when modals open to ensure correct size
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.target.classList.contains('open')) {
+                        const modalId = mutation.target.id;
+                        if(modalId === 'newFormModal') initSignature('sigCanvasNew');
+                        if(modalId === 'approveModal') initSignature('sigCanvasApp');
+                    }
+                });
+            });
+            
+            observer.observe(document.getElementById('newFormModal'), { attributes: true, attributeFilter: ['class'] });
+            observer.observe(document.getElementById('approveModal'), { attributes: true, attributeFilter: ['class'] });
+
             loadForms();
         });
 
