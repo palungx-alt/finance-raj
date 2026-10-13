@@ -2,103 +2,217 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FinanceRAJ - Input Jurnal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --primary: #2563eb; --bg: #f1f5f9; --text-main: #1e293b; --border: #e2e8f0; }
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
-        body { background:var(--bg); color:var(--text-main); min-height:100vh; padding:30px; max-width:1000px; margin:0 auto; }
+        :root {
+            --primary: #4f46e5;
+            --primary-glow: rgba(79, 70, 229, 0.15);
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-sec: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius: 16px;
+            --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        .top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; }
-        .page-title h1 { font-size:24px; font-weight:700; }
-        .btn-back { background:white; border:1px solid var(--border); padding:8px 15px; border-radius:8px; cursor:pointer; text-decoration:none; color:var(--text-main); font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:8px; }
+        body { 
+            background: var(--bg-body); 
+            color: var(--text-main); 
+            min-height: 100vh; 
+            padding-bottom: 40px;
+        }
+
+        /* HEADER FUTURISTIK */
+        .top-bar { 
+            background: var(--surface);
+            padding: 20px 24px; 
+            position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .page-title h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+        .page-title p { font-size: 13px; color: var(--text-sec); margin-top: 4px; }
         
-        .form-card { background:white; padding:30px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--border); }
-        .form-row { display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px; }
-        .form-group { margin-bottom:20px; }
-        .form-group label { display:block; margin-bottom:8px; font-weight:600; font-size:13px; color:var(--text-main); }
-        .form-control { width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; font-size:14px; outline:none; transition:0.2s; }
-        .form-control:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
+        .btn-back { 
+            background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; 
+            cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px; 
+            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-back:hover { background: var(--border); }
+
+        /* CONTAINER UTAMA */
+        .container { max-width: 800px; margin: 24px auto; padding: 0 20px; }
+
+        .form-card { 
+            background: var(--surface); 
+            padding: 24px; 
+            border-radius: var(--radius); 
+            box-shadow: var(--shadow); 
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
         
-        /* JURNAL ENTRIES TABLE */
-        .entries-table { width:100%; border-collapse:collapse; margin-bottom:20px; background:#f8fafc; border-radius:8px; overflow:hidden; }
-        .entries-table th { background:#f1f5f9; padding:12px; text-align:left; font-size:12px; color:#64748b; text-transform:uppercase; }
-        .entries-table td { padding:10px; border-bottom:1px solid var(--border); background:white; vertical-align:middle; }
-        .entries-table select, .entries-table input { width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; font-size:13px; }
+        .form-control { 
+            width: 100%; padding: 14px 16px; 
+            background: var(--bg-body); border: 1px solid var(--border); 
+            border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; 
+            color: var(--text-main);
+        }
+        .form-control:focus { 
+            border-color: var(--primary); 
+            background: white;
+            box-shadow: 0 0 0 4px var(--primary-glow); 
+        }
+
+        /* TABEL JURNAL RESPONSIF */
+        .section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
         
-        .total-section { display:flex; justify-content:space-between; align-items:center; padding:20px; background:#eff6ff; border-radius:8px; margin-bottom:20px; border:1px solid #dbeafe; }
-        .status-badge { padding:5px 12px; border-radius:20px; font-size:12px; font-weight:700; }
-        .status-balanced { background:#d1fae5; color:#065f46; }
-        .status-unbalanced { background:#fee2e2; color:#991b1b; }
+        .entries-container { 
+            background: var(--bg-body); border-radius: 12px; overflow: hidden; 
+            border: 1px solid var(--border); margin-bottom: 16px;
+        }
         
-        .btn-submit { width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:8px; font-size:16px; font-weight:700; cursor:pointer; transition:0.2s; }
-        .btn-submit:hover:not(:disabled) { background:#1d4ed8; transform:translateY(-2px); }
-        .btn-submit:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+        .entry-row { 
+            display: grid; 
+            grid-template-columns: 1fr 100px 100px 40px; 
+            gap: 8px; padding: 12px; 
+            background: white; border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+        .entry-row:last-child { border-bottom: none; }
         
-        .btn-add-row { background:white; border:2px dashed var(--border); color:#64748b; width:100%; padding:12px; border-radius:8px; cursor:pointer; font-weight:600; margin-bottom:20px; transition:0.2s; }
-        .btn-add-row:hover { border-color:var(--primary); color:var(--primary); background:#eff6ff; }
+        .entry-row select, .entry-row input { 
+            width: 100%; padding: 10px; border: 1px solid var(--border); 
+            border-radius: 8px; font-size: 14px; background: white;
+        }
+        .entry-row select:focus, .entry-row input:focus { border-color: var(--primary); outline: none; }
         
-        @media(max-width:768px) { .form-row{grid-template-columns:1fr;} }
+        .btn-delete { 
+            background: #fee2e2; border: none; color: var(--danger); 
+            width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        .free-text-input { display: none; margin-top: 8px; }
+
+        .btn-add-row { 
+            background: white; border: 2px dashed var(--border); color: var(--primary); 
+            width: 100%; padding: 14px; border-radius: 12px; cursor: pointer; 
+            font-weight: 600; font-size: 14px; transition: 0.2s; display: flex; 
+            align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-add-row:hover { border-color: var(--primary); background: var(--primary-glow); }
+
+        /* STATUS BALANCE CARD */
+        .balance-card { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 20px; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); 
+            border-radius: var(--radius); margin-bottom: 24px; border: 1px solid #dbeafe; 
+        }
+        .status-badge { 
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; 
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .status-balanced { background: #d1fae5; color: #065f46; }
+        .status-unbalanced { background: #fee2e2; color: #991b1b; }
+
+        /* TOMBOL SIMPAN */
+        .btn-submit { 
+            width: 100%; padding: 18px; 
+            background: var(--primary); color: white; border: none; 
+            border-radius: 14px; font-size: 16px; font-weight: 700; 
+            cursor: pointer; transition: 0.3s; 
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; background: var(--text-sec); }
+
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .form-group { margin-bottom: 16px; }
+            
+            .entry-row { 
+                grid-template-columns: 1fr; gap: 10px; 
+                padding: 16px; border-bottom: 2px solid var(--bg-body);
+            }
+            .entry-row td, .entry-row > div { width: 100%; }
+            
+            /* Label kecil di atas input mobile */
+            .mobile-label { font-size: 11px; color: var(--text-sec); margin-bottom: 4px; display: block; }
+            
+            .btn-delete { width: 100%; height: 44px; margin-top: 8px; }
+            
+            .container { padding: 0 16px; margin-top: 16px; }
+            .form-card { padding: 20px 16px; border-radius: 12px; }
+        }
     </style>
 </head>
 <body>
     <div class="top-bar">
         <div class="page-title">
-            <h1>Input Jurnal Umum</h1>
-            <p style="color:#64748b; font-size:14px; margin-top:5px;">Catat transaksi operasional harian (BBM, Kasbon, TPA, dll)</p>
+            <h1>Input Jurnal</h1>
+            <p>Catat transaksi operasional harian</p>
         </div>
-        <a href="dashboard.html" class="btn-back"><i class="fas fa-arrow-left"></i> Kembali</a>
+        <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i></button>
     </div>
 
-    <div class="form-card">
-        <div class="form-row">
-            <div class="form-group">
-                <label>Tanggal Transaksi</label>
-                <input type="date" id="transDate" class="form-control">
+    <div class="container">
+        <div class="form-card">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tanggal Transaksi</label>
+                    <input type="date" id="transDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>No. Bukti / Referensi</label>
+                    <input type="text" id="refNumber" class="form-control" placeholder="Cth: STRUK-SOLAR-001">
+                </div>
             </div>
+            
             <div class="form-group">
-                <label>No. Bukti / Referensi</label>
-                <input type="text" id="refNumber" class="form-control" placeholder="Contoh: STRUK-SOLAR-001">
+                <label>Keterangan Transaksi</label>
+                <input type="text" id="description" class="form-control" placeholder="Cth: Pembelian solar truk B 1234 CD">
             </div>
         </div>
+
+        <div class="section-title"><i class="fas fa-list-ul" style="color:var(--primary)"></i> Detail Akun (Debit & Kredit)</div>
         
-        <div class="form-group">
-            <label>Keterangan Transaksi</label>
-            <input type="text" id="description" class="form-control" placeholder="Contoh: Pembelian solar untuk truk B 1234 CD">
+        <div class="entries-container" id="journalEntries">
+            <!-- Baris jurnal akan ditambahkan via JS -->
         </div>
-
-        <h3 style="font-size:16px; margin-bottom:15px; color:var(--text-main);">Detail Akun (Debit & Kredit)</h3>
         
-        <table class="entries-table">
-            <thead>
-                <tr>
-                    <th style="width:45%">Akun (COA)</th>
-                    <th style="width:20%">Debit (Rp)</th>
-                    <th style="width:20%">Kredit (Rp)</th>
-                    <th style="width:15%"></th>
-                </tr>
-            </thead>
-            <tbody id="journalEntries">
-                <!-- Baris jurnal akan ditambahkan via JS -->
-            </tbody>
-        </table>
-        
-        <button class="btn-add-row" onclick="window.addEntryRow()"><i class="fas fa-plus"></i> Tambah Baris Akun</button>
+        <button class="btn-add-row" onclick="window.addEntryRow()"><i class="fas fa-plus-circle"></i> Tambah Baris Akun</button>
 
-        <div class="total-section">
+        <div class="balance-card">
             <div>
-                <div style="font-weight:700; color:var(--primary); font-size:16px;">Status Balance</div>
-                <div style="font-size:12px; color:#64748b; margin-top:4px;">Total Debit harus sama dengan Total Kredit</div>
+                <div style="font-weight:700; color:var(--primary); font-size:15px;">Status Balance</div>
+                <div style="font-size:12px; color:var(--text-sec); margin-top:4px;">Total Debit harus = Total Kredit</div>
             </div>
             <div style="text-align:right;">
                 <div id="balanceStatus" class="status-badge status-unbalanced">TIDAK SEIMBANG</div>
-                <div style="margin-top:8px; font-size:13px; color:#64748b;">Selisih: <span id="diffAmount" style="font-weight:700; color:var(--text-main);">Rp 0</span></div>
+                <div style="margin-top:8px; font-size:13px; color:var(--text-sec);">Selisih: <span id="diffAmount" style="font-weight:700; color:var(--text-main);">Rp 0</span></div>
             </div>
         </div>
 
         <button id="btnSave" class="btn-submit" disabled onclick="window.saveJournal()">
-            <i class="fas fa-save"></i> Simpan Jurnal
+            <i class="fas fa-paper-plane"></i> Simpan Jurnal
         </button>
     </div>
 
@@ -106,7 +220,6 @@
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-        // FIREBASE CONFIG (HANYA UNTUK AUTH LOGIN)
         const firebaseConfig = {
             apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg",
             authDomain: "finance-raj.firebaseapp.com",
@@ -119,118 +232,74 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-
-        // URL WEB APP GOOGLE SHEETS (PASTIKAN SUDAH DEPLOY NEW VERSION)
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwW-_Cl_hLlnY8s-0L-tUKkIlqcsjlPjw7kQKFLOIjBxf2TvtlHAaVSdO2djz9H2IY4fw/exec';
 
-        // DAFTAR AKUN LENGKAP DARI EXCEL "CV REZEKI AMANAH JAYA GROUP"
+        // COA BARU SESUAI EXCEL RAJ WASTE MANAGEMENT
         const coaData = [
-            // ASET LANCAR
-            { code: '1-1000', name: 'Aset Lancar' },
-            { code: '1-1100', name: 'Kas dan Setara Kas' },
-            { code: '1-1200', name: 'Bank (Rekening Utama)' },
-            { code: '1-1300', name: 'Piutang Usaha' },
-            { code: '1-1400', name: 'Perlengkapan Operasional' },
-            { code: '1-1500', name: 'Persediaan Bahan Baku' },
-            { code: '1-1600', name: 'Sewa Dibayar di Muka' },
-            
-            // ASET TETAP
-            { code: '1-2000', name: 'Aset Tetap' },
-            { code: '1-2100', name: 'Tanah' },
-            { code: '1-2200', name: 'Bangunan Kantor dan Gudang' },
-            { code: '1-2250', name: 'Akumulasi Penyusutan Bangunan' },
-            { code: '1-2300', name: 'Armada & Kendaraan' },
-            { code: '1-2350', name: 'Akumulasi Penyusutan Kendaraan' },
-            { code: '1-2400', name: 'Mesin Pengolahan Limbah' },
-            { code: '1-2450', name: 'Akumulasi Penyusutan Mesin' },
-            { code: '1-2500', name: 'Peralatan Kantor' },
-            { code: '1-2550', name: 'Akumulasi Penyusutan Peralatan Kantor' },
-            
-            // KEWAJIBAN JANGKA PENDEK
-            { code: '2-1000', name: 'Kewajiban Jangka Pendek' },
-            { code: '2-1100', name: 'Utang Usaha' },
-            { code: '2-1200', name: 'Utang Gaji dan Tunjangan' },
-            { code: '2-1300', name: 'Utang Pajak' },
-            { code: '2-1400', name: 'Pendapatan Diterima di Muka' },
-            
-            // KEWAJIBAN JANGKA PANJANG
-            { code: '2-2000', name: 'Kewajiban Jangka Panjang' },
-            { code: '2-2100', name: 'Utang Bank / Kredit Kendaraan' },
-            { code: '2-2200', name: 'Utang Sewa Pembiayaan' },
-            
-            // EKUITAS
-            { code: '3-1000', name: 'Modal Pemilik / Sekutu' },
-            { code: '3-2000', name: 'Prive Pemilik / Sekutu' },
-            { code: '3-3000', name: 'Laba Ditahan' },
-            { code: '3-4000', name: 'Ikhtisar Laba Rugi' },
-            
-            // PENDAPATAN
-            { code: '4-1000', name: 'Pendapatan Operasional' },
-            { code: '4-1100', name: 'Pendapatan Jasa Pengangkutan Sampah' },
-            { code: '4-1200', name: 'Pendapatan Jasa Pengolahan/Pemusnahan Limbah' },
-            { code: '4-1300', name: 'Pendapatan Penjualan Material Daur Ulang' },
-            { code: '4-1400', name: 'Pendapatan Sewa Kontainer' },
-            { code: '4-2000', name: 'Pendapatan Lain-lain' },
-            
-            // BEBAN OPERASIONAL LANGSUNG (HPP/COGS)
-            { code: '5-1000', name: 'Beban Operasional Langsung' },
-            { code: '5-1100', name: 'Beban Bahan Bakar Truk Armada' },
-            { code: '5-1200', name: 'Beban Tol, Parkir, dan Retribusi TPA' },
-            { code: '5-1300', name: 'Beban Gaji Sopir & Petugas Pemilah' },
-            { code: '5-1400', name: 'Beban Perawatan Truk dan Armada' },
-            { code: '5-1500', name: 'Beban Perawatan Mesin Pengolah Limbah' },
-            { code: '5-1600', name: 'Beban Perlengkapan K3' }
+            { code: '1-1000', name: 'Aset Lancar' }, { code: '1-1100', name: 'Kas dan Setara Kas' },
+            { code: '1-1200', name: 'Bank (Rekening Utama)' }, { code: '1-1300', name: 'Piutang Usaha' },
+            { code: '1-1400', name: 'Perlengkapan Operasional' }, { code: '1-1500', name: 'Persediaan Bahan Baku' },
+            { code: '1-1600', name: 'Sewa Dibayar di Muka' }, { code: '1-2000', name: 'Aset Tetap' },
+            { code: '1-2100', name: 'Tanah' }, { code: '1-2200', name: 'Bangunan Kantor dan Gudang' },
+            { code: '1-2250', name: 'Akumulasi Penyusutan Bangunan' }, { code: '1-2300', name: 'Armada & Kendaraan' },
+            { code: '1-2350', name: 'Akumulasi Penyusutan Kendaraan' }, { code: '1-2400', name: 'Mesin Pengolahan Limbah' },
+            { code: '1-2450', name: 'Akumulasi Penyusutan Mesin' }, { code: '1-2500', name: 'Peralatan Kantor' },
+            { code: '1-2550', name: 'Akumulasi Penyusutan Peralatan Kantor' }, { code: '2-1000', name: 'Kewajiban Jangka Pendek' },
+            { code: '2-1100', name: 'Utang Usaha' }, { code: '2-1200', name: 'Utang Gaji dan Tunjangan' },
+            { code: '2-1300', name: 'Utang Pajak' }, { code: '2-1400', name: 'Pendapatan Diterima di Muka' },
+            { code: '2-2000', name: 'Kewajiban Jangka Panjang' }, { code: '2-2100', name: 'Utang Bank / Kredit Kendaraan' },
+            { code: '2-2200', name: 'Utang Sewa Pembiayaan' }, { code: '3-1000', name: 'Modal Pemilik / Sekutu' },
+            { code: '3-2000', name: 'Prive Pemilik / Sekutu' }, { code: '3-3000', name: 'Laba Ditahan' },
+            { code: '3-4000', name: 'Ikhtisar Laba Rugi' }, { code: '4-1000', name: 'Pendapatan Operasional' },
+            { code: '4-1100', name: 'Pendapatan Jasa Pengangkutan Sampah' }, { code: '4-1200', name: 'Pendapatan Jasa Pengolahan/Pemusnahan Limbah' },
+            { code: '4-1300', name: 'Pendapatan Penjualan Material Daur Ulang' }, { code: '4-1400', name: 'Pendapatan Sewa Kontainer' },
+            { code: '4-2000', name: 'Pendapatan Lain-lain' }, { code: '5-1000', name: 'Beban Operasional Langsung' },
+            { code: '5-1100', name: 'Beban Bahan Bakar Truk Armada' }, { code: '5-1200', name: 'Beban Tol, Parkir, dan Retribusi TPA' },
+            { code: '5-1300', name: 'Beban Gaji Sopir & Petugas Pemilah' }, { code: '5-1400', name: 'Beban Perawatan Truk dan Armada' },
+            { code: '5-1500', name: 'Beban Perawatan Mesin Pengolah Limbah' }, { code: '5-1600', name: 'Beban Perlengkapan K3' }
         ];
 
-        // Init
         document.addEventListener('DOMContentLoaded', () => {
             const user = JSON.parse(localStorage.getItem('financeRajUser'));
             if (!user) window.location.href = 'index.html';
             document.getElementById('transDate').valueAsDate = new Date();
-            
-            // Tambah 2 baris default (Debit & Kredit)
             window.addEntryRow();
             window.addEntryRow();
         });
 
-        // FUNGSI TAMBAH BARIS (GLOBAL)
         window.addEntryRow = function() {
-            const tbody = document.getElementById('journalEntries');
-            const tr = document.createElement('tr');
+            const container = document.getElementById('journalEntries');
+            const row = document.createElement('div');
+            row.className = 'entry-row';
             
             let options = '<option value="">-- Pilih Akun --</option>';
-            coaData.forEach(acc => {
-                options += `<option value="${acc.code}">${acc.code} - ${acc.name}</option>`;
-            });
+            coaData.forEach(acc => options += `<option value="${acc.code}">${acc.code} - ${acc.name}</option>`);
             options += `<option value="FREE_TEXT">-- LAINNYA (Ketik Manual) --</option>`;
 
-            tr.innerHTML = `
-                <td>
-                    <select class="coa-select" onchange="window.handleAccountChange(this)">${options}</select>
-                    <input type="text" class="free-text-input form-control" style="display:none; margin-top:5px;" placeholder="Ketik nama akun lain...">
-                </td>
-                <td><input type="number" class="debit-input" placeholder="0" oninput="window.updateBalance()" min="0"></td>
-                <td><input type="number" class="credit-input" placeholder="0" oninput="window.updateBalance()" min="0"></td>
-                <td style="text-align:center;"><button onclick="this.closest('tr').remove(); window.updateBalance();" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fas fa-trash"></i></button></td>
+            // Deteksi mobile untuk layout label
+            const isMobile = window.innerWidth <= 600;
+            const lblAkun = isMobile ? '<span class="mobile-label">Akun</span>' : '';
+            const lblDebit = isMobile ? '<span class="mobile-label">Debit (Rp)</span>' : '';
+            const lblKredit = isMobile ? '<span class="mobile-label">Kredit (Rp)</span>' : '';
+
+            row.innerHTML = `
+                <div>${lblAkun}<select class="coa-select" onchange="window.handleAccountChange(this)">${options}</select><input type="text" class="free-text-input form-control" placeholder="Ketik nama akun..."></div>
+                <div>${lblDebit}<input type="number" class="debit-input" placeholder="0" oninput="window.updateBalance()" inputmode="decimal"></div>
+                <div>${lblKredit}<input type="number" class="credit-input" placeholder="0" oninput="window.updateBalance()" inputmode="decimal"></div>
+                <div><button class="btn-delete" onclick="this.closest('.entry-row').remove(); window.updateBalance();"><i class="fas fa-trash-alt"></i></button></div>
             `;
-            tbody.appendChild(tr);
+            container.appendChild(row);
         }
 
         window.handleAccountChange = function(selectEl) {
             const freeInput = selectEl.nextElementSibling;
-            if (selectEl.value === 'FREE_TEXT') {
-                freeInput.style.display = 'block';
-                freeInput.focus();
-            } else {
-                freeInput.style.display = 'none';
-                freeInput.value = '';
-            }
+            if (selectEl.value === 'FREE_TEXT') { freeInput.style.display = 'block'; freeInput.focus(); } 
+            else { freeInput.style.display = 'none'; freeInput.value = ''; }
             window.updateBalance();
         }
 
         window.updateBalance = function() {
             let totalDebit = 0, totalCredit = 0;
-            
             document.querySelectorAll('.debit-input').forEach(i => totalDebit += Number(i.value) || 0);
             document.querySelectorAll('.credit-input').forEach(i => totalCredit += Number(i.value) || 0);
             
@@ -242,46 +311,30 @@
             const btn = document.getElementById('btnSave');
             
             if (isBalanced) {
-                statusEl.textContent = "SEIMBANG";
-                statusEl.className = "status-badge status-balanced";
-                diffEl.textContent = "Rp 0";
-                btn.disabled = false;
+                statusEl.textContent = "SEIMBANG"; statusEl.className = "status-badge status-balanced";
+                diffEl.textContent = "Rp 0"; btn.disabled = false;
             } else {
-                statusEl.textContent = "TIDAK SEIMBANG";
-                statusEl.className = "status-badge status-unbalanced";
-                diffEl.textContent = formatRupiah(diff);
-                btn.disabled = true;
+                statusEl.textContent = "TIDAK SEIMBANG"; statusEl.className = "status-badge status-unbalanced";
+                diffEl.textContent = formatRupiah(diff); btn.disabled = true;
             }
         }
 
-        // FUNGSI SIMPAN KE GOOGLE SHEETS (FIXED CORS)
         window.saveJournal = async function() {
             const btn = document.getElementById('btnSave');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
 
             const items = [];
-            document.querySelectorAll('#journalEntries tr').forEach(tr => {
-                const select = tr.querySelector('.coa-select');
-                const freeInput = tr.querySelector('.free-text-input');
+            document.querySelectorAll('.entry-row').forEach(row => {
+                const select = row.querySelector('.coa-select');
+                const freeInput = row.querySelector('.free-text-input');
+                let code = select.value, name = select.options[select.selectedIndex].text;
                 
-                let code = select.value;
-                let name = select.options[select.selectedIndex].text;
-                
-                if (code === 'FREE_TEXT') {
-                    code = 'FREE-' + Date.now();
-                    name = freeInput.value || 'Akun Lainnya';
-                }
-
-                const debit = Number(tr.querySelector('.debit-input').value) || 0;
-                const credit = Number(tr.querySelector('.credit-input').value) || 0;
+                if (code === 'FREE_TEXT') { code = 'FREE-' + Date.now(); name = freeInput.value || 'Akun Lainnya'; }
+                const debit = Number(row.querySelector('.debit-input').value) || 0;
+                const credit = Number(row.querySelector('.credit-input').value) || 0;
 
                 if ((debit > 0 || credit > 0) && code) {
-                    items.push({ 
-                        code, name, debit, credit, 
-                        type: debit > 0 ? 'debit' : 'kredit',
-                        amount: debit > 0 ? debit : credit
-                    });
+                    items.push({ code, name, debit, credit, type: debit > 0 ? 'debit' : 'kredit', amount: debit > 0 ? debit : credit });
                 }
             });
 
@@ -290,35 +343,20 @@
                 tanggal: document.getElementById('transDate').value,
                 noBukti: document.getElementById('refNumber').value,
                 keterangan: document.getElementById('description').value,
-                inputBy: user.email,
-                inputByName: user.fullName,
-                items: items,
-                createdAt: new Date().toISOString()
+                inputBy: user.email, inputByName: user.fullName, items: items, createdAt: new Date().toISOString()
             };
 
             try {
-                // KIRIM DATA KE GOOGLE SHEETS VIA POST REQUEST
-                // Gunakan fetch biasa TANPA mode: 'no-cors' agar bisa handle redirect GAS
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'addJurnalFromWeb', data: journalData })
-                });
-
-                // Karena GAS sering redirect, kita anggap sukses jika tidak throw error network
-                alert("✅ Jurnal berhasil disimpan ke Spreadsheet!\n\nSilakan cek sheet 'JURNAL_WEB' di Google Sheets.");
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'addJurnalFromWeb', data: journalData }) });
+                alert("✅ Jurnal berhasil disimpan ke Spreadsheet!");
                 window.location.href = 'dashboard.html';
-                
             } catch(e) {
-                console.error(e);
-                alert('Gagal menyimpan: ' + e.message + '\n\nPastikan URL Web App sudah Deploy New Version.');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save"></i> Simpan Jurnal';
+                alert('Gagal menyimpan: ' + e.message);
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Jurnal';
             }
         }
 
-        function formatRupiah(num) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
-        }
+        function formatRupiah(num) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num); }
     </script>
 </body>
 </html>
