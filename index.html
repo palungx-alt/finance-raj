@@ -2,34 +2,79 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FinanceRAJ - Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --primary: #2563eb; --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
-        body.login-page { min-height:100vh; display:flex; align-items:center; justify-content:center; background: var(--bg-gradient); padding:20px; }
-        .login-box { background:white; border-radius:16px; padding:40px; width:100%; max-width:400px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); }
-        .login-header { text-align:center; margin-bottom:30px; }
-        .login-header h1 { color:var(--primary); font-size:28px; font-weight:800; }
-        .company-name { font-weight:600; color:#1e293b; margin-top:8px; font-size:13px; }
-        .form-group { margin-bottom:20px; }
-        .form-group label { display:block; margin-bottom:8px; font-weight:600; font-size:13px; }
+        :root {
+            --primary: #4f46e5;
+            --primary-glow: rgba(79, 70, 229, 0.15);
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-sec: #64748b;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body.login-page { 
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; 
+            background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%); padding: 20px; 
+        }
+
+        .login-box { 
+            background: var(--surface); border-radius: var(--radius); padding: 40px 30px; 
+            width: 100%; max-width: 420px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08); 
+            border: 1px solid var(--border); text-align: center;
+        }
+
+        /* LOGO STYLING */
+        .login-logo {
+            width: 90px; height: auto; margin-bottom: 20px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
+            transition: transform 0.3s ease;
+        }
+        .login-logo:hover { transform: scale(1.05); }
+
+        .login-header h1 { color: var(--primary); font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 5px; }
+        .login-header p { color: var(--text-sec); font-size: 14px; font-weight: 500; }
+        .company-name { font-weight: 700; color: var(--text-main); margin-top: 12px; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
         .input-wrapper { position: relative; }
-        .input-wrapper i.icon-left { position: absolute; left:15px; top:50%; transform:translateY(-50%); color:#64748b; }
-        .form-group input { width:100%; padding:12px 15px 12px 40px; border:2px solid #e2e8f0; border-radius:10px; font-size:14px; outline:none; }
-        .form-group input:focus { border-color:var(--primary); box-shadow:0 0 0 4px rgba(37,99,235,0.1); }
-        .toggle-password { position:absolute; right:15px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#64748b; }
-        .btn-login { width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:10px; font-size:16px; font-weight:700; cursor:pointer; margin-top:10px; display:flex; align-items:center; justify-content:center; gap:10px; }
-        .btn-login:disabled { opacity:0.7; cursor:not-allowed; }
-        .error-message { background:#fef2f2; border:1px solid #fecaca; color:#ef4444; padding:12px; border-radius:8px; margin-bottom:20px; display:none; align-items:center; gap:10px; font-size:13px; }
-        .login-footer { text-align:center; margin-top:30px; padding-top:20px; border-top:1px solid #e2e8f0; color:#64748b; font-size:12px; }
+        .input-wrapper i.icon-left { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-sec); font-size: 16px; }
+        
+        .form-control { 
+            width: 100%; padding: 14px 16px 14px 44px; background: var(--bg-body); 
+            border: 1px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; 
+        }
+        .form-control:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px var(--primary-glow); }
+        
+        .toggle-password { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-sec); }
+        
+        .btn-login { 
+            width: 100%; padding: 16px; background: var(--primary); color: white; border: none; 
+            border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; 
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); transition: 0.3s;
+        }
+        .btn-login:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
+        .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .error-message { background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; padding: 12px; border-radius: 10px; margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 13px; text-align: left; }
+        .login-footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text-sec); font-size: 12px; }
     </style>
 </head>
 <body class="login-page">
     <div class="login-box">
+        <!-- LOGO INTEGRATION -->
+        <img src="assets/logo.png" alt="FinanceRAJ Logo" class="login-logo" onerror="this.style.display='none'">
+        
         <div class="login-header">
-            <div style="font-size:40px; color:var(--primary); margin-bottom:10px;"><i class="fas fa-chart-line"></i></div>
             <h1>FinanceRAJ</h1>
             <p>Sistem Akuntansi & Keuangan Profesional</p>
             <p class="company-name">CV Rezeki Amanah Jaya Group</p>
@@ -40,14 +85,14 @@
                 <label>Email</label>
                 <div class="input-wrapper">
                     <i class="fas fa-envelope icon-left"></i>
-                    <input type="email" id="email" required placeholder="nama@rezekiamanahjaya.com">
+                    <input type="email" id="email" class="form-control" required placeholder="nama@rezekiamanahjaya.com">
                 </div>
             </div>
             <div class="form-group">
                 <label>Password</label>
                 <div class="input-wrapper">
                     <i class="fas fa-lock icon-left"></i>
-                    <input type="password" id="password" required placeholder="Masukkan password">
+                    <input type="password" id="password" class="form-control" required placeholder="Masukkan password">
                     <button type="button" class="toggle-password" onclick="togglePass()"><i class="fas fa-eye"></i></button>
                 </div>
             </div>
@@ -84,47 +129,14 @@
         }
         window.togglePass = togglePass;
 
-        // LOGIKA HANDSHAKE YANG LEBIH KUAT
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                console.log("Firebase User Detected:", user.email);
-                
-                // Cek apakah sudah pernah setup data user di sesi ini
-                const sessionCheck = sessionStorage.getItem('raj_session_active');
-                
-                if (!sessionCheck) {
-                    // Pertama kali load setelah login -> Setup Data
-                    console.log("Setting up user session...");
-                    
-                    // Ambil data lama atau buat baru
-                    let userData = localStorage.getItem('financeRajUser');
-                    if (!userData) {
-                        userData = JSON.stringify({
-                            uid: user.uid,
-                            email: user.email,
-                            fullName: user.email.split('@')[0], 
-                            role: 'admin' 
-                        });
-                        localStorage.setItem('financeRajUser', userData);
-                    }
-                    
-                    // Tandai sesi sudah aktif agar tidak loop lagi
-                    sessionStorage.setItem('raj_session_active', 'true');
-                    
-                    // Baru redirect
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 500); // Delay kecil untuk memastikan storage tersimpan
-                } else {
-                    // Sesi sudah aktif tapi masih di halaman login? Berarti ada masalah di dashboard
-                    // Force redirect anyway
-                    window.location.href = 'dashboard.html';
+                let storedUser = localStorage.getItem('financeRajUser');
+                if (!storedUser) {
+                    storedUser = JSON.stringify({ uid: user.uid, email: user.email, fullName: user.email.split('@')[0], role: 'admin' });
+                    localStorage.setItem('financeRajUser', storedUser);
                 }
-            } else {
-                // Jika tidak ada user di Firebase, hapus semua sesi
-                console.log("No Firebase User. Clearing sessions.");
-                localStorage.removeItem('financeRajUser');
-                sessionStorage.removeItem('raj_session_active');
+                window.location.href = 'dashboard.html';
             }
         });
 
@@ -141,7 +153,6 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
-                // onAuthStateChanged akan handle sisanya
             } catch (error) {
                 console.error(error);
                 let msg = "Login gagal.";
