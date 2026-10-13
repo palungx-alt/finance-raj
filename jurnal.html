@@ -34,14 +34,16 @@
         /* HEADER FUTURISTIK */
         .top-bar { 
             background: var(--surface);
-            padding: 20px 24px; 
+            padding: 16px 24px; 
             position: sticky; top: 0; z-index: 100;
             border-bottom: 1px solid var(--border);
             backdrop-filter: blur(10px);
             display: flex; align-items: center; justify-content: space-between;
         }
-        .page-title h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
-        .page-title p { font-size: 13px; color: var(--text-sec); margin-top: 4px; }
+        .brand-area { display: flex; align-items: center; gap: 12px; }
+        .brand-logo { width: 32px; height: auto; }
+        .page-title h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; margin: 0; }
+        .page-title p { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
         
         .btn-back { 
             background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; 
@@ -152,7 +154,7 @@
                 grid-template-columns: 1fr; gap: 10px; 
                 padding: 16px; border-bottom: 2px solid var(--bg-body);
             }
-            .entry-row td, .entry-row > div { width: 100%; }
+            .entry-row > div { width: 100%; }
             
             /* Label kecil di atas input mobile */
             .mobile-label { font-size: 11px; color: var(--text-sec); margin-bottom: 4px; display: block; }
@@ -166,9 +168,13 @@
 </head>
 <body>
     <div class="top-bar">
-        <div class="page-title">
-            <h1>Input Jurnal</h1>
-            <p>Catat transaksi operasional harian</p>
+        <div class="brand-area">
+            <!-- LOGO INTEGRATION -->
+            <img src="assets/logo.png" alt="Logo" class="brand-logo" onerror="this.style.display='none'">
+            <div class="page-title">
+                <h1>Input Jurnal</h1>
+                <p>Catat transaksi operasional harian</p>
+            </div>
         </div>
         <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i></button>
     </div>
@@ -232,6 +238,8 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+
+        // ⚠️ PASTE URL WEB APP BARU ANDA DI SINI ⚠️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwW-_Cl_hLlnY8s-0L-tUKkIlqcsjlPjw7kQKFLOIjBxf2TvtlHAaVSdO2djz9H2IY4fw/exec';
 
         // COA BARU SESUAI EXCEL RAJ WASTE MANAGEMENT
@@ -347,12 +355,20 @@
             };
 
             try {
-                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'addJurnalFromWeb', data: journalData }) });
-                alert("✅ Jurnal berhasil disimpan ke Spreadsheet!");
+                // FIX CORS: Gunakan fetch biasa tanpa mode:no-cors
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'addJurnalFromWeb', data: journalData })
+                });
+
+                alert("✅ Jurnal berhasil disimpan ke Spreadsheet!\nCek sheet 'JURNAL_WEB'.");
                 window.location.href = 'dashboard.html';
+                
             } catch(e) {
-                alert('Gagal menyimpan: ' + e.message);
-                btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Jurnal';
+                console.error(e);
+                alert('Gagal menyimpan: ' + e.message + '\n\nPastikan:\n1. URL Web App sudah New Version\n2. Internet stabil');
+                btn.disabled = false; 
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Jurnal';
             }
         }
 
