@@ -5,28 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinanceRAJ - Input Jurnal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        /* Menggunakan Style Dasar yang Sama dengan Dashboard */
-        :root { --primary: #2563eb; --sidebar-bg: #ffffff; --bg: #f1f5f9; --text-main: #1e293b; --text-sec: #64748b; --border: #e2e8f0; }
+        :root { --primary: #2563eb; --bg: #f1f5f9; --text-main: #1e293b; --border: #e2e8f0; }
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
-        body { background:var(--bg); color:var(--text-main); display:flex; min-height:100vh; }
+        body { background:var(--bg); color:var(--text-main); min-height:100vh; padding:30px; max-width:1000px; margin:0 auto; }
         
-        .sidebar { width:260px; background:var(--sidebar-bg); height:100vh; position:fixed; left:0; top:0; border-right:1px solid var(--border); display:flex; flex-direction:column; z-index:100; }
-        .sidebar-header { padding:25px 20px; text-align:center; border-bottom:1px solid var(--border); }
-        .sidebar-header h2 { color:var(--primary); font-size:22px; font-weight:800; }
-        .nav-menu { flex:1; padding:20px 0; overflow-y:auto; }
-        .nav-item { display:flex; align-items:center; padding:14px 25px; color:var(--text-sec); text-decoration:none; transition:0.2s; gap:12px; font-weight:500; font-size:14px; }
-        .nav-item:hover, .nav-item.active { background:#eff6ff; color:var(--primary); border-right:3px solid var(--primary); }
-        .user-profile { padding:20px; border-top:1px solid var(--border); display:flex; align-items:center; gap:10px; }
-        .avatar { width:40px; height:40px; background:var(--primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; }
-        
-        .main { margin-left:260px; flex:1; padding:30px; max-width:1000px; }
         .top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; }
         .page-title h1 { font-size:24px; font-weight:700; }
         .btn-back { background:white; border:1px solid var(--border); padding:8px 15px; border-radius:8px; cursor:pointer; text-decoration:none; color:var(--text-main); font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:8px; }
         
-        /* FORM STYLES */
         .form-card { background:white; padding:30px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--border); }
         .form-row { display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px; }
         .form-group { margin-bottom:20px; }
@@ -36,13 +23,11 @@
         
         /* JURNAL ENTRIES TABLE */
         .entries-table { width:100%; border-collapse:collapse; margin-bottom:20px; background:#f8fafc; border-radius:8px; overflow:hidden; }
-        .entries-table th { background:#f1f5f9; padding:12px; text-align:left; font-size:12px; color:var(--text-sec); text-transform:uppercase; }
-        .entries-table td { padding:10px; border-bottom:1px solid var(--border); background:white; }
+        .entries-table th { background:#f1f5f9; padding:12px; text-align:left; font-size:12px; color:#64748b; text-transform:uppercase; }
+        .entries-table td { padding:10px; border-bottom:1px solid var(--border); background:white; vertical-align:middle; }
         .entries-table select, .entries-table input { width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; font-size:13px; }
         
         .total-section { display:flex; justify-content:space-between; align-items:center; padding:20px; background:#eff6ff; border-radius:8px; margin-bottom:20px; border:1px solid #dbeafe; }
-        .total-label { font-weight:700; color:var(--primary); font-size:16px; }
-        .total-value { font-size:24px; font-weight:800; color:var(--text-main); }
         .status-badge { padding:5px 12px; border-radius:20px; font-size:12px; font-weight:700; }
         .status-balanced { background:#d1fae5; color:#065f46; }
         .status-unbalanced { background:#fee2e2; color:#991b1b; }
@@ -51,114 +36,138 @@
         .btn-submit:hover:not(:disabled) { background:#1d4ed8; transform:translateY(-2px); }
         .btn-submit:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
         
-        .btn-add-row { background:white; border:2px dashed var(--border); color:var(--text-sec); width:100%; padding:12px; border-radius:8px; cursor:pointer; font-weight:600; margin-bottom:20px; transition:0.2s; }
+        .btn-add-row { background:white; border:2px dashed var(--border); color:#64748b; width:100%; padding:12px; border-radius:8px; cursor:pointer; font-weight:600; margin-bottom:20px; transition:0.2s; }
         .btn-add-row:hover { border-color:var(--primary); color:var(--primary); background:#eff6ff; }
         
-        @media(max-width:768px) { .sidebar{transform:translateX(-100%);} .main{margin-left:0;} .form-row{grid-template-columns:1fr;} }
+        @media(max-width:768px) { .form-row{grid-template-columns:1fr;} }
     </style>
 </head>
 <body>
-    <!-- Sidebar (Sama seperti dashboard) -->
-    <aside class="sidebar">
-        <div class="sidebar-header"><h2><i class="fas fa-chart-line"></i> FinanceRAJ</h2></div>
-        <nav class="nav-menu">
-            <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
-            <a href="jurnal.html" class="nav-item active"><i class="fas fa-book"></i> Jurnal Umum</a>
-            <a href="#" class="nav-item"><i class="fas fa-file-signature"></i> Approval Form</a>
-            <a href="#" class="nav-item"><i class="fas fa-list-alt"></i> Buku Besar</a>
-            <a href="#" class="nav-item"><i class="fas fa-chart-pie"></i> Laporan</a>
-        </nav>
-        <div class="user-profile">
-            <div class="avatar" id="userAvatar">A</div>
-            <div style="font-size:13px; font-weight:600;" id="userNameDisplay">Admin</div>
+    <div class="top-bar">
+        <div class="page-title">
+            <h1>Input Jurnal Umum</h1>
+            <p style="color:#64748b; font-size:14px; margin-top:5px;">Catat transaksi operasional harian (BBM, Kasbon, TPA, dll)</p>
         </div>
-    </aside>
+        <a href="dashboard.html" class="btn-back"><i class="fas fa-arrow-left"></i> Kembali</a>
+    </div>
 
-    <!-- Main Content -->
-    <main class="main">
-        <div class="top-bar">
-            <div class="page-title">
-                <h1>Input Jurnal Umum</h1>
-                <p style="color:var(--text-sec); font-size:14px; margin-top:5px;">Catat transaksi operasional harian (BBM, Kasbon, TPA, dll)</p>
-            </div>
-            <a href="dashboard.html" class="btn-back"><i class="fas fa-arrow-left"></i> Kembali</a>
-        </div>
-
-        <div class="form-card">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Tanggal Transaksi</label>
-                    <input type="date" id="transDate" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>No. Bukti / Referensi</label>
-                    <input type="text" id="refNumber" class="form-control" placeholder="Contoh: STRUK-SOLAR-001">
-                </div>
-            </div>
-            
+    <div class="form-card">
+        <div class="form-row">
             <div class="form-group">
-                <label>Keterangan Transaksi</label>
-                <input type="text" id="description" class="form-control" placeholder="Contoh: Pembelian solar untuk truk B 1234 CD">
+                <label>Tanggal Transaksi</label>
+                <input type="date" id="transDate" class="form-control">
             </div>
-
-            <h3 style="font-size:16px; margin-bottom:15px; color:var(--text-main);">Detail Akun (Debit & Kredit)</h3>
-            
-            <table class="entries-table">
-                <thead>
-                    <tr>
-                        <th style="width:40%">Akun (COA)</th>
-                        <th style="width:25%">Debit (Rp)</th>
-                        <th style="width:25%">Kredit (Rp)</th>
-                        <th style="width:10%"></th>
-                    </tr>
-                </thead>
-                <tbody id="journalEntries">
-                    <!-- Baris jurnal akan ditambahkan via JS -->
-                </tbody>
-            </table>
-            
-            <button class="btn-add-row" onclick="addEntryRow()"><i class="fas fa-plus"></i> Tambah Baris Akun</button>
-
-            <div class="total-section">
-                <div>
-                    <div class="total-label">Status Balance</div>
-                    <div style="font-size:12px; color:var(--text-sec); margin-top:4px;">Total Debit harus sama dengan Total Kredit</div>
-                </div>
-                <div style="text-align:right;">
-                    <div id="balanceStatus" class="status-badge status-unbalanced">TIDAK SEIMBANG</div>
-                    <div style="margin-top:8px; font-size:13px; color:var(--text-sec);">Selisih: <span id="diffAmount" style="font-weight:700; color:var(--text-main);">Rp 0</span></div>
-                </div>
+            <div class="form-group">
+                <label>No. Bukti / Referensi</label>
+                <input type="text" id="refNumber" class="form-control" placeholder="Contoh: STRUK-SOLAR-001">
             </div>
-
-            <button id="btnSave" class="btn-submit" disabled onclick="saveJournal()">
-                <i class="fas fa-save"></i> Simpan Jurnal
-            </button>
         </div>
-    </main>
+        
+        <div class="form-group">
+            <label>Keterangan Transaksi</label>
+            <input type="text" id="description" class="form-control" placeholder="Contoh: Pembelian solar untuk truk B 1234 CD">
+        </div>
 
-    <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwW-_Cl_hLlnY8s-0L-tUKkIlqcsjlPjw7kQKFLOIjBxf2TvtlHAaVSdO2djz9H2IY4fw/exec';
-        let coaData = [];
+        <h3 style="font-size:16px; margin-bottom:15px; color:var(--text-main);">Detail Akun (Debit & Kredit)</h3>
+        
+        <table class="entries-table">
+            <thead>
+                <tr>
+                    <th style="width:45%">Akun (COA)</th>
+                    <th style="width:20%">Debit (Rp)</th>
+                    <th style="width:20%">Kredit (Rp)</th>
+                    <th style="width:15%"></th>
+                </tr>
+            </thead>
+            <tbody id="journalEntries">
+                <!-- Baris jurnal akan ditambahkan via JS -->
+            </tbody>
+        </table>
+        
+        <button class="btn-add-row" onclick="addEntryRow()"><i class="fas fa-plus"></i> Tambah Baris Akun</button>
+
+        <div class="total-section">
+            <div>
+                <div style="font-weight:700; color:var(--primary); font-size:16px;">Status Balance</div>
+                <div style="font-size:12px; color:#64748b; margin-top:4px;">Total Debit harus sama dengan Total Kredit</div>
+            </div>
+            <div style="text-align:right;">
+                <div id="balanceStatus" class="status-badge status-unbalanced">TIDAK SEIMBANG</div>
+                <div style="margin-top:8px; font-size:13px; color:#64748b;">Selisih: <span id="diffAmount" style="font-weight:700; color:var(--text-main);">Rp 0</span></div>
+            </div>
+        </div>
+
+        <button id="btnSave" class="btn-submit" disabled onclick="saveJournal()">
+            <i class="fas fa-save"></i> Simpan Jurnal
+        </button>
+    </div>
+
+    <script type="module">
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg",
+            authDomain: "finance-raj.firebaseapp.com",
+            projectId: "finance-raj",
+            storageBucket: "finance-raj.firebasestorage.app",
+            messagingSenderId: "138468278392",
+            appId: "1:138468278392:web:215731466beb7f89566d8d",
+            measurementId: "G-BMG4L7P2DP"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // DAFTAR AKUN LENGKAP DARI EXCEL RAJ WASTE MANAGEMENT
+        const coaData = [
+            { code: '1-1101', name: 'Kas Kecil Operasional' },
+            { code: '1-1102', name: 'Bank Utama (Operasional)' },
+            { code: '1-1201', name: 'Piutang Pelanggan Komersial (B2B)' },
+            { code: '1-1202', name: 'Piutang Pelanggan Perumahan (B2C)' },
+            { code: '1-1301', name: 'Persediaan Bin & Kontainer' },
+            { code: '1-1302', name: 'Stok Sparepart & Ban Armada' },
+            { code: '1-1303', name: 'Perlengkapan K3 & APD' },
+            { code: '1-2101', name: 'Armada Truk Sampah' },
+            { code: '1-2102', name: 'Peralatan Pengolahan Sampah' },
+            { code: '2-1101', name: 'Utang TPA (Tipping Fee)' },
+            { code: '2-1102', name: 'Utang Pemasok BBM & Perawatan' },
+            { code: '2-1201', name: 'Utang Gaji Sopir, Kernet & Staf' },
+            { code: '2-1202', name: 'Utang Pajak (PPh 23, PPh 21, PPN)' },
+            { code: '3-1100', name: 'Modal Disetor' },
+            { code: '3-1300', name: 'Laba Tahun Berjalan' },
+            { code: '4-1100', name: 'Pendapatan Jasa Angkut Komersial (B2B)' },
+            { code: '4-1200', name: 'Pendapatan Jasa Angkut Perumahan (B2C)' },
+            { code: '4-1300', name: 'Pendapatan Sewa Kontainer & Skip Bin' },
+            { code: '4-2100', name: 'Penjualan Material Daur Ulang' },
+            { code: '4-2200', name: 'Penjualan Kompos & Hasil Organik' },
+            { code: '5-1100', name: 'Bahan Bakar (BBM) Truk Sampah' },
+            { code: '5-1200', name: 'Biaya Tipping Fee / Retribusi TPA' },
+            { code: '5-1300', name: 'Biaya Perawatan, Service & Sparepart' },
+            { code: '5-1400', name: 'Biaya Tol, Parkir & Uang Jalan Driver' },
+            { code: '5-2100', name: 'Gaji Sopir Truk Sampah' },
+            { code: '5-2200', name: 'Gaji Kernet / Helper Lapangan' },
+            { code: '5-2300', name: 'Insentif Ritase & Lembur' },
+            { code: '5-3100', name: 'Biaya Listrik & BBM Mesin Pengolah' },
+            { code: '5-3200', name: 'Perlengkapan K3 & Seragam Lapangan' },
+            { code: '5-3400', name: 'Gaji Staf Manajemen, Admin & Accounting' },
+            { code: '5-3600', name: 'Pajak Kendaraan Bermotor (STNK & KIR)' },
+            { code: '5-3700', name: 'Beban Penyusutan Armada & Kontainer' },
+            { code: '5-3800', name: 'Beban Sewa Lahan/Depo Sampah & Kantor' }
+        ];
 
         // Init
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             const user = JSON.parse(localStorage.getItem('financeRajUser'));
             if (!user) window.location.href = 'index.html';
-            
-            document.getElementById('userNameDisplay').textContent = user.fullName;
-            document.getElementById('userAvatar').textContent = user.fullName.charAt(0).toUpperCase();
             document.getElementById('transDate').valueAsDate = new Date();
-
-            // Load COA dari Spreadsheet
-            try {
-                const res = await fetch(`${API_URL}?action=getCOA`);
-                const data = await res.json();
-                if(data.status === 'success') {
-                    coaData = data.accounts.filter(a => a.classification === 'Detail'); // Hanya akun detail
-                    addEntryRow(); // Tambah baris pertama
-                    addEntryRow(); // Tambah baris kedua (minimal 2 untuk debit/kredit)
-                }
-            } catch(e) { console.error("Gagal load COA", e); }
+            
+            // Tambah 2 baris default (Debit & Kredit)
+            addEntryRow();
+            addEntryRow();
         });
 
         function addEntryRow() {
@@ -167,16 +176,33 @@
             
             let options = '<option value="">-- Pilih Akun --</option>';
             coaData.forEach(acc => {
-                options += `<option value="${acc.code}" data-name="${acc.name}">${acc.code} - ${acc.name}</option>`;
+                options += `<option value="${acc.code}">${acc.code} - ${acc.name}</option>`;
             });
+            // Opsi Free Text di paling bawah
+            options += `<option value="FREE_TEXT">-- LAINNYA (Ketik Manual) --</option>`;
 
             tr.innerHTML = `
-                <td><select class="coa-select" onchange="updateBalance()">${options}</select></td>
+                <td>
+                    <select class="coa-select" onchange="handleAccountChange(this)">${options}</select>
+                    <input type="text" class="free-text-input form-control" style="display:none; margin-top:5px;" placeholder="Ketik nama akun lain...">
+                </td>
                 <td><input type="number" class="debit-input" placeholder="0" oninput="updateBalance()" min="0"></td>
                 <td><input type="number" class="credit-input" placeholder="0" oninput="updateBalance()" min="0"></td>
                 <td style="text-align:center;"><button onclick="this.closest('tr').remove(); updateBalance();" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fas fa-trash"></i></button></td>
             `;
             tbody.appendChild(tr);
+        }
+
+        function handleAccountChange(selectEl) {
+            const freeInput = selectEl.nextElementSibling;
+            if (selectEl.value === 'FREE_TEXT') {
+                freeInput.style.display = 'block';
+                freeInput.focus();
+            } else {
+                freeInput.style.display = 'none';
+                freeInput.value = '';
+            }
+            updateBalance();
         }
 
         function updateBalance() {
@@ -213,45 +239,47 @@
             const items = [];
             document.querySelectorAll('#journalEntries tr').forEach(tr => {
                 const select = tr.querySelector('.coa-select');
-                const code = select.value;
-                const name = select.options[select.selectedIndex].dataset.name;
+                const freeInput = tr.querySelector('.free-text-input');
+                
+                let code = select.value;
+                let name = select.options[select.selectedIndex].text;
+                
+                // Handle Free Text
+                if (code === 'FREE_TEXT') {
+                    code = 'FREE-' + Date.now();
+                    name = freeInput.value || 'Akun Lainnya';
+                }
+
                 const debit = Number(tr.querySelector('.debit-input').value) || 0;
                 const credit = Number(tr.querySelector('.credit-input').value) || 0;
 
-                if (code) {
-                    if (debit > 0) items.push({ type: 'debit', kodeAkun: code, namaAkun: name, amount: debit });
-                    if (credit > 0) items.push({ type: 'kredit', kodeAkun: code, namaAkun: name, amount: credit });
+                if ((debit > 0 || credit > 0) && code) {
+                    items.push({ 
+                        code, name, debit, credit, 
+                        type: debit > 0 ? 'debit' : 'kredit',
+                        amount: debit > 0 ? debit : credit
+                    });
                 }
             });
 
-            const payload = {
-                action: 'addJurnal',
-                jurnalData: {
+            const user = JSON.parse(localStorage.getItem('financeRajUser'));
+
+            try {
+                await addDoc(collection(db, "journals"), {
                     tanggal: document.getElementById('transDate').value,
                     noBukti: document.getElementById('refNumber').value,
                     keterangan: document.getElementById('description').value,
-                    inputBy: JSON.parse(localStorage.getItem('financeRajUser')).username,
-                    items: items
-                }
-            };
-
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
+                    inputBy: user.email,
+                    inputByName: user.fullName,
+                    items: items,
+                    createdAt: new Date().toISOString()
                 });
-                const result = await res.json();
                 
-                if(result.status === 'success') {
-                    alert(`Jurnal berhasil disimpan! ID: ${result.journalId}`);
-                    window.location.href = 'dashboard.html';
-                } else {
-                    alert('Error: ' + result.message);
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-save"></i> Simpan Jurnal';
-                }
+                alert("Jurnal berhasil disimpan ke Firestore!");
+                window.location.href = 'dashboard.html';
             } catch(e) {
-                alert('Gagal terhubung ke server.');
+                console.error(e);
+                alert('Gagal menyimpan: ' + e.message);
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-save"></i> Simpan Jurnal';
             }
