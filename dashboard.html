@@ -254,8 +254,6 @@
     <script type="module">
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // Import Firestore untuk ambil data real-time
-        import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg",
@@ -269,7 +267,9 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
+
+        // URL WEB APP GOOGLE SHEETS (SAMA DENGAN DI JURNAL.HTML)
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
         // Cek Auth & Load Data
         onAuthStateChanged(auth, async (user) => {
@@ -286,51 +286,58 @@
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', options);
 
-            // Load Data Transaksi dari Firestore
-            await loadTransactions();
+            // Load Data Transaksi dari Google Sheets
+            await loadTransactionsFromSheets();
         });
 
-        async function loadTransactions() {
+        async function loadTransactionsFromSheets() {
             try {
-                // Ambil 50 transaksi terakhir untuk kalkulasi saldo & grafik
-                const q = query(collection(db, "journals"), orderBy("createdAt", "desc"), limit(50));
-                const querySnapshot = await getDocs(q);
+                // Ambil data jurnal dari Apps Script
+                const response = await fetch(`${GAS_URL}?action=getJurnal`);
+                const result = await response.json();
                 
-                let transactions = [];
-                let totalDebit = 0, totalCredit = 0, revenue = 0, expense = 0, cashBalance = 0;
+                if (result.status !== 'success') {
+                    throw new Error(result.message || 'Gagal mengambil data');
+                }
 
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    transactions.push(data);
+                const transactions = result.journals || [];
+                
+                let totalDebit = 0, totalCredit = 0, revenue = 0, expense = 0;
+
+                // Kalkulasi Sederhana untuk Dashboard
+                transactions.forEach(tx => {
+                    // Struktur data dari sheet: [ID, Tanggal, NoBukti, Ket, InputBy, NamaInput, KodeAkun, NamaAkun, Debit, Kredit, Tipe, Timestamp]
+                    const debit = Number(tx[8]) || 0;
+                    const credit = Number(tx[9]) || 0;
+                    const code = String(tx[6]);
                     
-                    // Kalkulasi Sederhana untuk Dashboard
-                    data.items.forEach(item => {
-                        if(item.debit > 0) totalDebit += item.debit;
-                        if(item.credit > 0) totalCredit += item.credit;
-                        
-                        // Logika sederhana: Aset/Beban Debit = Cash Out/In, Liabilitas/Pendapatan Kredit = Cash In/Out
-                        // Untuk demo ini kita anggap semua debit sebagai pengeluaran kas dan kredit sebagai pemasukan (sesuaikan dengan COA nanti)
-                        if(item.code.startsWith('4-')) revenue += item.credit || 0;
-                        if(item.code.startsWith('5-')) expense += item.debit || 0;
-                    });
+                    totalDebit += debit;
+                    totalCredit += credit;
+                    
+                    // Logika sederhana: Akun 4xxx = Pendapatan (Kredit), Akun 5xxx = Beban (Debit)
+                    if(code.startsWith('4-')) revenue += credit;
+                    if(code.startsWith('5-')) expense += debit;
                 });
 
                 // Update Cards
-                cashBalance = totalDebit - totalCredit; // Simplified logic
+                // Sisa Saldo = Total Debit Aset - Total Kredit Aset (Simplified)
+                // Untuk demo ini kita pakai Total Debit - Total Kredit sebagai proxy saldo kas
+                const cashBalance = totalDebit - totalCredit; 
                 document.getElementById('totalCash').textContent = formatRupiah(Math.abs(cashBalance));
                 document.getElementById('totalRevenue').textContent = formatRupiah(revenue);
                 document.getElementById('totalExpense').textContent = formatRupiah(expense);
                 document.getElementById('txCount').textContent = transactions.length;
 
-                // Render Table (Top 10)
-                renderTable(transactions.slice(0, 10));
+                // Render Table (Top 10 - Reverse karena data dari sheet urutan masuk)
+                const recentTx = transactions.slice(-10).reverse();
+                renderTable(recentTx);
 
-                // Render Chart
+                // Render Chart (Dummy data for now, will be dynamic later)
                 renderChart(transactions);
 
             } catch (e) {
                 console.error("Error loading dashboard:", e);
-                document.getElementById('txTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Gagal memuat data</td></tr>';
+                document.getElementById('txTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Gagal memuat data: ' + e.message + '</td></tr>';
             }
         }
 
@@ -342,18 +349,23 @@
             }
 
             tbody.innerHTML = data.map(tx => {
-                // Gabungkan item untuk tampilan ringkas
-                const mainItem = tx.items[0] || {};
-                const date = new Date(tx.tanggal).toLocaleDateString('id-ID');
+                // tx structure: [ID, Tanggal, NoBukti, Ket, InputBy, NamaInput, KodeAkun, NamaAkun, Debit, Kredit, Tipe, Timestamp]
+                const date = new Date(tx[1]).toLocaleDateString('id-ID');
+                const noBukti = tx[2];
+                const ket = tx[3];
+                const kodeAkun = tx[6];
+                const namaAkun = tx[7];
+                const debit = Number(tx[8]) || 0;
+                const kredit = Number(tx[9]) || 0;
                 
                 return `
                     <tr>
                         <td>${date}</td>
-                        <td style="font-weight:600; color:var(--primary);">${tx.noBukti || '-'}</td>
-                        <td>${tx.keterangan}</td>
-                        <td><span style="font-size:12px; color:var(--text-sec);">${mainItem.code} - ${mainItem.name}</span></td>
-                        <td class="text-right" style="color:var(--success); font-weight:600;">${mainItem.debit ? formatRupiah(mainItem.debit) : '-'}</td>
-                        <td class="text-right" style="color:var(--danger); font-weight:600;">${mainItem.credit ? formatRupiah(mainItem.credit) : '-'}</td>
+                        <td style="font-weight:600; color:var(--primary);">${noBukti || '-'}</td>
+                        <td>${ket}</td>
+                        <td><span style="font-size:12px; color:var(--text-sec);">${kodeAkun} - ${namaAkun}</span></td>
+                        <td class="text-right" style="color:var(--success); font-weight:600;">${debit ? formatRupiah(debit) : '-'}</td>
+                        <td class="text-right" style="color:var(--danger); font-weight:600;">${kredit ? formatRupiah(kredit) : '-'}</td>
                         <td><span class="badge badge-debit">Saved</span></td>
                     </tr>
                 `;
@@ -380,14 +392,18 @@
             const expenseData = [0, 0, 0, 0, 0, 0];
 
             transactions.forEach(tx => {
-                const d = new Date(tx.createdAt);
+                // tx[1] is date string, tx[8] is debit, tx[9] is credit, tx[6] is account code
+                const d = new Date(tx[1]);
                 const monthIndex = d.getMonth(); 
-                // Map current year months to chart indices (Simplified logic)
+                
+                // Map current year months to chart indices (Simplified logic for Oct 2026)
                 if(monthIndex === 9) { // October
-                     tx.items.forEach(i => {
-                         if(i.code.startsWith('4-')) incomeData[5] += (i.credit||0);
-                         if(i.code.startsWith('5-')) expenseData[5] += (i.debit||0);
-                     });
+                     const debit = Number(tx[8]) || 0;
+                     const credit = Number(tx[9]) || 0;
+                     const code = String(tx[6]);
+                     
+                     if(code.startsWith('4-')) incomeData[5] += credit;
+                     if(code.startsWith('5-')) expenseData[5] += debit;
                 }
             });
 
