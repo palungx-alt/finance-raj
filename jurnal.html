@@ -84,7 +84,7 @@
             </tbody>
         </table>
         
-        <button class="btn-add-row" onclick="addEntryRow()"><i class="fas fa-plus"></i> Tambah Baris Akun</button>
+        <button class="btn-add-row" onclick="window.addEntryRow()"><i class="fas fa-plus"></i> Tambah Baris Akun</button>
 
         <div class="total-section">
             <div>
@@ -97,7 +97,7 @@
             </div>
         </div>
 
-        <button id="btnSave" class="btn-submit" disabled onclick="saveJournal()">
+        <button id="btnSave" class="btn-submit" disabled onclick="window.saveJournal()">
             <i class="fas fa-save"></i> Simpan Jurnal
         </button>
     </div>
@@ -121,6 +121,9 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // URL WEB APP GOOGLE SHEETS (GANTI DENGAN URL ANDA SENDIRI)
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwW-_Cl_hLlnY8s-0L-tUKkIlqcsjlPjw7kQKFLOIjBxf2TvtlHAaVSdO2djz9H2IY4fw/exec';
 
         // DAFTAR AKUN LENGKAP DARI EXCEL RAJ WASTE MANAGEMENT
         const coaData = [
@@ -166,11 +169,12 @@
             document.getElementById('transDate').valueAsDate = new Date();
             
             // Tambah 2 baris default (Debit & Kredit)
-            addEntryRow();
-            addEntryRow();
+            window.addEntryRow();
+            window.addEntryRow();
         });
 
-        function addEntryRow() {
+        // FUNGSI TAMBAH BARIS (DIBUAT GLOBAL AGAR BISA DIPANGGIL HTML)
+        window.addEntryRow = function() {
             const tbody = document.getElementById('journalEntries');
             const tr = document.createElement('tr');
             
@@ -183,17 +187,17 @@
 
             tr.innerHTML = `
                 <td>
-                    <select class="coa-select" onchange="handleAccountChange(this)">${options}</select>
+                    <select class="coa-select" onchange="window.handleAccountChange(this)">${options}</select>
                     <input type="text" class="free-text-input form-control" style="display:none; margin-top:5px;" placeholder="Ketik nama akun lain...">
                 </td>
-                <td><input type="number" class="debit-input" placeholder="0" oninput="updateBalance()" min="0"></td>
-                <td><input type="number" class="credit-input" placeholder="0" oninput="updateBalance()" min="0"></td>
-                <td style="text-align:center;"><button onclick="this.closest('tr').remove(); updateBalance();" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fas fa-trash"></i></button></td>
+                <td><input type="number" class="debit-input" placeholder="0" oninput="window.updateBalance()" min="0"></td>
+                <td><input type="number" class="credit-input" placeholder="0" oninput="window.updateBalance()" min="0"></td>
+                <td style="text-align:center;"><button onclick="this.closest('tr').remove(); window.updateBalance();" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fas fa-trash"></i></button></td>
             `;
             tbody.appendChild(tr);
         }
 
-        function handleAccountChange(selectEl) {
+        window.handleAccountChange = function(selectEl) {
             const freeInput = selectEl.nextElementSibling;
             if (selectEl.value === 'FREE_TEXT') {
                 freeInput.style.display = 'block';
@@ -202,10 +206,10 @@
                 freeInput.style.display = 'none';
                 freeInput.value = '';
             }
-            updateBalance();
+            window.updateBalance();
         }
 
-        function updateBalance() {
+        window.updateBalance = function() {
             let totalDebit = 0, totalCredit = 0;
             
             document.querySelectorAll('.debit-input').forEach(i => totalDebit += Number(i.value) || 0);
@@ -231,7 +235,7 @@
             }
         }
 
-        async function saveJournal() {
+        window.saveJournal = async function() {
             const btn = document.getElementById('btnSave');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
@@ -263,19 +267,37 @@
             });
 
             const user = JSON.parse(localStorage.getItem('financeRajUser'));
+            const journalData = {
+                tanggal: document.getElementById('transDate').value,
+                noBukti: document.getElementById('refNumber').value,
+                keterangan: document.getElementById('description').value,
+                inputBy: user.email,
+                inputByName: user.fullName,
+                items: items,
+                createdAt: new Date().toISOString()
+            };
 
             try {
-                await addDoc(collection(db, "journals"), {
-                    tanggal: document.getElementById('transDate').value,
-                    noBukti: document.getElementById('refNumber').value,
-                    keterangan: document.getElementById('description').value,
-                    inputBy: user.email,
-                    inputByName: user.fullName,
-                    items: items,
-                    createdAt: new Date().toISOString()
+                // 1. SIMPAN KE FIRESTORE (DATABASE UTAMA)
+                await addDoc(collection(db, "journals"), journalData);
+
+                // 2. SIMPAN KE GOOGLE SHEETS (BACKUP/LAPORAN)
+                // Kita kirim data dalam format yang bisa langsung di-append ke sheet
+                const sheetPayload = {
+                    action: 'addJurnalFromWeb',
+                    data: journalData
+                };
+
+                // Gunakan fetch dengan mode no-cors atau redirect manual jika perlu
+                // Untuk GAS Web App, kita pakai POST biasa
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Penting untuk menghindari error CORS di browser
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(sheetPayload)
                 });
                 
-                alert("Jurnal berhasil disimpan ke Firestore!");
+                alert("✅ Jurnal berhasil disimpan!\n\nData tersimpan di:\n1. Firebase Firestore (Real-time)\n2. Google Sheets (Backup)");
                 window.location.href = 'dashboard.html';
             } catch(e) {
                 console.error(e);
