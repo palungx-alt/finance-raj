@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceRAJ - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #2563eb; --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
+        body.login-page { min-height:100vh; display:flex; align-items:center; justify-content:center; background: var(--bg-gradient); padding:20px; }
+        .login-box { background:white; border-radius:16px; padding:40px; width:100%; max-width:400px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); }
+        .login-header { text-align:center; margin-bottom:30px; }
+        .login-header h1 { color:var(--primary); font-size:28px; font-weight:800; }
+        .company-name { font-weight:600; color:#1e293b; margin-top:8px; font-size:13px; }
+        .form-group { margin-bottom:20px; }
+        .form-group label { display:block; margin-bottom:8px; font-weight:600; font-size:13px; }
+        .input-wrapper { position: relative; }
+        .input-wrapper i.icon-left { position: absolute; left:15px; top:50%; transform:translateY(-50%); color:#64748b; }
+        .form-group input { width:100%; padding:12px 15px 12px 40px; border:2px solid #e2e8f0; border-radius:10px; font-size:14px; outline:none; }
+        .form-group input:focus { border-color:var(--primary); box-shadow:0 0 0 4px rgba(37,99,235,0.1); }
+        .toggle-password { position:absolute; right:15px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#64748b; }
+        .btn-login { width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:10px; font-size:16px; font-weight:700; cursor:pointer; margin-top:10px; display:flex; align-items:center; justify-content:center; gap:10px; }
+        .btn-login:disabled { opacity:0.7; cursor:not-allowed; }
+        .error-message { background:#fef2f2; border:1px solid #fecaca; color:#ef4444; padding:12px; border-radius:8px; margin-bottom:20px; display:none; align-items:center; gap:10px; font-size:13px; }
+        .login-footer { text-align:center; margin-top:30px; padding-top:20px; border-top:1px solid #e2e8f0; color:#64748b; font-size:12px; }
+    </style>
+</head>
+<body class="login-page">
+    <div class="login-box">
+        <div class="login-header">
+            <div style="font-size:40px; color:var(--primary); margin-bottom:10px;"><i class="fas fa-chart-line"></i></div>
+            <h1>FinanceRAJ</h1>
+            <p>Sistem Akuntansi & Keuangan Profesional</p>
+            <p class="company-name">CV Rezeki Amanah Jaya Group</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Email</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope icon-left"></i>
+                    <input type="email" id="email" required placeholder="nama@rezekiamanahjaya.com">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock icon-left"></i>
+                    <input type="password" id="password" required placeholder="Masukkan password">
+                    <button type="button" class="toggle-password" onclick="togglePass()"><i class="fas fa-eye"></i></button>
+                </div>
+            </div>
+            <div id="errorMessage" class="error-message"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+            <button type="submit" class="btn-login" id="btnLogin"><i class="fas fa-sign-in-alt"></i> Masuk</button>
+        </form>
+        <div class="login-footer">
+            <p>&copy; 2026 CV Rezeki Amanah Jaya Group | Tangerang</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg",
+            authDomain: "finance-raj.firebaseapp.com",
+            projectId: "finance-raj",
+            storageBucket: "finance-raj.firebasestorage.app",
+            messagingSenderId: "138468278392",
+            appId: "1:138468278392:web:215731466beb7f89566d8d",
+            measurementId: "G-BMG4L7P2DP"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        function togglePass() {
+            const inp = document.getElementById('password');
+            const icn = document.querySelector('.toggle-password i');
+            if(inp.type==='password'){ inp.type='text'; icn.classList.replace('fa-eye','fa-eye-slash'); }
+            else { inp.type='password'; icn.classList.replace('fa-eye-slash','fa-eye'); }
+        }
+        window.togglePass = togglePass;
+
+        // LOGIKA HANDSHAKE YANG LEBIH KUAT
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("Firebase User Detected:", user.email);
+                
+                // Cek apakah sudah pernah setup data user di sesi ini
+                const sessionCheck = sessionStorage.getItem('raj_session_active');
+                
+                if (!sessionCheck) {
+                    // Pertama kali load setelah login -> Setup Data
+                    console.log("Setting up user session...");
+                    
+                    // Ambil data lama atau buat baru
+                    let userData = localStorage.getItem('financeRajUser');
+                    if (!userData) {
+                        userData = JSON.stringify({
+                            uid: user.uid,
+                            email: user.email,
+                            fullName: user.email.split('@')[0], 
+                            role: 'admin' 
+                        });
+                        localStorage.setItem('financeRajUser', userData);
+                    }
+                    
+                    // Tandai sesi sudah aktif agar tidak loop lagi
+                    sessionStorage.setItem('raj_session_active', 'true');
+                    
+                    // Baru redirect
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 500); // Delay kecil untuk memastikan storage tersimpan
+                } else {
+                    // Sesi sudah aktif tapi masih di halaman login? Berarti ada masalah di dashboard
+                    // Force redirect anyway
+                    window.location.href = 'dashboard.html';
+                }
+            } else {
+                // Jika tidak ada user di Firebase, hapus semua sesi
+                console.log("No Firebase User. Clearing sessions.");
+                localStorage.removeItem('financeRajUser');
+                sessionStorage.removeItem('raj_session_active');
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnLogin');
+            const errDiv = document.getElementById('errorMessage');
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('password').value.trim();
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            errDiv.style.display = 'none';
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                // onAuthStateChanged akan handle sisanya
+            } catch (error) {
+                console.error(error);
+                let msg = "Login gagal.";
+                if(error.code === 'auth/user-not-found') msg = "Email tidak terdaftar.";
+                else if(error.code === 'auth/wrong-password') msg = "Password salah.";
+                
+                errDiv.querySelector('span').textContent = msg;
+                errDiv.style.display = 'flex';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Masuk';
+            }
+        });
+    </script>
+</body>
+</html>

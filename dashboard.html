@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceRAJ - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #2563eb; --sidebar-bg: #ffffff; --bg: #f1f5f9; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
+        body { background:var(--bg); display:flex; min-height:100vh; }
+        .sidebar { width:260px; background:var(--sidebar-bg); height:100vh; position:fixed; left:0; top:0; border-right:1px solid #e2e8f0; display:flex; flex-direction:column; }
+        .sidebar-header { padding:25px 20px; text-align:center; border-bottom:1px solid #e2e8f0; }
+        .sidebar-header h2 { color:var(--primary); font-size:22px; font-weight:800; }
+        .nav-menu { flex:1; padding:20px 0; }
+        .nav-item { display:flex; align-items:center; padding:14px 25px; color:#64748b; text-decoration:none; gap:12px; font-weight:500; }
+        .nav-item:hover, .nav-item.active { background:#eff6ff; color:var(--primary); border-right:3px solid var(--primary); }
+        .main { margin-left:260px; flex:1; padding:30px; }
+        .card { background:white; padding:25px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); margin-bottom:20px; }
+        .btn-danger { background:#ef4444; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; }
+        .debug-info { font-size:12px; color:#64748b; margin-top:10px; background:#f8fafc; padding:10px; border-radius:6px; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header"><h2><i class="fas fa-chart-line"></i> FinanceRAJ</h2></div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="jurnal.html" class="nav-item"><i class="fas fa-book"></i> Jurnal</a>
+            <a href="approval.html" class="nav-item"><i class="fas fa-file-signature"></i> Approval</a>
+        </nav>
+        <div style="padding:20px; border-top:1px solid #e2e8f0;">
+            <button onclick="forceLogout()" class="btn-danger" style="width:100%"><i class="fas fa-sign-out-alt"></i> Logout Paksa</button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="card">
+            <h1 style="margin-bottom:10px;">Selamat Datang, <span id="userNameDisplay">Loading...</span>!</h1>
+            <p style="color:#64748b;">Role: <span id="userRoleDisplay">...</span></p>
+            <p style="margin-top:10px; font-size:13px; color:#94a3b8;">Email: <span id="userEmailDisplay">...</span></p>
+            
+            <div class="debug-info">
+                <strong>Status Debug:</strong><br>
+                Firebase Auth: <span id="fbStatus">Checking...</span><br>
+                LocalStorage: <span id="lsStatus">Checking...</span><br>
+                Session Storage: <span id="ssStatus">Checking...</span>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg",
+            authDomain: "finance-raj.firebaseapp.com",
+            projectId: "finance-raj",
+            storageBucket: "finance-raj.firebasestorage.app",
+            messagingSenderId: "138468278392",
+            appId: "1:138468278392:web:215731466beb7f89566d8d",
+            measurementId: "G-BMG4L7P2DP"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Update Debug Info
+        document.getElementById('fbStatus').textContent = "Connected";
+        document.getElementById('lsStatus').textContent = localStorage.getItem('financeRajUser') ? "OK" : "EMPTY";
+        document.getElementById('ssStatus').textContent = sessionStorage.getItem('raj_session_active') ? "ACTIVE" : "INACTIVE";
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                console.warn("User logout detected. Redirecting to login...");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            console.log("Dashboard: User authenticated via Firebase");
+            document.getElementById('fbStatus').textContent = "Authenticated (" + user.email + ")";
+
+            // PRIORITAS 1: Gunakan LocalStorage jika ada
+            let userData = localStorage.getItem('financeRajUser');
+            
+            // PRIORITAS 2: Jika LocalStorage kosong/rusak, REPAIR dari Firebase Auth
+            if (!userData) {
+                console.warn("LocalStorage empty! Repairing from Firebase Auth...");
+                userData = JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    fullName: user.email.split('@')[0],
+                    role: 'admin'
+                });
+                localStorage.setItem('financeRajUser', userData);
+                document.getElementById('lsStatus').textContent = "REPAIRED";
+            }
+
+            try {
+                const data = JSON.parse(userData);
+                document.getElementById('userNameDisplay').textContent = data.fullName || 'User';
+                document.getElementById('userRoleDisplay').textContent = data.role || 'Unknown';
+                document.getElementById('userEmailDisplay').textContent = data.email || user.email;
+            } catch (e) {
+                console.error("Data corrupt, resetting...", e);
+                localStorage.removeItem('financeRajUser');
+                location.reload(); // Reload to trigger repair
+            }
+        });
+
+        window.forceLogout = async () => {
+            localStorage.removeItem('financeRajUser');
+            sessionStorage.removeItem('raj_session_active');
+            await signOut(auth);
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
