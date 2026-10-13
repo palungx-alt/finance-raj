@@ -9,57 +9,169 @@
     
     <style>
         :root {
-            --primary: #4f46e5; --primary-glow: rgba(79, 70, 229, 0.15);
-            --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a;
-            --text-sec: #64748b; --border: #e2e8f0; --success: #10b981;
-            --danger: #ef4444; --radius: 16px; --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+            --primary: #4f46e5;
+            --primary-glow: rgba(79, 70, 229, 0.15);
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-sec: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius: 16px;
+            --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
 
-        .top-bar { background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-body); 
+            color: var(--text-main); 
+            min-height: 100vh; 
+            padding-bottom: 40px;
+        }
+
+        /* HEADER FUTURISTIK */
+        .top-bar { 
+            background: var(--surface);
+            padding: 16px 24px; 
+            position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+        }
         .brand-area { display: flex; align-items: center; gap: 12px; }
         .brand-logo { width: 32px; height: auto; }
-        .page-title h1 { font-size: 18px; font-weight: 700; margin: 0; }
+        .page-title h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; margin: 0; }
         .page-title p { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
-        .btn-back { background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        
+        .btn-back { 
+            background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; 
+            cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px; 
+            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
         .btn-back:hover { background: var(--border); }
 
+        /* CONTAINER UTAMA */
         .container { max-width: 800px; margin: 24px auto; padding: 0 20px; }
-        .form-card { background: var(--surface); padding: 24px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 24px; }
+
+        .form-card { 
+            background: var(--surface); 
+            padding: 24px; 
+            border-radius: var(--radius); 
+            box-shadow: var(--shadow); 
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
-        .form-control { width: 100%; padding: 14px 16px; background: var(--bg-body); border: 1px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; color: var(--text-main); }
-        .form-control:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px var(--primary-glow); }
+        
+        .form-control { 
+            width: 100%; padding: 14px 16px; 
+            background: var(--bg-body); border: 1px solid var(--border); 
+            border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; 
+            color: var(--text-main);
+        }
+        .form-control:focus { 
+            border-color: var(--primary); 
+            background: white;
+            box-shadow: 0 0 0 4px var(--primary-glow); 
+        }
 
+        /* TABEL JURNAL RESPONSIF DENGAN LABEL DI ATAS */
         .section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-        .entries-container { background: var(--bg-body); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 16px; }
-        .entry-row { display: grid; grid-template-columns: 1fr 100px 100px 40px; gap: 8px; padding: 12px; background: white; border-bottom: 1px solid var(--border); align-items: center; }
+        
+        .entries-container { 
+            background: var(--bg-body); border-radius: 12px; overflow: hidden; 
+            border: 1px solid var(--border); margin-bottom: 16px;
+        }
+
+        /* Header Label Debit/Kredit */
+        .entry-header {
+            display: grid; 
+            grid-template-columns: 1fr 100px 100px 40px; 
+            gap: 8px; padding: 12px 16px; 
+            background: #f1f5f9; border-bottom: 1px solid var(--border);
+            font-size: 11px; font-weight: 700; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        
+        .entry-row { 
+            display: grid; 
+            grid-template-columns: 1fr 100px 100px 40px; 
+            gap: 8px; padding: 12px 16px; 
+            background: white; border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
         .entry-row:last-child { border-bottom: none; }
-        .entry-row select, .entry-row input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: white; }
+        
+        .entry-row select, .entry-row input { 
+            width: 100%; padding: 10px; border: 1px solid var(--border); 
+            border-radius: 8px; font-size: 14px; background: white;
+        }
         .entry-row select:focus, .entry-row input:focus { border-color: var(--primary); outline: none; }
-        .btn-delete { background: #fee2e2; border: none; color: var(--danger); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        
+        .btn-delete { 
+            background: #fee2e2; border: none; color: var(--danger); 
+            width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
         .btn-delete:hover { background: var(--danger); color: white; }
+
         .free-text-input { display: none; margin-top: 8px; }
-        .btn-add-row { background: white; border: 2px dashed var(--border); color: var(--primary); width: 100%; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        .btn-add-row { 
+            background: white; border: 2px dashed var(--border); color: var(--primary); 
+            width: 100%; padding: 14px; border-radius: 12px; cursor: pointer; 
+            font-weight: 600; font-size: 14px; transition: 0.2s; display: flex; 
+            align-items: center; justify-content: center; gap: 8px;
+        }
         .btn-add-row:hover { border-color: var(--primary); background: var(--primary-glow); }
 
-        .balance-card { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border-radius: var(--radius); margin-bottom: 24px; border: 1px solid #dbeafe; }
-        .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* STATUS BALANCE CARD */
+        .balance-card { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 20px; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); 
+            border-radius: var(--radius); margin-bottom: 24px; border: 1px solid #dbeafe; 
+        }
+        .status-badge { 
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; 
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
         .status-balanced { background: #d1fae5; color: #065f46; }
         .status-unbalanced { background: #fee2e2; color: #991b1b; }
 
-        .btn-submit { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        /* TOMBOL SIMPAN */
+        .btn-submit { 
+            width: 100%; padding: 18px; 
+            background: var(--primary); color: white; border: none; 
+            border-radius: 14px; font-size: 16px; font-weight: 700; 
+            cursor: pointer; transition: 0.3s; 
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
         .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
         .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; background: var(--text-sec); }
 
+        /* MOBILE OPTIMIZATION */
         @media (max-width: 600px) {
             .form-row { grid-template-columns: 1fr; gap: 0; }
-            .entry-row { grid-template-columns: 1fr; gap: 10px; padding: 16px; border-bottom: 2px solid var(--bg-body); }
+            .form-group { margin-bottom: 16px; }
+            
+            .entry-header { display: none; } /* Sembunyikan header di HP agar tidak sempit */
+            
+            .entry-row { 
+                grid-template-columns: 1fr; gap: 10px; 
+                padding: 16px; border-bottom: 2px solid var(--bg-body);
+            }
             .entry-row > div { width: 100%; }
-            .mobile-label { font-size: 11px; color: var(--text-sec); margin-bottom: 4px; display: block; }
+            
+            /* Label kecil di atas input mobile */
+            .mobile-label { font-size: 11px; color: var(--text-sec); margin-bottom: 4px; display: block; font-weight: 600; }
+            
             .btn-delete { width: 100%; height: 44px; margin-top: 8px; }
+            
             .container { padding: 0 16px; margin-top: 16px; }
             .form-card { padding: 20px 16px; border-radius: 12px; }
         }
@@ -68,8 +180,12 @@
 <body>
     <div class="top-bar">
         <div class="brand-area">
+            <!-- LOGO INTEGRATION -->
             <img src="assets/logo.png" alt="Logo" class="brand-logo" onerror="this.style.display='none'">
-            <div class="page-title"><h1>Input Jurnal</h1><p>Catat transaksi operasional harian</p></div>
+            <div class="page-title">
+                <h1>Input Jurnal</h1>
+                <p>Catat transaksi operasional harian</p>
+            </div>
         </div>
         <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i></button>
     </div>
@@ -77,22 +193,54 @@
     <div class="container">
         <div class="form-card">
             <div class="form-row">
-                <div class="form-group"><label>Tanggal Transaksi</label><input type="date" id="transDate" class="form-control"></div>
-                <div class="form-group"><label>No. Bukti / Referensi</label><input type="text" id="refNumber" class="form-control" placeholder="Cth: STRUK-SOLAR-001"></div>
+                <div class="form-group">
+                    <label>Tanggal Transaksi</label>
+                    <input type="date" id="transDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>No. Bukti / Referensi</label>
+                    <input type="text" id="refNumber" class="form-control" placeholder="Cth: STRUK-SOLAR-001">
+                </div>
             </div>
-            <div class="form-group"><label>Keterangan Transaksi</label><input type="text" id="description" class="form-control" placeholder="Cth: Pembelian solar truk B 1234 CD"></div>
+            
+            <div class="form-group">
+                <label>Keterangan Transaksi</label>
+                <input type="text" id="description" class="form-control" placeholder="Cth: Pembelian solar truk B 1234 CD">
+            </div>
         </div>
 
         <div class="section-title"><i class="fas fa-list-ul" style="color:var(--primary)"></i> Detail Akun (Debit & Kredit)</div>
-        <div class="entries-container" id="journalEntries"></div>
+        
+        <div class="entries-container">
+            <!-- HEADER LABEL DEBIT KREDIT (Hanya muncul di Desktop) -->
+            <div class="entry-header">
+                <div>Akun (COA)</div>
+                <div style="text-align:center;">Debit (Rp)</div>
+                <div style="text-align:center;">Kredit (Rp)</div>
+                <div></div>
+            </div>
+            
+            <div id="journalEntries">
+                <!-- Baris jurnal akan ditambahkan via JS -->
+            </div>
+        </div>
+        
         <button class="btn-add-row" onclick="window.addEntryRow()"><i class="fas fa-plus-circle"></i> Tambah Baris Akun</button>
 
         <div class="balance-card">
-            <div><div style="font-weight:700; color:var(--primary); font-size:15px;">Status Balance</div><div style="font-size:12px; color:var(--text-sec); margin-top:4px;">Total Debit harus = Total Kredit</div></div>
-            <div style="text-align:right;"><div id="balanceStatus" class="status-badge status-unbalanced">TIDAK SEIMBANG</div><div style="margin-top:8px; font-size:13px; color:var(--text-sec);">Selisih: <span id="diffAmount" style="font-weight:700; color:var(--text-main);">Rp 0</span></div></div>
+            <div>
+                <div style="font-weight:700; color:var(--primary); font-size:15px;">Status Balance</div>
+                <div style="font-size:12px; color:var(--text-sec); margin-top:4px;">Total Debit harus = Total Kredit</div>
+            </div>
+            <div style="text-align:right;">
+                <div id="balanceStatus" class="status-badge status-unbalanced">TIDAK SEIMBANG</div>
+                <div style="margin-top:8px; font-size:13px; color:var(--text-sec);">Selisih: <span id="diffAmount" style="font-weight:700; color:var(--text-main);">Rp 0</span></div>
+            </div>
         </div>
 
-        <button id="btnSave" class="btn-submit" disabled onclick="window.saveJournal()"><i class="fas fa-paper-plane"></i> Simpan Jurnal</button>
+        <button id="btnSave" class="btn-submit" disabled onclick="window.saveJournal()">
+            <i class="fas fa-paper-plane"></i> Simpan Jurnal
+        </button>
     </div>
 
     <script type="module">
@@ -111,11 +259,11 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        
-        // ⚠️ URL WEB APP BARU ANDA ⚠️
+
+        // ⚠️ URL WEB APP BARU ANDA ️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
-        // COA SESUAI EXCEL RAJ WASTE MANAGEMENT
+        // COA BARU SESUAI EXCEL RAJ WASTE MANAGEMENT
         const coaData = [
             { code: '1-1000', name: 'Aset Lancar' }, { code: '1-1100', name: 'Kas dan Setara Kas' },
             { code: '1-1200', name: 'Bank (Rekening Utama)' }, { code: '1-1300', name: 'Piutang Usaha' },
@@ -157,6 +305,7 @@
             coaData.forEach(acc => options += `<option value="${acc.code}">${acc.code} - ${acc.name}</option>`);
             options += `<option value="FREE_TEXT">-- LAINNYA (Ketik Manual) --</option>`;
 
+            // Deteksi mobile untuk layout label
             const isMobile = window.innerWidth <= 600;
             const lblAkun = isMobile ? '<span class="mobile-label">Akun</span>' : '';
             const lblDebit = isMobile ? '<span class="mobile-label">Debit (Rp)</span>' : '';
