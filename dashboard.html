@@ -58,7 +58,13 @@
         .card-exp { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
 
         /* CHART & TABLE */
-        .chart-container, .table-container { background: var(--surface); padding: 24px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 30px; }
+        .chart-container { 
+            background: var(--surface); padding: 24px; border-radius: var(--radius); 
+            box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 30px; 
+            height: 400px; /* Tinggi Fix Agar Grafik Tidak Memanjang */
+            position: relative;
+        }
+        .table-container { background: var(--surface); padding: 24px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 30px; }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .search-box input { width: 100%; padding: 10px 16px 10px 40px; border: 1px solid var(--border); border-radius: 10px; outline: none; }
         
@@ -74,6 +80,7 @@
             .main { margin-left: 0; padding: 20px; }
             .menu-toggle { display: block !important; }
             .cards-row-1, .cards-row-2 { grid-template-columns: 1fr; }
+            .chart-container { height: 300px; }
         }
         .menu-toggle { display: none; background: none; border: none; font-size: 24px; cursor: pointer; margin-right: 16px; }
     </style>
@@ -149,7 +156,7 @@
 
         <div class="chart-container">
             <div class="section-header"><div style="font-size:18px; font-weight:700;">Tren Arus Kas (6 Bulan Terakhir)</div></div>
-            <canvas id="cashFlowChart" height="100"></canvas>
+            <canvas id="cashFlowChart"></canvas>
         </div>
 
         <div class="table-container">
@@ -210,24 +217,43 @@
 
         async function loadTransactionsFromSheets() {
             try {
-                // 1. Ambil Ringkasan Angka yang Sudah Dihitung Backend (Akurat Sesuai COA)
-                const summaryRes = await fetch(`${GAS_URL}?action=getDashboardSummary`);
-                const summaryData = await summaryRes.json();
+                // 1. Coba Ambil Ringkasan dari Backend
+                let summary = { asset: 0, liability: 0, equity: 0, revenue: 0, expense: 0 };
                 
-                if (summaryData.status === 'success') {
-                    const s = summaryData.summary;
-                    document.getElementById('totalAsset').textContent = formatRupiah(s.asset);
-                    document.getElementById('totalLiab').textContent = formatRupiah(s.liability);
-                    document.getElementById('totalEquity').textContent = formatRupiah(s.equity);
-                    document.getElementById('totalRev').textContent = formatRupiah(s.revenue);
-                    document.getElementById('totalExp').textContent = formatRupiah(s.expense);
-                }
+                try {
+                    const summaryRes = await fetch(`${GAS_URL}?action=getDashboardSummary`);
+                    const summaryData = await summaryRes.json();
+                    if (summaryData.status === 'success') summary = summaryData.summary;
+                } catch (e) { console.warn("Gagal ambil summary backend, pakai kalkulasi manual"); }
 
-                // 2. Ambil Data Transaksi untuk Tabel & Grafik
+                // 2. Ambil Data Transaksi untuk Tabel & Fallback Kalkulasi
                 const txRes = await fetch(`${GAS_URL}?action=getJurnal`);
                 const txData = await txRes.json();
                 const transactions = txData.journals || [];
-                
+
+                // Jika summary dari backend masih 0, hitung manual sebagai fallback
+                if (summary.asset === 0 && transactions.length > 0) {
+                    let a=0, l=0, e=0, r=0, x=0;
+                    transactions.forEach(tx => {
+                        const code = String(tx[6]||'').trim();
+                        const d = Number(String(tx[8]).replace(/\./g,'')) || 0;
+                        const c = Number(String(tx[9]).replace(/\./g,'')) || 0;
+                        if(code.startsWith('1-')) a += (d-c);
+                        else if(code.startsWith('2-')) l += (c-d);
+                        else if(code.startsWith('3-')) e += (c-d);
+                        else if(code.startsWith('4-')) r += c;
+                        else if(code.startsWith('5-')) x += d;
+                    });
+                    summary = { asset:a, liability:l, equity:e, revenue:r, expense:x };
+                }
+
+                // Update UI Cards
+                document.getElementById('totalAsset').textContent = formatRupiah(summary.asset);
+                document.getElementById('totalLiab').textContent = formatRupiah(summary.liability);
+                document.getElementById('totalEquity').textContent = formatRupiah(summary.equity);
+                document.getElementById('totalRev').textContent = formatRupiah(summary.revenue);
+                document.getElementById('totalExp').textContent = formatRupiah(summary.expense);
+
                 renderTable(transactions.slice(-10).reverse());
                 renderChart(transactions);
 
@@ -265,10 +291,7 @@
         function renderChart(transactions) {
             const ctx = document.getElementById('cashFlowChart').getContext('2d');
             
-            // FIX: Hancurkan chart lama jika sudah ada
-            if (cashFlowChartInstance) {
-                cashFlowChartInstance.destroy();
-            }
+            if (cashFlowChartInstance) cashFlowChartInstance.destroy();
 
             const months = ['Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt'];
             const incomeData = [0, 0, 0, 0, 0, 0]; 
@@ -278,8 +301,8 @@
                 const d = new Date(tx[1]);
                 if(d.getMonth() === 9) { // Oktober
                     const code = String(tx[6]);
-                    if(code.startsWith('4-')) incomeData[5] += (Number(tx[9])||0);
-                    if(code.startsWith('5-')) expenseData[5] += (Number(tx[8])||0);
+                    if(code.startsWith('4-')) incomeData[5] += (Number(String(tx[9]).replace(/\./g,''))||0);
+                    if(code.startsWith('5-')) expenseData[5] += (Number(String(tx[8]).replace(/\./g,''))||0);
                 }
             });
 
@@ -294,7 +317,7 @@
                 },
                 options: { 
                     responsive: true, 
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: false, // FIX GRAFIK MEMANJANG
                     plugins: { legend: { position: 'top' } }, 
                     scales: { y: { beginAtZero: true } } 
                 }
