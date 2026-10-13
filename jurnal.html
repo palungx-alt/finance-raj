@@ -106,7 +106,7 @@
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-        // FIREBASE CONFIG (HANYA UNTUK AUTH)
+        // FIREBASE CONFIG (HANYA UNTUK AUTH LOGIN)
         const firebaseConfig = {
             apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg",
             authDomain: "finance-raj.firebaseapp.com",
@@ -123,54 +123,63 @@
         // URL WEB APP GOOGLE SHEETS (PASTIKAN SUDAH DEPLOY NEW VERSION)
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwW-_Cl_hLlnY8s-0L-tUKkIlqcsjlPjw7kQKFLOIjBxf2TvtlHAaVSdO2djz9H2IY4fw/exec';
 
-        // DAFTAR AKUN LENGKAP DARI EXCEL RAJ WASTE MANAGEMENT
+        // DAFTAR AKUN LENGKAP DARI EXCEL "CV REZEKI AMANAH JAYA GROUP"
         const coaData = [
-            { code: '1-1101', name: 'Kas Kecil Operasional' },
-            { code: '1-1102', name: 'Bank Utama (Operasional)' },
-            { code: '1-1201', name: 'Piutang Pelanggan Komersial (B2B)' },
-            { code: '1-1202', name: 'Piutang Pelanggan Perumahan (B2C)' },
-            { code: '1-1209', name: 'Penyisihan Piutang Tak Tertagih' },
-            { code: '1-1301', name: 'Persediaan Bin & Kontainer' },
-            { code: '1-1302', name: 'Stok Sparepart & Ban Armada' },
-            { code: '1-1303', name: 'Perlengkapan K3 & APD' },
-            { code: '1-1401', name: 'Asuransi Armada Dibayar di Muka' },
-            { code: '1-1402', name: 'Pajak Kendaraan (STNK/KIR) Dibayar di Muka' },
-            { code: '1-2101', name: 'Armada Truk Sampah' },
-            { code: '1-2102', name: 'Peralatan Pengolahan Sampah' },
-            { code: '1-2103', name: 'Kontainer Heavy-Duty & Skip Bin' },
-            { code: '1-2201', name: 'Akumulasi Penyusutan Truk Armada' },
-            { code: '1-2202', name: 'Akumulasi Penyusutan Peralatan Pengolahan' },
-            { code: '2-1101', name: 'Utang TPA (Tipping Fee)' },
-            { code: '2-1102', name: 'Utang Pemasok BBM & Perawatan' },
-            { code: '2-1201', name: 'Utang Gaji Sopir, Kernet & Staf' },
-            { code: '2-1202', name: 'Utang Pajak (PPh 23, PPh 21, PPN)' },
-            { code: '2-1301', name: 'Deposit Bin / Kontainer Pelanggan' },
-            { code: '2-1302', name: 'Pendapatan Kontrak Angkut Diterima di Muka' },
-            { code: '2-2100', name: 'Utang Pembiayaan Armada (Leasing)' },
-            { code: '3-1100', name: 'Modal Disetor' },
-            { code: '3-1200', name: 'Laba Ditahan' },
-            { code: '3-1300', name: 'Laba Tahun Berjalan' },
-            { code: '4-1100', name: 'Pendapatan Jasa Angkut Komersial (B2B)' },
-            { code: '4-1200', name: 'Pendapatan Jasa Angkut Perumahan (B2C)' },
-            { code: '4-1300', name: 'Pendapatan Sewa Kontainer & Skip Bin' },
-            { code: '4-2100', name: 'Penjualan Material Daur Ulang' },
-            { code: '4-2200', name: 'Penjualan Kompos & Hasil Organik' },
-            { code: '4-2300', name: 'Jasa Pemusnahan Dokumen / Produk' },
-            { code: '5-1100', name: 'Bahan Bakar (BBM) Truk Sampah' },
-            { code: '5-1200', name: 'Biaya Tipping Fee / Retribusi TPA' },
-            { code: '5-1300', name: 'Biaya Perawatan, Service & Sparepart' },
-            { code: '5-1400', name: 'Biaya Tol, Parkir & Uang Jalan Driver' },
-            { code: '5-2100', name: 'Gaji Sopir Truk Sampah' },
-            { code: '5-2200', name: 'Gaji Kernet / Helper Lapangan' },
-            { code: '5-2300', name: 'Insentif Ritase & Lembur' },
-            { code: '5-3100', name: 'Biaya Listrik & BBM Mesin Pengolah' },
-            { code: '5-3200', name: 'Perlengkapan K3 & Seragam Lapangan' },
-            { code: '5-3300', name: 'Biaya Promosi & Pemasaran' },
-            { code: '5-3400', name: 'Gaji Staf Manajemen, Admin & Accounting' },
-            { code: '5-3500', name: 'Biaya Perizinan, AMDAL & Retribusi Daerah' },
-            { code: '5-3600', name: 'Pajak Kendaraan Bermotor (STNK & KIR)' },
-            { code: '5-3700', name: 'Beban Penyusutan Armada & Kontainer' },
-            { code: '5-3800', name: 'Beban Sewa Lahan/Depo Sampah & Kantor' }
+            // ASET LANCAR
+            { code: '1-1000', name: 'Aset Lancar' },
+            { code: '1-1100', name: 'Kas dan Setara Kas' },
+            { code: '1-1200', name: 'Bank (Rekening Utama)' },
+            { code: '1-1300', name: 'Piutang Usaha' },
+            { code: '1-1400', name: 'Perlengkapan Operasional' },
+            { code: '1-1500', name: 'Persediaan Bahan Baku' },
+            { code: '1-1600', name: 'Sewa Dibayar di Muka' },
+            
+            // ASET TETAP
+            { code: '1-2000', name: 'Aset Tetap' },
+            { code: '1-2100', name: 'Tanah' },
+            { code: '1-2200', name: 'Bangunan Kantor dan Gudang' },
+            { code: '1-2250', name: 'Akumulasi Penyusutan Bangunan' },
+            { code: '1-2300', name: 'Armada & Kendaraan' },
+            { code: '1-2350', name: 'Akumulasi Penyusutan Kendaraan' },
+            { code: '1-2400', name: 'Mesin Pengolahan Limbah' },
+            { code: '1-2450', name: 'Akumulasi Penyusutan Mesin' },
+            { code: '1-2500', name: 'Peralatan Kantor' },
+            { code: '1-2550', name: 'Akumulasi Penyusutan Peralatan Kantor' },
+            
+            // KEWAJIBAN JANGKA PENDEK
+            { code: '2-1000', name: 'Kewajiban Jangka Pendek' },
+            { code: '2-1100', name: 'Utang Usaha' },
+            { code: '2-1200', name: 'Utang Gaji dan Tunjangan' },
+            { code: '2-1300', name: 'Utang Pajak' },
+            { code: '2-1400', name: 'Pendapatan Diterima di Muka' },
+            
+            // KEWAJIBAN JANGKA PANJANG
+            { code: '2-2000', name: 'Kewajiban Jangka Panjang' },
+            { code: '2-2100', name: 'Utang Bank / Kredit Kendaraan' },
+            { code: '2-2200', name: 'Utang Sewa Pembiayaan' },
+            
+            // EKUITAS
+            { code: '3-1000', name: 'Modal Pemilik / Sekutu' },
+            { code: '3-2000', name: 'Prive Pemilik / Sekutu' },
+            { code: '3-3000', name: 'Laba Ditahan' },
+            { code: '3-4000', name: 'Ikhtisar Laba Rugi' },
+            
+            // PENDAPATAN
+            { code: '4-1000', name: 'Pendapatan Operasional' },
+            { code: '4-1100', name: 'Pendapatan Jasa Pengangkutan Sampah' },
+            { code: '4-1200', name: 'Pendapatan Jasa Pengolahan/Pemusnahan Limbah' },
+            { code: '4-1300', name: 'Pendapatan Penjualan Material Daur Ulang' },
+            { code: '4-1400', name: 'Pendapatan Sewa Kontainer' },
+            { code: '4-2000', name: 'Pendapatan Lain-lain' },
+            
+            // BEBAN OPERASIONAL LANGSUNG (HPP/COGS)
+            { code: '5-1000', name: 'Beban Operasional Langsung' },
+            { code: '5-1100', name: 'Beban Bahan Bakar Truk Armada' },
+            { code: '5-1200', name: 'Beban Tol, Parkir, dan Retribusi TPA' },
+            { code: '5-1300', name: 'Beban Gaji Sopir & Petugas Pemilah' },
+            { code: '5-1400', name: 'Beban Perawatan Truk dan Armada' },
+            { code: '5-1500', name: 'Beban Perawatan Mesin Pengolah Limbah' },
+            { code: '5-1600', name: 'Beban Perlengkapan K3' }
         ];
 
         // Init
@@ -289,18 +298,13 @@
 
             try {
                 // KIRIM DATA KE GOOGLE SHEETS VIA POST REQUEST
-                // Gunakan mode 'no-cors' HANYA JIKA ANDA TIDAK BUTUH RESPON JSON
-                // Tapi karena GAS redirect, kita pakai teknik fetch biasa tanpa await respon JSON
-                
+                // Gunakan fetch biasa TANPA mode: 'no-cors' agar bisa handle redirect GAS
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
                     body: JSON.stringify({ action: 'addJurnalFromWeb', data: journalData })
-                    // Jangan pakai mode: 'no-cors' atau headers custom yang memicu preflight
                 });
 
-                // Karena GAS sering redirect, kita anggap sukses jika tidak throw error
-                // Atau cek response.ok jika redirect dihandle browser
-                
+                // Karena GAS sering redirect, kita anggap sukses jika tidak throw error network
                 alert("✅ Jurnal berhasil disimpan ke Spreadsheet!\n\nSilakan cek sheet 'JURNAL_WEB' di Google Sheets.");
                 window.location.href = 'dashboard.html';
                 
