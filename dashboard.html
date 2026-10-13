@@ -6,6 +6,7 @@
     <title>FinanceRAJ - Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -35,8 +36,8 @@
         .page-title h1 { font-size: 24px; font-weight: 700; }
         .date-badge { background: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-sec); border: 1px solid var(--border); }
 
-        /* 5 CARDS GRID LAYOUT */
-        .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+        /* 5 CARDS LAYOUT */
+        .cards-row-1 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
         .cards-row-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px; }
         
         .card { 
@@ -49,7 +50,7 @@
         .card .sub { font-size: 12px; opacity: 0.8; font-style: italic; }
         .card i.bg-icon { position: absolute; right: -10px; bottom: -10px; font-size: 100px; opacity: 0.15; transform: rotate(-15deg); }
 
-        /* GRADIENT COLORS FOR 5 CARDS */
+        /* GRADIENTS */
         .card-asset { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
         .card-liab { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
         .card-equity { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
@@ -72,7 +73,7 @@
             .sidebar.open { transform: translateX(0); }
             .main { margin-left: 0; padding: 20px; }
             .menu-toggle { display: block !important; }
-            .cards-grid, .cards-row-2 { grid-template-columns: 1fr; }
+            .cards-row-1, .cards-row-2 { grid-template-columns: 1fr; }
         }
         .menu-toggle { display: none; background: none; border: none; font-size: 24px; cursor: pointer; margin-right: 16px; }
     </style>
@@ -108,8 +109,8 @@
             <div class="date-badge" id="currentDate"></div>
         </div>
 
-        <!-- ROW 1: NERACA (ASET, KEWAJIBAN, MODAL) -->
-        <div class="cards-grid">
+        <!-- ROW 1: NERACA -->
+        <div class="cards-row-1">
             <div class="card card-asset">
                 <h3>Aset (Harta)</h3>
                 <div class="value" id="totalAsset">Rp 0</div>
@@ -130,7 +131,7 @@
             </div>
         </div>
 
-        <!-- ROW 2: LABA RUGI (PENDAPATAN, BEBAN) -->
+        <!-- ROW 2: LABA RUGI -->
         <div class="cards-row-2">
             <div class="card card-rev">
                 <h3>Pendapatan (Revenue)</h3>
@@ -187,8 +188,10 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         
-        // ️ GANTI DENGAN URL WEB APP TERBARU ANDA ⚠️
+        // ⚠️ GANTI DENGAN URL WEB APP TERBARU ANDA ⚠️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
+
+        let cashFlowChartInstance = null; // Variabel global untuk menyimpan instance chart
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
@@ -220,30 +223,34 @@
                 let equityBalance = 0;  // Ekuitas: Kredit (+), Debit (-)
                 let revenue = 0;        // Pendapatan: Kredit (+)
                 let expense = 0;        // Beban: Debit (+)
+                const validTransactions = [];
 
                 transactions.forEach(tx => {
-                    // Struktur data sheets: [6]KodeAkun, [8]Debit, [9]Kredit
-                    const code = String(tx[6]);
+                    // Struktur data sheets yang BENAR setelah fix:
+                    // [0]ID, [1]Tanggal, [2]NoBukti, [3]Ket, [4]Email, [5]Nama, [6]KodeAkun, [7]NamaAkun, [8]Debit, [9]Kredit
+                    
+                    const code = String(tx[6] || '').trim();
                     const debit = Number(tx[8]) || 0;
                     const credit = Number(tx[9]) || 0;
                     
-                    // LOGIKA KALKULASI SALDO PER KELAS AKUN
+                    // Validasi sederhana: Kode akun harus mulai dengan angka dan strip (contoh: 1-1100)
+                    if (!code.match(/^\d+-\d+$/)) return; 
+
+                    // LOGIKA AKUNTANSI YANG BENAR
                     if (code.startsWith('1-')) {
-                        // ASET: Saldo Normal Debit
                         assetBalance += (debit - credit);
                     } else if (code.startsWith('2-')) {
-                        // LIABILITAS: Saldo Normal Kredit
                         liabBalance += (credit - debit);
                     } else if (code.startsWith('3-')) {
-                        // EKUITAS: Saldo Normal Kredit
                         equityBalance += (credit - debit);
                     } else if (code.startsWith('4-')) {
-                        // PENDAPATAN: Saldo Normal Kredit
                         revenue += credit;
                     } else if (code.startsWith('5-')) {
-                        // BEBAN: Saldo Normal Debit
                         expense += debit;
                     }
+
+                    // Hanya simpan transaksi valid untuk tabel & grafik
+                    validTransactions.push(tx);
                 });
 
                 // Update UI Cards
@@ -253,12 +260,12 @@
                 document.getElementById('totalRev').textContent = formatRupiah(revenue);
                 document.getElementById('totalExp').textContent = formatRupiah(expense);
 
-                renderTable(transactions.slice(-10).reverse());
-                renderChart(transactions);
+                renderTable(validTransactions.slice(-10).reverse());
+                renderChart(validTransactions);
 
             } catch (e) {
                 console.error(e);
-                document.getElementById('txTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Gagal memuat: ${e.message}</td></tr>`;
+                document.getElementById('txTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Error: ${e.message}</td></tr>`;
             }
         }
 
@@ -289,6 +296,12 @@
 
         function renderChart(transactions) {
             const ctx = document.getElementById('cashFlowChart').getContext('2d');
+            
+            // FIX: Hancurkan chart lama jika sudah ada untuk mencegah error "Canvas is already in use"
+            if (cashFlowChartInstance) {
+                cashFlowChartInstance.destroy();
+            }
+
             const months = ['Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt'];
             const incomeData = [0, 0, 0, 0, 0, 0]; 
             const expenseData = [0, 0, 0, 0, 0, 0];
@@ -302,7 +315,7 @@
                 }
             });
 
-            new Chart(ctx, {
+            cashFlowChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: months,
@@ -311,7 +324,12 @@
                         { label: 'Beban', data: expenseData, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.4, fill: true }
                     ]
                 },
-                options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } }, 
+                    scales: { y: { beginAtZero: true } } 
+                }
             });
         }
 
