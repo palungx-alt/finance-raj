@@ -26,7 +26,7 @@
         
         body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
 
-        /* HEADER WITH BACK BUTTON */
+        /* HEADER */
         .top-bar { 
             background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100;
             border-bottom: 1px solid var(--border); backdrop-filter: blur(10px);
@@ -258,6 +258,7 @@
 
         let currentFilter = '';
         let currentFormId = null;
+        let currentUser = null; // Variabel global untuk menyimpan data user
 
         // SIGNATURE PAD LOGIC (FIXED FOR MOBILE & MODAL)
         function initSignature(canvasId) {
@@ -267,7 +268,6 @@
             const ctx = canvas.getContext('2d');
             let isDrawing = false;
 
-            // Resize canvas to fit container properly
             const resize = () => {
                 const rect = canvas.parentElement.getBoundingClientRect();
                 canvas.width = rect.width;
@@ -278,7 +278,6 @@
                 ctx.lineJoin = "round";
             };
             
-            // Initial resize and resize on window change
             setTimeout(resize, 50);
             window.addEventListener('resize', resize);
 
@@ -289,20 +288,8 @@
                 return { x: clientX - r.left, y: clientY - r.top };
             }
 
-            function start(e) { 
-                isDrawing = true; 
-                const p = getPos(e); 
-                ctx.beginPath(); 
-                ctx.moveTo(p.x, p.y); 
-                e.preventDefault(); 
-            }
-            function draw(e) { 
-                if(!isDrawing) return; 
-                const p = getPos(e); 
-                ctx.lineTo(p.x, p.y); 
-                ctx.stroke(); 
-                e.preventDefault(); 
-            }
+            function start(e) { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }
+            function draw(e) { if(!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }
             function stop() { isDrawing = false; }
 
             canvas.addEventListener('mousedown', start);
@@ -314,14 +301,16 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const user = JSON.parse(localStorage.getItem('financeRajUser'));
-            if (!user) window.location.href = 'index.html';
+            // AMBIL DATA USER DARI LOCALSTORAGE
+            currentUser = JSON.parse(localStorage.getItem('financeRajUser'));
+            if (!currentUser) {
+                window.location.href = 'index.html';
+                return;
+            }
             
-            // Init signatures immediately
             initSignature('sigCanvasNew');
             initSignature('sigCanvasApp');
             
-            // Re-init when modals open to ensure correct size
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     if (mutation.target.classList.contains('open')) {
@@ -392,21 +381,25 @@
         }
 
         async function submitNewForm() {
+            if (!currentUser) return alert("Sesi login tidak valid. Silakan login ulang.");
+            
             const type = document.getElementById('newType').value;
             const amount = document.getElementById('newAmount').value;
             const purpose = document.getElementById('newPurpose').value;
             const canvas = document.getElementById('sigCanvasNew');
-            const user = JSON.parse(localStorage.getItem('financeRajUser'));
             
             if(!amount || !purpose) return alert("Lengkapi semua data!");
             
             const payload = {
                 action: 'addApprovalForm',
                 formData: {
-                    tipeForm: type, tanggal: new Date().toISOString().split('T')[0],
-                    pemohon: user.fullName, jumlah: amount, keperluan: purpose,
+                    tipeForm: type, 
+                    tanggal: new Date().toISOString().split('T')[0],
+                    pemohon: currentUser.fullName, // Gunakan nama dari localStorage
+                    jumlah: amount, 
+                    keperluan: purpose,
                     signaturePemohon: canvas.toDataURL(),
-                    namaPemohonTTD: user.fullName,
+                    namaPemohonTTD: currentUser.fullName,
                     tanggalTTDPemohon: new Date().toISOString()
                 }
             };
@@ -422,7 +415,7 @@
                     document.getElementById('newPurpose').value = '';
                     loadForms();
                 } else { alert("Error: " + result.message); }
-            } catch(e) { alert("Gagal mengirim data."); }
+            } catch(e) { alert("Gagal mengirim data: " + e.message); }
         }
 
         window.openApprove = (id, type, pemohon, jumlah, keperluan) => {
@@ -438,13 +431,14 @@
         }
 
         async function processApproval(newStatus) {
+            if (!currentUser) return alert("Sesi login tidak valid.");
+            
             const canvas = document.getElementById('sigCanvasApp');
-            const user = JSON.parse(localStorage.getItem('financeRajUser'));
             
             const payload = {
                 action: newStatus === 'Approved' ? 'approveForm' : 'rejectForm',
                 formId: currentFormId,
-                approverName: user.fullName,
+                approverName: currentUser.fullName, // Gunakan nama dari localStorage
                 signature: canvas.toDataURL(),
                 reason: newStatus === 'Rejected' ? prompt("Masukkan alasan penolakan:") : ""
             };
@@ -458,7 +452,7 @@
                     clearSig('sigCanvasApp');
                     loadForms();
                 } else { alert("Error: " + result.message); }
-            } catch(e) { alert("Gagal memproses approval."); }
+            } catch(e) { alert("Gagal memproses approval: " + e.message); }
         }
 
         function formatRupiah(num) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num); }
