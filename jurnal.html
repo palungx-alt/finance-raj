@@ -260,7 +260,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // ⚠️ URL WEB APP BARU ANDA ️
+        // ⚠️ URL WEB APP BARU ANDA ⚠️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
         // COA BARU SESUAI EXCEL RAJ WASTE MANAGEMENT
@@ -296,6 +296,30 @@
             window.addEntryRow();
         });
 
+        // FUNGSI FORMAT RUPIAH UNTUK INPUT MASKING
+        function formatInputRupiah(angka) {
+            if (!angka) return '';
+            let number_string = angka.toString().replace(/[^,\d]/g, '').toString();
+            let split = number_string.split(',');
+            let sisa = split[0].length % 3;
+            let rupiah = split[0].substr(0, sisa);
+            let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+            
+            if (ribuan) {
+                let separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+            
+            rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+            return rupiah;
+        }
+
+        // FUNGSI UNFORMAT RUPIAH KE ANGKA MURNI
+        function unformatRupiah(rupiah) {
+            if (!rupiah) return 0;
+            return parseFloat(rupiah.toString().replace(/\./g, '').replace(/,/g, '.')) || 0;
+        }
+
         window.addEntryRow = function() {
             const container = document.getElementById('journalEntries');
             const row = document.createElement('div');
@@ -305,7 +329,6 @@
             coaData.forEach(acc => options += `<option value="${acc.code}">${acc.code} - ${acc.name}</option>`);
             options += `<option value="FREE_TEXT">-- LAINNYA (Ketik Manual) --</option>`;
 
-            // Deteksi mobile untuk layout label
             const isMobile = window.innerWidth <= 600;
             const lblAkun = isMobile ? '<span class="mobile-label">Akun</span>' : '';
             const lblDebit = isMobile ? '<span class="mobile-label">Debit (Rp)</span>' : '';
@@ -313,8 +336,8 @@
 
             row.innerHTML = `
                 <div>${lblAkun}<select class="coa-select" onchange="window.handleAccountChange(this)">${options}</select><input type="text" class="free-text-input form-control" placeholder="Ketik nama akun..."></div>
-                <div>${lblDebit}<input type="number" class="debit-input" placeholder="0" oninput="window.updateBalance()" inputmode="decimal"></div>
-                <div>${lblKredit}<input type="number" class="credit-input" placeholder="0" oninput="window.updateBalance()" inputmode="decimal"></div>
+                <div>${lblDebit}<input type="text" class="debit-input" placeholder="0" oninput="this.value=formatInputRupiah(this.value); window.updateBalance()" onfocus="this.select()" inputmode="numeric"></div>
+                <div>${lblKredit}<input type="text" class="credit-input" placeholder="0" oninput="this.value=formatInputRupiah(this.value); window.updateBalance()" onfocus="this.select()" inputmode="numeric"></div>
                 <div><button class="btn-delete" onclick="this.closest('.entry-row').remove(); window.updateBalance();"><i class="fas fa-trash-alt"></i></button></div>
             `;
             container.appendChild(row);
@@ -329,8 +352,10 @@
 
         window.updateBalance = function() {
             let totalDebit = 0, totalCredit = 0;
-            document.querySelectorAll('.debit-input').forEach(i => totalDebit += Number(i.value) || 0);
-            document.querySelectorAll('.credit-input').forEach(i => totalCredit += Number(i.value) || 0);
+            
+            // Gunakan unformatRupiah alih-alih Number() biasa
+            document.querySelectorAll('.debit-input').forEach(i => totalDebit += unformatRupiah(i.value));
+            document.querySelectorAll('.credit-input').forEach(i => totalCredit += unformatRupiah(i.value));
             
             const diff = Math.abs(totalDebit - totalCredit);
             const isBalanced = diff < 0.01 && totalDebit > 0;
@@ -359,8 +384,10 @@
                 let code = select.value, name = select.options[select.selectedIndex].text;
                 
                 if (code === 'FREE_TEXT') { code = 'FREE-' + Date.now(); name = freeInput.value || 'Akun Lainnya'; }
-                const debit = Number(row.querySelector('.debit-input').value) || 0;
-                const credit = Number(row.querySelector('.credit-input').value) || 0;
+                
+                // Gunakan unformatRupiah saat mengambil data untuk dikirim ke backend
+                const debit = unformatRupiah(row.querySelector('.debit-input').value);
+                const credit = unformatRupiah(row.querySelector('.credit-input').value);
 
                 if ((debit > 0 || credit > 0) && code) {
                     items.push({ code, name, debit, credit, type: debit > 0 ? 'debit' : 'kredit', amount: debit > 0 ? debit : credit });
