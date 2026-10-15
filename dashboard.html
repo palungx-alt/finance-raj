@@ -223,7 +223,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         
-        // ⚠️ URL WEB APP BARU ANDA ⚠️
+        // ⚠️ URL WEB APP BARU ANDA ️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
         let cashFlowChartInstance = null; 
@@ -259,7 +259,12 @@
                 // 2. Ambil Data Transaksi
                 const txRes = await fetch(`${GAS_URL}?action=getJurnal`);
                 const txData = await txRes.json();
-                allTransactions = txData.journals || [];
+                
+                // Filter data yang valid (harus punya Kode Akun yang benar)
+                allTransactions = (txData.journals || []).filter(tx => {
+                    const code = String(tx[6] || '').trim();
+                    return /^\d+-\d+$/.test(code); // Hanya ambil baris dengan format kode akun X-XXXX
+                });
 
                 // Fallback Calculation jika summary 0
                 if (summary.asset === 0 && allTransactions.length > 0) {
