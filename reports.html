@@ -3,90 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinanceRAJ - Laporan Keuangan</title>
+    <title>FinanceRAJ - Laporan Neraca</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --primary: #4f46e5; --bg: #f8fafc; --surface: #ffffff; 
+            --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; 
             --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0;
+            --radius: 16px; --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
         }
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
-        body { background:var(--bg); color:var(--text-main); min-height:100vh; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
+
+        .top-bar { background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .btn-back { background: var(--bg-body); border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; text-decoration: none; }
+        .btn-back:hover { background: var(--border); }
         
-        .top-bar { background:var(--surface); padding:16px 24px; position:sticky; top:0; z-index:100; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; backdrop-filter:blur(10px); }
-        .page-title h1 { font-size:20px; font-weight:700; }
-        .btn-back, .btn-print { background:white; border:1px solid var(--border); padding:10px 16px; border-radius:10px; cursor:pointer; font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:8px; transition:0.2s; color:var(--text-main); text-decoration:none; }
-        .btn-print:hover, .btn-back:hover { background:var(--bg); border-color:var(--primary); color:var(--primary); }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
         
-        .container { max-width:900px; margin:30px auto; padding:0 20px; }
-        .report-card { background:var(--surface); padding:40px; border-radius:16px; box-shadow:0 4px 20px -2px rgba(0,0,0,0.05); border:1px solid var(--border); }
+        .report-card { 
+            background: var(--surface); padding: 40px; border-radius: var(--radius); 
+            box-shadow: var(--shadow); border: 1px solid var(--border);
+        }
         
-        /* KOP SURAT PRINT ONLY */
-        #printHeader { display:none; text-align:center; margin-bottom:30px; padding-bottom:20px; border-bottom:2px solid var(--text-main); }
-        #printHeader img { max-width:100%; height:auto; max-height:120px; object-fit:contain; }
+        .report-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--primary); padding-bottom: 20px; }
+        .report-header h1 { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
+        .report-header p { font-size: 14px; color: var(--text-sec); }
         
-        .report-meta { text-align:right; font-size:13px; color:var(--text-sec); margin-bottom:20px; font-weight:500; }
-        .report-title { font-size:22px; font-weight:800; text-align:center; margin-bottom:30px; text-transform:uppercase; letter-spacing:1px; color:var(--text-main); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 12px 16px; font-size: 12px; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
         
-        table { width:100%; border-collapse:collapse; margin-bottom:20px; }
-        th { text-align:left; padding:12px 16px; font-size:12px; text-transform:uppercase; color:var(--text-sec); border-bottom:2px solid var(--border); font-weight:700; }
-        td { padding:12px 16px; border-bottom:1px solid var(--border); font-size:14px; }
-        tr:last-child td { border-bottom:none; }
-        .text-right { text-align:right; }
-        .total-row td { font-weight:700; background:var(--bg); border-top:2px solid var(--border); font-size:15px; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: 700; }
+        .bg-gray { background: #f8fafc; }
         
+        .total-row td { 
+            border-top: 2px solid var(--text-main); border-bottom: none; 
+            font-size: 16px; font-weight: 800; color: var(--primary); padding-top: 20px;
+        }
+
+        .section-title { 
+            font-size: 14px; font-weight: 700; color: var(--primary); 
+            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 20px; margin-bottom: 10px;
+            border-bottom: 1px dashed var(--border); padding-bottom: 5px;
+        }
+
         @media print {
-            body { background:white; }
-            .top-bar, .btn-back, .btn-print { display:none !important; }
-            .container { margin:0; padding:0; max-width:100%; }
-            .report-card { box-shadow:none; border:none; padding:0; }
-            #printHeader { display:block !important; } /* TAMPILKAN KOP SURAT SAAT PRINT */
+            .top-bar { display: none; }
+            .container { margin: 0; padding: 0; max-width: 100%; }
+            .report-card { box-shadow: none; border: none; padding: 0; }
+            body { background: white; }
         }
-        
-        @media(max-width:600px) { .report-card { padding:20px; } .container { padding:0 16px; } }
     </style>
 </head>
 <body>
     <div class="top-bar">
-        <div class="page-title"><h1>Laporan Keuangan</h1></div>
-        <div style="display:flex; gap:10px;">
-            <a href="dashboard.html" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
-            <button onclick="window.print()" class="btn-print"><i class="fas fa-print"></i> Cetak PDF</button>
-        </div>
+        <a href="dashboard.html" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        <button onclick="window.print()" class="btn-back" style="background:var(--primary); color:white;"><i class="fas fa-print"></i> Cetak PDF</button>
     </div>
 
     <div class="container">
         <div class="report-card">
-            <!-- KOP SURAT INTEGRATION -->
-            <div id="printHeader">
-                <img src="assets/kop-surat.png" alt="Kop Surat CV RAJ" onerror="this.style.display='none'">
+            <div class="report-header">
+                <h1>NERACA (BALANCE SHEET)</h1>
+                <p>CV Rezeki Amanah Jaya Group</p>
+                <p id="reportPeriod" style="margin-top:8px; font-weight:600;">Periode: Oktober 2026</p>
             </div>
 
-            <div class="report-meta">Periode: Oktober 2026</div>
-            <div class="report-title">Neraca (Balance Sheet)</div>
-            
-            <table>
+            <table id="balanceSheetTable">
                 <thead>
-                    <tr><th>Kode Akun</th><th>Nama Akun</th><th class="text-right">Debit (Rp)</th><th class="text-right">Kredit (Rp)</th></tr>
+                    <tr>
+                        <th style="width:15%">Kode Akun</th>
+                        <th>Nama Akun</th>
+                        <th class="text-right" style="width:20%">Debit (Rp)</th>
+                        <th class="text-right" style="width:20%">Kredit (Rp)</th>
+                    </tr>
                 </thead>
-                <tbody>
-                    <!-- Contoh Data Statis Sesuai Excel -->
-                    <tr><td>1-1100</td><td>Kas dan Setara Kas</td><td class="text-right">-</td><td class="text-right">-</td></tr>
-                    <tr><td>1-1200</td><td>Bank (Rekening Utama)</td><td class="text-right">-</td><td class="text-right">-</td></tr>
-                    <tr><td>1-1300</td><td>Piutang Usaha</td><td class="text-right">-</td><td class="text-right">-</td></tr>
-                    <tr><td>1-2300</td><td>Armada & Kendaraan</td><td class="text-right">-</td><td class="text-right">-</td></tr>
-                    <tr><td>2-1100</td><td>Utang Usaha</td><td class="text-right">-</td><td class="text-right">-</td></tr>
-                    <tr><td>3-1000</td><td>Modal Pemilik / Sekutu</td><td class="text-right">-</td><td class="text-right">-</td></tr>
-                    <tr class="total-row"><td colspan="2">TOTAL</td><td class="text-right">0</td><td class="text-right">0</td></tr>
+                <tbody id="reportBody">
+                    <tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-sec);">Memuat data laporan...</td></tr>
                 </tbody>
             </table>
             
-            <div style="margin-top:40px; text-align:center; font-size:13px; color:var(--text-sec);">
-                Dicetak otomatis oleh Sistem FinanceRAJ<br>CV Rezeki Amanah Jaya Group
+            <div style="margin-top:40px; text-align:center; font-size:12px; color:var(--text-sec);">
+                Dicetak otomatis oleh Sistem FinanceRAJ<br>
+                CV Rezeki Amanah Jaya Group
             </div>
         </div>
     </div>
+
+    <script type="module">
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg",
+            authDomain: "finance-raj.firebaseapp.com",
+            projectId: "finance-raj",
+            storageBucket: "finance-raj.firebasestorage.app",
+            messagingSenderId: "138468278392",
+            appId: "1:138468278392:web:215731466beb7f89566d8d",
+            measurementId: "G-BMG4L7P2DP"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        // ⚠️ URL WEB APP BARU ANDA ⚠️
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
+
+        // DAFTAR LENGKAP AKUN NERACA (ASET, LIABILITAS, EKUITAS)
+        const balanceSheetAccounts = [
+            // ASET
+            { code: '1-1100', name: 'Kas dan Setara Kas', type: 'asset' },
+            { code: '1-1200', name: 'Bank (Rekening Utama)', type: 'asset' },
+            { code: '1-1300', name: 'Piutang Usaha', type: 'asset' },
+            { code: '1-1400', name: 'Perlengkapan Operasional', type: 'asset' },
+            { code: '1-1500', name: 'Persediaan Bahan Baku', type: 'asset' },
+            { code: '1-1600', name: 'Sewa Dibayar di Muka', type: 'asset' },
+            { code: '1-2100', name: 'Tanah', type: 'asset' },
+            { code: '1-2200', name: 'Bangunan Kantor dan Gudang', type: 'asset' },
+            { code: '1-2250', name: 'Akumulasi Penyusutan Bangunan', type: 'asset_contra' },
+            { code: '1-2300', name: 'Armada & Kendaraan', type: 'asset' },
+            { code: '1-2350', name: 'Akumulasi Penyusutan Kendaraan', type: 'asset_contra' },
+            { code: '1-2400', name: 'Mesin Pengolahan Limbah', type: 'asset' },
+            { code: '1-2450', name: 'Akumulasi Penyusutan Mesin', type: 'asset_contra' },
+            { code: '1-2500', name: 'Peralatan Kantor', type: 'asset' },
+            { code: '1-2550', name: 'Akumulasi Penyusutan Peralatan Kantor', type: 'asset_contra' },
+            
+            // LIABILITAS
+            { code: '2-1100', name: 'Utang Usaha', type: 'liability' },
+            { code: '2-1200', name: 'Utang Gaji dan Tunjangan', type: 'liability' },
+            { code: '2-1300', name: 'Utang Pajak', type: 'liability' },
+            { code: '2-1400', name: 'Pendapatan Diterima di Muka', type: 'liability' },
+            { code: '2-2100', name: 'Utang Bank / Kredit Kendaraan', type: 'liability' },
+            { code: '2-2200', name: 'Utang Sewa Pembiayaan', type: 'liability' },
+            
+            // EKUITAS
+            { code: '3-1000', name: 'Modal Pemilik / Sekutu', type: 'equity' },
+            { code: '3-2000', name: 'Prive Pemilik / Sekutu', type: 'equity_contra' },
+            { code: '3-3000', name: 'Laba Ditahan', type: 'equity' }
+        ];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'index.html'; return; }
+            await generateBalanceSheet();
+        });
+
+        async function generateBalanceSheet() {
+            try {
+                // Ambil semua data jurnal
+                const res = await fetch(`${GAS_URL}?action=getJurnal`);
+                const data = await res.json();
+                const transactions = data.journals || [];
+
+                // Hitung saldo per akun
+                const accountBalances = {};
+                
+                transactions.forEach(tx => {
+                    const code = String(tx[6] || '').trim();
+                    const debit = parseNumber(tx[8]);
+                    const credit = parseNumber(tx[9]);
+                    
+                    if (!accountBalances[code]) accountBalances[code] = 0;
+                    
+                    // Logika saldo normal
+                    if (code.startsWith('1-') || code.startsWith('5-')) {
+                        accountBalances[code] += (debit - credit);
+                    } else {
+                        accountBalances[code] += (credit - debit);
+                    }
+                });
+
+                // Render Tabel
+                const tbody = document.getElementById('reportBody');
+                let html = '';
+                let totalDebit = 0, totalCredit = 0;
+
+                // Render Aset
+                html += `<tr><td colspan="4" class="section-title">ASET (HARTA)</td></tr>`;
+                balanceSheetAccounts.filter(a => a.type.includes('asset')).forEach(acc => {
+                    const balance = accountBalances[acc.code] || 0;
+                    const isContra = acc.type === 'asset_contra';
+                    const displayBalance = isContra ? Math.abs(balance) : balance;
+                    
+                    if (balance !== 0 || true) { // Tampilkan semua akun neraca
+                        const debitVal = (!isContra && balance > 0) ? balance : (isContra ? balance : 0);
+                        const creditVal = (isContra && balance > 0) ? balance : (!isContra && balance < 0 ? Math.abs(balance) : 0);
+                        
+                        // Untuk neraca sederhana, kita tampilkan saldo netto di kolom sesuai jenis akun
+                        // Aset normalnya Debit, Liab/Ekuitas normalnya Kredit
+                        const showDebit = (!isContra && balance >= 0) || (isContra && balance <= 0) ? Math.abs(balance) : 0;
+                        const showCredit = 0; 
+
+                        // Simplifikasi: Tampilkan saldo positif di kolom Debit untuk Aset
+                        html += `
+                            <tr>
+                                <td>${acc.code}</td>
+                                <td>${acc.name}</td>
+                                <td class="text-right">${showDebit ? formatRupiah(showDebit) : '-'}</td>
+                                <td class="text-right">-</td>
+                            </tr>
+                        `;
+                        totalDebit += showDebit;
+                    }
+                });
+
+                // Render Liabilitas
+                html += `<tr><td colspan="4" class="section-title">KEWAJIBAN (UTANG)</td></tr>`;
+                balanceSheetAccounts.filter(a => a.type.includes('liability')).forEach(acc => {
+                    const balance = accountBalances[acc.code] || 0;
+                    const showCredit = balance >= 0 ? balance : 0;
+                    
+                    html += `
+                        <tr>
+                            <td>${acc.code}</td>
+                            <td>${acc.name}</td>
+                            <td class="text-right">-</td>
+                            <td class="text-right">${showCredit ? formatRupiah(showCredit) : '-'}</td>
+                        </tr>
+                    `;
+                    totalCredit += showCredit;
+                });
+
+                // Render Ekuitas
+                html += `<tr><td colspan="4" class="section-title">MODAL (EKUITAS)</td></tr>`;
+                balanceSheetAccounts.filter(a => a.type.includes('equity')).forEach(acc => {
+                    const balance = accountBalances[acc.code] || 0;
+                    const isContra = acc.type === 'equity_contra';
+                    const showCredit = (!isContra && balance >= 0) ? balance : (isContra ? Math.abs(balance) : 0);
+                    
+                    html += `
+                        <tr>
+                            <td>${acc.code}</td>
+                            <td>${acc.name}</td>
+                            <td class="text-right">-</td>
+                            <td class="text-right">${showCredit ? formatRupiah(showCredit) : '-'}</td>
+                        </tr>
+                    `;
+                    totalCredit += showCredit;
+                });
+
+                // Total Row
+                html += `
+                    <tr class="total-row bg-gray">
+                        <td colspan="2">TOTAL</td>
+                        <td class="text-right">${formatRupiah(totalDebit)}</td>
+                        <td class="text-right">${formatRupiah(totalCredit)}</td>
+                    </tr>
+                `;
+
+                tbody.innerHTML = html;
+                
+                // Update Periode
+                const now = new Date();
+                const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                document.getElementById('reportPeriod').textContent = `Periode: ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('reportBody').innerHTML = `<tr><td colspan="4" style="text-align:center; color:red; padding:30px;">Error memuat laporan: ${e.message}</td></tr>`;
+            }
+        }
+
+        // Helper Functions
+        function parseNumber(val) {
+            if (!val) return 0;
+            let str = String(val).trim();
+            if (str.includes(',')) str = str.replace(/\./g, '').replace(/,/g, '.');
+            const num = parseFloat(str);
+            return isNaN(num) ? 0 : num;
+        }
+
+        function formatRupiah(num) {
+            const number = Number(num);
+            if (isNaN(number)) return '0';
+            const parts = number.toFixed(2).split('.');
+            let integerPart = parts[0];
+            let decimalPart = parts[1];
+            let formattedInteger = '';
+            let count = 0;
+            for (let i = integerPart.length - 1; i >= 0; i--) {
+                formattedInteger = integerPart[i] + formattedInteger;
+                count++;
+                if (count % 3 === 0 && i !== 0) formattedInteger = '.' + formattedInteger;
+            }
+            return formattedInteger + ',' + decimalPart;
+        }
+    </script>
 </body>
 </html>
