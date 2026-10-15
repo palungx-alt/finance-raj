@@ -6,7 +6,6 @@
     <title>FinanceRAJ - Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js & SheetJS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
@@ -18,8 +17,6 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; }
-
-        /* SIDEBAR */
         .sidebar { width: 260px; background: var(--surface); height: 100vh; position: fixed; left: 0; top: 0; border-right: 1px solid var(--border); z-index: 100; display: flex; flex-direction: column; transition: 0.3s; }
         .sidebar-header { padding: 24px; text-align: center; border-bottom: 1px solid var(--border); }
         .sidebar-logo { width: 50px; height: auto; margin-bottom: 12px; }
@@ -30,59 +27,36 @@
         .user-profile { padding: 20px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
         .avatar { width: 40px; height: 40px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
         .btn-logout { margin-left: auto; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 16px; }
-
-        /* MAIN CONTENT */
         .main { margin-left: 260px; flex: 1; padding: 30px; max-width: 1400px; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .page-title h1 { font-size: 24px; font-weight: 700; }
         .date-badge { background: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-sec); border: 1px solid var(--border); }
-
-        /* 5 CARDS LAYOUT */
         .cards-row-1 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
         .cards-row-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px; }
-        
-        .card { 
-            padding: 24px; border-radius: var(--radius); color: white; position: relative; overflow: hidden; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); transition: transform 0.2s;
-        }
+        .card { padding: 24px; border-radius: var(--radius); color: white; position: relative; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); transition: transform 0.2s; }
         .card:hover { transform: translateY(-3px); }
         .card h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; opacity: 0.9; margin-bottom: 8px; letter-spacing: 0.5px; }
         .card .value { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
         .card .sub { font-size: 12px; opacity: 0.8; font-style: italic; }
         .card i.bg-icon { position: absolute; right: -10px; bottom: -10px; font-size: 100px; opacity: 0.15; transform: rotate(-15deg); }
-
-        /* GRADIENTS */
         .card-asset { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
         .card-liab { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
         .card-equity { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
         .card-rev { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
         .card-exp { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
-
-        /* CHART & TABLE */
-        .chart-container { 
-            background: var(--surface); padding: 24px; border-radius: var(--radius); 
-            box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 30px; 
-            height: 400px; position: relative;
-        }
+        .chart-container { background: var(--surface); padding: 24px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 30px; height: 400px; position: relative; }
         .table-container { background: var(--surface); padding: 24px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 30px; }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         .search-box input { width: 100%; padding: 10px 16px 10px 40px; border: 1px solid var(--border); border-radius: 10px; outline: none; }
-        
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 14px 16px; font-size: 12px; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); }
         td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: #f8fafc; }
-
         .pagination-controls { display: flex; align-items: center; gap: 10px; margin-top: 20px; justify-content: space-between; }
         .rows-select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; cursor: pointer; }
-        .btn-export { 
-            background: #10b981; color: white; border: none; padding: 10px 20px; 
-            border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; 
-            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
-        }
+        .btn-export { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
         .btn-export:hover { background: #059669; }
-
         @media (max-width: 1024px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
@@ -125,42 +99,14 @@
             <div class="date-badge" id="currentDate"></div>
         </div>
 
-        <!-- ROW 1: NERACA -->
         <div class="cards-row-1">
-            <div class="card card-asset">
-                <h3>Aset (Harta)</h3>
-                <div class="value" id="totalAsset">Rp 0</div>
-                <div class="sub">Kas + Piutang + Aset Tetap</div>
-                <i class="fas fa-landmark bg-icon"></i>
-            </div>
-            <div class="card card-liab">
-                <h3>Kewajiban (Utang)</h3>
-                <div class="value" id="totalLiab">Rp 0</div>
-                <div class="sub">Utang Usaha + Bank + Pajak</div>
-                <i class="fas fa-file-invoice-dollar bg-icon"></i>
-            </div>
-            <div class="card card-equity">
-                <h3>Modal (Ekuitas)</h3>
-                <div class="value" id="totalEquity">Rp 0</div>
-                <div class="sub">Kekayaan Bersih Perusahaan</div>
-                <i class="fas fa-balance-scale bg-icon"></i>
-            </div>
+            <div class="card card-asset"><h3>Aset (Harta)</h3><div class="value" id="totalAsset">Rp 0</div><div class="sub">Kas + Piutang + Aset Tetap</div><i class="fas fa-landmark bg-icon"></i></div>
+            <div class="card card-liab"><h3>Kewajiban (Utang)</h3><div class="value" id="totalLiab">Rp 0</div><div class="sub">Utang Usaha + Bank + Pajak</div><i class="fas fa-file-invoice-dollar bg-icon"></i></div>
+            <div class="card card-equity"><h3>Modal (Ekuitas)</h3><div class="value" id="totalEquity">Rp 0</div><div class="sub">Kekayaan Bersih Perusahaan</div><i class="fas fa-balance-scale bg-icon"></i></div>
         </div>
-
-        <!-- ROW 2: LABA RUGI -->
         <div class="cards-row-2">
-            <div class="card card-rev">
-                <h3>Pendapatan (Revenue)</h3>
-                <div class="value" id="totalRev">Rp 0</div>
-                <div class="sub">Total Pemasukan Operasional</div>
-                <i class="fas fa-arrow-down bg-icon"></i>
-            </div>
-            <div class="card card-exp">
-                <h3>Beban (Expenses)</h3>
-                <div class="value" id="totalExp">Rp 0</div>
-                <div class="sub">Total Pengeluaran Operasional</div>
-                <i class="fas fa-arrow-up bg-icon"></i>
-            </div>
+            <div class="card card-rev"><h3>Pendapatan (Revenue)</h3><div class="value" id="totalRev">Rp 0</div><div class="sub">Total Pemasukan Operasional</div><i class="fas fa-arrow-down bg-icon"></i></div>
+            <div class="card card-exp"><h3>Beban (Expenses)</h3><div class="value" id="totalExp">Rp 0</div><div class="sub">Total Pengeluaran Operasional</div><i class="fas fa-arrow-up bg-icon"></i></div>
         </div>
 
         <div class="chart-container">
@@ -181,25 +127,16 @@
             </div>
             <div style="overflow-x:auto;">
                 <table id="txTable">
-                    <thead>
-                        <tr><th>Tanggal</th><th>No. Bukti</th><th>Keterangan</th><th>Akun</th><th style="text-align:right">Debit</th><th style="text-align:right">Kredit</th></tr>
-                    </thead>
+                    <thead><tr><th>Tanggal</th><th>No. Bukti</th><th>Keterangan</th><th>Akun</th><th style="text-align:right">Debit</th><th style="text-align:right">Kredit</th></tr></thead>
                     <tbody id="txTableBody"><tr><td colspan="6" style="text-align:center; padding:30px;">Memuat data...</td></tr></tbody>
                 </table>
             </div>
-            
-            <!-- PAGINATION CONTROLS -->
             <div class="pagination-controls">
-                <div style="font-size:13px; color:var(--text-sec);">
-                    Menampilkan <span id="showingCount">0</span> dari <span id="totalCount">0</span> transaksi
-                </div>
+                <div style="font-size:13px; color:var(--text-sec);">Menampilkan <span id="showingCount">0</span> dari <span id="totalCount">0</span> transaksi</div>
                 <div style="display:flex; align-items:center; gap:10px;">
                     <label style="font-size:13px; color:var(--text-sec);">Tampilkan:</label>
                     <select id="rowsPerPage" class="rows-select" onchange="changeRowsPerPage()">
-                        <option value="10">10 Baris</option>
-                        <option value="50">50 Baris</option>
-                        <option value="100">100 Baris</option>
-                        <option value="all">Semua</option>
+                        <option value="10">10 Baris</option><option value="50">50 Baris</option><option value="100">100 Baris</option><option value="all">Semua</option>
                     </select>
                 </div>
             </div>
@@ -210,71 +147,47 @@
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg",
-            authDomain: "finance-raj.firebaseapp.com",
-            projectId: "finance-raj",
-            storageBucket: "finance-raj.firebasestorage.app",
-            messagingSenderId: "138468278392",
-            appId: "1:138468278392:web:215731466beb7f89566d8d",
-            measurementId: "G-BMG4L7P2DP"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg", authDomain: "finance-raj.firebaseapp.com", projectId: "finance-raj", storageBucket: "finance-raj.firebasestorage.app", messagingSenderId: "138468278392", appId: "1:138468278392:web:215731466beb7f89566d8d", measurementId: "G-BMG4L7P2DP" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        
-        // ️ URL WEB APP BARU ANDA ️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
         let cashFlowChartInstance = null; 
-        let allTransactions = []; // Simpan semua data untuk export & pagination
-        let currentRows = 10;
+        let allTransactions = []; 
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
-            
             const storedUser = JSON.parse(localStorage.getItem('financeRajUser'));
             if(storedUser) {
                 document.getElementById('userNameDisplay').textContent = storedUser.fullName;
                 document.getElementById('userAvatar').textContent = storedUser.fullName.charAt(0).toUpperCase();
             }
-
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', options);
-
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             await loadTransactionsFromSheets();
         });
 
         async function loadTransactionsFromSheets() {
             try {
-                // 1. Ambil Ringkasan dari Backend
                 let summary = { asset: 0, liability: 0, equity: 0, revenue: 0, expense: 0 };
-                
                 try {
                     const summaryRes = await fetch(`${GAS_URL}?action=getDashboardSummary`);
                     const summaryData = await summaryRes.json();
                     if (summaryData.status === 'success') summary = summaryData.summary;
                 } catch (e) { console.warn("Gagal ambil summary backend"); }
 
-                // 2. Ambil Data Transaksi
                 const txRes = await fetch(`${GAS_URL}?action=getJurnal`);
                 const txData = await txRes.json();
                 
-                // Filter data yang valid (harus punya Kode Akun yang benar)
-                allTransactions = (txData.journals || []).filter(tx => {
-                    const code = String(tx[6] || '').trim();
-                    return /^\d+-\d+$/.test(code); // Hanya ambil baris dengan format kode akun X-XXXX
-                });
+                // Filter data valid
+                allTransactions = (txData.journals || []).filter(tx => /^\d+-\d+$/.test(String(tx[6]||'').trim()));
 
-                // Fallback Calculation jika summary 0
+                // Fallback Calculation
                 if (summary.asset === 0 && allTransactions.length > 0) {
                     let a=0, l=0, e=0, r=0, x=0;
                     allTransactions.forEach(tx => {
                         const code = String(tx[6]||'').trim();
-                        // Gunakan parseNumber yang bisa baca koma/titik
                         const d = parseNumber(tx[8]);
                         const c = parseNumber(tx[9]);
-                        
                         if(code.startsWith('1-')) a += (d-c);
                         else if(code.startsWith('2-')) l += (c-d);
                         else if(code.startsWith('3-')) e += (c-d);
@@ -284,17 +197,14 @@
                     summary = { asset:a, liability:l, equity:e, revenue:r, expense:x };
                 }
 
-                // Update UI Cards
                 document.getElementById('totalAsset').textContent = formatRupiah(summary.asset);
                 document.getElementById('totalLiab').textContent = formatRupiah(summary.liability);
                 document.getElementById('totalEquity').textContent = formatRupiah(summary.equity);
                 document.getElementById('totalRev').textContent = formatRupiah(summary.revenue);
                 document.getElementById('totalExp').textContent = formatRupiah(summary.expense);
 
-                // Render Tabel & Chart
                 renderTable();
                 renderChart(allTransactions);
-
             } catch (e) {
                 console.error(e);
                 document.getElementById('txTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Error: ${e.message}</td></tr>`;
@@ -303,12 +213,8 @@
 
         function renderTable() {
             const tbody = document.getElementById('txTableBody');
-            const selectVal = document.getElementById('rowsPerPage').value;
-            const limit = selectVal === 'all' ? allTransactions.length : parseInt(selectVal);
-            
-            // Ambil data terbaru dulu (reverse), lalu potong sesuai limit
-            const sortedTx = [...allTransactions].reverse();
-            const displayTx = sortedTx.slice(0, limit);
+            const limit = document.getElementById('rowsPerPage').value === 'all' ? allTransactions.length : parseInt(document.getElementById('rowsPerPage').value);
+            const displayTx = [...allTransactions].reverse().slice(0, limit);
 
             if (displayTx.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">Belum ada transaksi</td></tr>';
@@ -324,138 +230,81 @@
                     </tr>
                 `).join('');
             }
-
-            // Update Pagination Info
             document.getElementById('showingCount').textContent = displayTx.length;
             document.getElementById('totalCount').textContent = allTransactions.length;
         }
 
-        window.changeRowsPerPage = function() {
-            renderTable();
-        }
-
+        window.changeRowsPerPage = () => renderTable();
         window.filterTable = function() {
             const input = document.getElementById('searchInput').value.toLowerCase();
-            const rows = document.querySelectorAll('#txTableBody tr');
-            rows.forEach(row => {
-                row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none';
-            });
+            document.querySelectorAll('#txTableBody tr').forEach(row => row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none');
         }
 
-        // FUNGSI EXPORT KE EXCEL
         window.exportToExcel = function() {
-            if (allTransactions.length === 0) return alert("Tidak ada data untuk diexport!");
-            
-            // Siapkan data untuk Excel
+            if (allTransactions.length === 0) return alert("Tidak ada data!");
             const excelData = allTransactions.map(tx => ({
-                "Tanggal": new Date(tx[1]).toLocaleDateString('id-ID'),
-                "No. Bukti": tx[2],
-                "Keterangan": tx[3],
-                "Kode Akun": tx[6],
-                "Nama Akun": tx[7],
-                "Debit": parseNumber(tx[8]),
-                "Kredit": parseNumber(tx[9]),
-                "Tipe": tx[10]
+                "Tanggal": new Date(tx[1]).toLocaleDateString('id-ID'), "No. Bukti": tx[2], "Keterangan": tx[3],
+                "Kode Akun": tx[6], "Nama Akun": tx[7], "Debit": parseNumber(tx[8]), "Kredit": parseNumber(tx[9]), "Tipe": tx[10]
             }));
-
-            // Buat worksheet dan workbook
             const ws = XLSX.utils.json_to_sheet(excelData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Transaksi_Jurnal");
-
-            // Download file
             XLSX.writeFile(wb, `FinanceRAJ_Transaksi_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
         function renderChart(transactions) {
             const ctx = document.getElementById('cashFlowChart').getContext('2d');
             if (cashFlowChartInstance) cashFlowChartInstance.destroy();
-
-            // Cari bulan terakhir dari data transaksi agar grafik dinamis
             let lastMonthIndex = -1;
-            transactions.forEach(tx => {
-                const d = new Date(tx[1]);
-                if(d.getMonth() > lastMonthIndex) lastMonthIndex = d.getMonth();
-            });
-
-            // Jika tidak ada data valid, default ke Oktober (9)
+            transactions.forEach(tx => { const d = new Date(tx[1]); if(d.getMonth() > lastMonthIndex) lastMonthIndex = d.getMonth(); });
             if(lastMonthIndex === -1) lastMonthIndex = 9; 
-
             const months = ['Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt'];
-            const incomeData = [0, 0, 0, 0, 0, 0]; 
-            const expenseData = [0, 0, 0, 0, 0, 0];
-
+            const incomeData = [0,0,0,0,0,0]; const expenseData = [0,0,0,0,0,0];
             transactions.forEach(tx => {
                 const d = new Date(tx[1]);
-                // Hanya tampilkan data di bulan terakhir yang tersedia
                 if(d.getMonth() === lastMonthIndex) {
                     const code = String(tx[6]);
                     if(code.startsWith('4-')) incomeData[lastMonthIndex] += parseNumber(tx[9]);
                     if(code.startsWith('5-')) expenseData[lastMonthIndex] += parseNumber(tx[8]);
                 }
             });
-
             cashFlowChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: months,
-                    datasets: [
-                        { label: 'Pendapatan', data: incomeData, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, fill: true },
-                        { label: 'Beban', data: expenseData, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.4, fill: true }
-                    ]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'top' } }, 
-                    scales: { y: { beginAtZero: true } } 
-                }
+                type: 'line', data: { labels: months, datasets: [
+                    { label: 'Pendapatan', data: incomeData, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, fill: true },
+                    { label: 'Beban', data: expenseData, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.4, fill: true }
+                ]}, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
             });
         }
 
-        // FUNGSI PARSE ANGKA YANG BISA BACA KOMA DAN TITIK (INDONESIA FORMAT)
+        // FUNGSI PARSE ANGKA INDONESIA (KEBAL TERHADAP KOMA/TITIK)
         function parseNumber(val) {
             if (!val) return 0;
             let str = String(val).trim();
-            
-            // Deteksi apakah ini format Indonesia (ada koma sebagai desimal)
-            // Contoh: "3.505,18" atau "3505,18"
+            // Jika ada koma, asumsikan format Indonesia: hapus titik ribuan, ganti koma jadi titik desimal
             if (str.includes(',')) {
-                // Hapus titik ribuan, ganti koma desimal jadi titik
                 str = str.replace(/\./g, '').replace(/,/g, '.');
-            } else {
-                // Jika tidak ada koma, mungkin format US "1,000.00" atau polos "1000000"
-                // Kita asumsikan jika ada titik dan panjang > 4, itu ribuan
-                // Tapi untuk amannya, kita hapus titik saja jika tidak ada koma
-                // Karena data spreadsheet kita dominan Indonesia, logic di atas sudah cukup
             }
-            
             const num = parseFloat(str);
             return isNaN(num) ? 0 : num;
         }
 
-        // FORMAT RUPIAH DENGAN DESIMAL AKURAT & TITIK RIBUAN
+        // FORMAT RUPIAH DENGAN DESIMAL AKURAT (2 DIGIT)
         function formatRupiah(num) {
             const number = Number(num);
-            if (isNaN(number)) return 'Rp 0';
+            if (isNaN(number)) return 'Rp 0,00';
             
-            // Pisahkan integer dan desimal
-            const parts = number.toFixed(2).split('.'); // Gunakan toFixed(2) agar desimal terjaga
+            // toFixed(2) menjaga 2 digit desimal
+            const parts = number.toFixed(2).split('.');
             let integerPart = parts[0];
             let decimalPart = parts[1];
             
-            // Tambahkan titik setiap 3 digit dari belakang untuk bagian integer
             let formattedInteger = '';
             let count = 0;
             for (let i = integerPart.length - 1; i >= 0; i--) {
                 formattedInteger = integerPart[i] + formattedInteger;
                 count++;
-                if (count % 3 === 0 && i !== 0) {
-                    formattedInteger = '.' + formattedInteger;
-                }
+                if (count % 3 === 0 && i !== 0) formattedInteger = '.' + formattedInteger;
             }
-            
-            // Gabungkan kembali dengan koma desimal
             return 'Rp ' + formattedInteger + ',' + decimalPart;
         }
         
