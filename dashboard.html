@@ -195,7 +195,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         
-        // ️ URL WEB APP BARU ANDA ️
+        // ⚠️ URL WEB APP BARU ANDA ⚠️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
         let cashFlowChartInstance = null; 
@@ -324,7 +324,15 @@
             });
         }
 
-        function formatRupiah(num) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num); }
+        // FUNGSI FORMAT RUPIAH DENGAN TITIK PEMISAH RIBUAN
+        function formatRupiah(num) { 
+            return new Intl.NumberFormat('id-ID', { 
+                style: 'currency', 
+                currency: 'IDR', 
+                maximumFractionDigits: 0 
+            }).format(num); 
+        }
+        
         window.logout = async () => { localStorage.removeItem('financeRajUser'); await signOut(auth); window.location.href = 'index.html'; }
     </script>
 </body>
