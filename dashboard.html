@@ -74,6 +74,8 @@
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: #f8fafc; }
 
+        .pagination-controls { display: flex; align-items: center; gap: 10px; margin-top: 20px; justify-content: space-between; }
+        .rows-select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; cursor: pointer; }
         .btn-export { 
             background: #10b981; color: white; border: none; padding: 10px 20px; 
             border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; 
@@ -185,10 +187,21 @@
                     <tbody id="txTableBody"><tr><td colspan="6" style="text-align:center; padding:30px;">Memuat data...</td></tr></tbody>
                 </table>
             </div>
-            <div style="margin-top:20px; text-align:center;">
-                <button id="loadMoreBtn" onclick="loadMoreTransactions()" style="background:none; border:1px solid var(--border); padding:10px 20px; border-radius:8px; cursor:pointer; color:var(--text-sec); display:none;">
-                    Muat 50 Transaksi Lainnya
-                </button>
+            
+            <!-- PAGINATION CONTROLS -->
+            <div class="pagination-controls">
+                <div style="font-size:13px; color:var(--text-sec);">
+                    Menampilkan <span id="showingCount">0</span> dari <span id="totalCount">0</span> transaksi
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <label style="font-size:13px; color:var(--text-sec);">Tampilkan:</label>
+                    <select id="rowsPerPage" class="rows-select" onchange="changeRowsPerPage()">
+                        <option value="10">10 Baris</option>
+                        <option value="50">50 Baris</option>
+                        <option value="100">100 Baris</option>
+                        <option value="all">Semua</option>
+                    </select>
+                </div>
             </div>
         </div>
     </main>
@@ -214,9 +227,8 @@
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
         let cashFlowChartInstance = null; 
-        let allTransactions = []; // Simpan semua data untuk export
-        let displayedCount = 0;
-        const BATCH_SIZE = 50;
+        let allTransactions = []; // Simpan semua data untuk export & pagination
+        let currentRows = 10;
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
@@ -272,9 +284,8 @@
                 document.getElementById('totalRev').textContent = formatRupiah(summary.revenue);
                 document.getElementById('totalExp').textContent = formatRupiah(summary.expense);
 
-                // Reset pagination dan render awal
-                displayedCount = 0;
-                renderBatch();
+                // Render Tabel & Chart
+                renderTable();
                 renderChart(allTransactions);
 
             } catch (e) {
@@ -283,44 +294,37 @@
             }
         }
 
-        function renderBatch() {
+        function renderTable() {
             const tbody = document.getElementById('txTableBody');
-            const startIdx = displayedCount;
-            const endIdx = Math.min(startIdx + BATCH_SIZE, allTransactions.length);
+            const selectVal = document.getElementById('rowsPerPage').value;
+            const limit = selectVal === 'all' ? allTransactions.length : parseInt(selectVal);
             
-            // Jika pertama kali load, kosongkan tabel
-            if (startIdx === 0) tbody.innerHTML = '';
+            // Ambil data terbaru dulu (reverse), lalu potong sesuai limit
+            const sortedTx = [...allTransactions].reverse();
+            const displayTx = sortedTx.slice(0, limit);
 
-            const batch = allTransactions.slice(startIdx, endIdx).reverse(); // Reverse agar terbaru di atas
-            
-            if (batch.length === 0 && startIdx === 0) {
+            if (displayTx.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">Belum ada transaksi</td></tr>';
-                document.getElementById('loadMoreBtn').style.display = 'none';
-                return;
+            } else {
+                tbody.innerHTML = displayTx.map(tx => `
+                    <tr>
+                        <td>${new Date(tx[1]).toLocaleDateString('id-ID')}</td>
+                        <td style="font-weight:600; color:var(--primary);">${tx[2] || '-'}</td>
+                        <td>${tx[3]}</td>
+                        <td><span style="font-size:12px; color:var(--text-sec);">${tx[6]} - ${tx[7]}</span></td>
+                        <td style="text-align:right; color:#10b981; font-weight:600;">${Number(tx[8]) ? formatRupiah(tx[8]) : '-'}</td>
+                        <td style="text-align:right; color:#ef4444; font-weight:600;">${Number(tx[9]) ? formatRupiah(tx[9]) : '-'}</td>
+                    </tr>
+                `).join('');
             }
 
-            const html = batch.map(tx => `
-                <tr>
-                    <td>${new Date(tx[1]).toLocaleDateString('id-ID')}</td>
-                    <td style="font-weight:600; color:var(--primary);">${tx[2] || '-'}</td>
-                    <td>${tx[3]}</td>
-                    <td><span style="font-size:12px; color:var(--text-sec);">${tx[6]} - ${tx[7]}</span></td>
-                    <td style="text-align:right; color:#10b981; font-weight:600;">${Number(tx[8]) ? formatRupiah(tx[8]) : '-'}</td>
-                    <td style="text-align:right; color:#ef4444; font-weight:600;">${Number(tx[9]) ? formatRupiah(tx[9]) : '-'}</td>
-                </tr>
-            `).join('');
-
-            tbody.insertAdjacentHTML('beforeend', html);
-            displayedCount = endIdx;
-
-            // Tampilkan tombol load more jika masih ada data
-            const btn = document.getElementById('loadMoreBtn');
-            btn.style.display = displayedCount < allTransactions.length ? 'inline-block' : 'none';
-            btn.textContent = `Muat ${Math.min(BATCH_SIZE, allTransactions.length - displayedCount)} Transaksi Lainnya`;
+            // Update Pagination Info
+            document.getElementById('showingCount').textContent = displayTx.length;
+            document.getElementById('totalCount').textContent = allTransactions.length;
         }
 
-        window.loadMoreTransactions = function() {
-            renderBatch();
+        window.changeRowsPerPage = function() {
+            renderTable();
         }
 
         window.filterTable = function() {
