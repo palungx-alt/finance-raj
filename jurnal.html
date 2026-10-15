@@ -149,6 +149,172 @@
             border-radius: 14px; font-size: 16px; font-weight: 700; 
             cursor: pointer; transition: 0.3s; 
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            displayTentu bisa! Fitur **Auto-Generate Nomor Bukti** sangat berguna agar user tidak perlu mengetik manual dan menghindari duplikasi nomor.
+
+Logika yang akan kita terapkan adalah:
+1.  Sistem akan membaca data terakhir di sheet `JURNAL_WEB`.
+2.  Mengambil nomor urut terakhir dari No. Bukti (misal: `RAJ/BK-005` → ambil angka `5`).
+3.  Menambah 1 menjadi `6`, lalu memformatnya kembali menjadi `RAJ/BK-006`.
+4.  Jika belum ada data, sistem akan mulai dari `RAJ/BK-001`.
+
+Berikut adalah perbaikan pada **FULL SCRIPT `jurnal.html`**. Saya telah menambahkan fungsi `generateNextNoBukti()` yang otomatis mengisi kolom "No. Bukti" saat halaman dimuat.
+
+### 📄 FILE: `jurnal.html` (With Auto No. Bukti)
+
+Silakan ganti seluruh isi file `jurnal.html` di GitHub Anda dengan kode ini:
+
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FinanceRAJ - Input Jurnal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-glow: rgba(79, 70, 229, 0.15);
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-sec: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius: 16px;
+            --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-body); 
+            color: var(--text-main); 
+            min-height: 100vh; 
+            padding-bottom: 40px;
+        }
+
+        /* HEADER FUTURISTIK */
+        .top-bar { 
+            background: var(--surface);
+            padding: 16px 24px; 
+            position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .brand-area { display: flex; align-items: center; gap: 12px; }
+        .brand-logo { width: 32px; height: auto; }
+        .page-title h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; margin: 0; }
+        .page-title p { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
+        
+        .btn-back { 
+            background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; 
+            cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px; 
+            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-back:hover { background: var(--border); }
+
+        /* CONTAINER UTAMA */
+        .container { max-width: 800px; margin: 24px auto; padding: 0 20px; }
+
+        .form-card { 
+            background: var(--surface); 
+            padding: 24px; 
+            border-radius: var(--radius); 
+            box-shadow: var(--shadow); 
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
+        
+        .form-control { 
+            width: 100%; padding: 14px 16px; 
+            background: var(--bg-body); border: 1px solid var(--border); 
+            border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; 
+            color: var(--text-main);
+        }
+        .form-control:focus { 
+            border-color: var(--primary); 
+            background: white;
+            box-shadow: 0 0 0 4px var(--primary-glow); 
+        }
+
+        /* TABEL JURNAL RESPONSIF DENGAN LABEL DI ATAS */
+        .section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        
+        .entries-container { 
+            background: var(--bg-body); border-radius: 12px; overflow: hidden; 
+            border: 1px solid var(--border); margin-bottom: 16px;
+        }
+
+        /* Header Label Debit/Kredit */
+        .entry-header {
+            display: grid; 
+            grid-template-columns: 1fr 100px 100px 40px; 
+            gap: 8px; padding: 12px 16px; 
+            background: #f1f5f9; border-bottom: 1px solid var(--border);
+            font-size: 11px; font-weight: 700; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        
+        .entry-row { 
+            display: grid; 
+            grid-template-columns: 1fr 100px 100px 40px; 
+            gap: 8px; padding: 12px 16px; 
+            background: white; border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+        .entry-row:last-child { border-bottom: none; }
+        
+        .entry-row select, .entry-row input { 
+            width: 100%; padding: 10px; border: 1px solid var(--border); 
+            border-radius: 8px; font-size: 14px; background: white;
+        }
+        .entry-row select:focus, .entry-row input:focus { border-color: var(--primary); outline: none; }
+        
+        .btn-delete { 
+            background: #fee2e2; border: none; color: var(--danger); 
+            width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        .free-text-input { display: none; margin-top: 8px; }
+
+        .btn-add-row { 
+            background: white; border: 2px dashed var(--border); color: var(--primary); 
+            width: 100%; padding: 14px; border-radius: 12px; cursor: pointer; 
+            font-weight: 600; font-size: 14px; transition: 0.2s; display: flex; 
+            align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-add-row:hover { border-color: var(--primary); background: var(--primary-glow); }
+
+        /* STATUS BALANCE CARD */
+        .balance-card { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 20px; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); 
+            border-radius: var(--radius); margin-bottom: 24px; border: 1px solid #dbeafe; 
+        }
+        .status-badge { 
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; 
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .status-balanced { background: #d1fae5; color: #065f46; }
+        .status-unbalanced { background: #fee2e2; color: #991b1b; }
+
+        /* TOMBOL SIMPAN */
+        .btn-submit { 
+            width: 100%; padding: 18px; 
+            background: var(--primary); color: white; border: none; 
+            border-radius: 14px; font-size: 16px; font-weight: 700; 
+            cursor: pointer; transition: 0.3s; 
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
             display: flex; align-items: center; justify-content: center; gap: 10px;
         }
         .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
@@ -199,7 +365,8 @@
                 </div>
                 <div class="form-group">
                     <label>No. Bukti / Referensi</label>
-                    <input type="text" id="refNumber" class="form-control" placeholder="Cth: STRUK-SOLAR-001">
+                    <!-- Input ini sekarang readonly karena diisi otomatis -->
+                    <input type="text" id="refNumber" class="form-control" placeholder="Auto-generated" readonly style="background:#f1f5f9; cursor:not-allowed;">
                 </div>
             </div>
             
@@ -260,7 +427,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // ️ URL WEB APP BARU ANDA ⚠️
+        // ⚠️ URL WEB APP BARU ANDA ⚠️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
         // COA BARU SESUAI EXCEL RAJ WASTE MANAGEMENT
@@ -288,13 +455,53 @@
             { code: '5-1500', name: 'Beban Perawatan Mesin Pengolah Limbah' }, { code: '5-1600', name: 'Beban Perlengkapan K3' }
         ];
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const user = JSON.parse(localStorage.getItem('financeRajUser'));
             if (!user) window.location.href = 'index.html';
+            
             document.getElementById('transDate').valueAsDate = new Date();
+            
+            // Generate No. Bukti Otomatis saat halaman dimuat
+            await generateNextNoBukti();
+            
             window.addEntryRow();
             window.addEntryRow();
         });
+
+        // FUNGSI GENERATE NO BUKTI OTOMATIS
+        async function generateNextNoBukti() {
+            try {
+                const res = await fetch(`${GAS_URL}?action=getJurnal`);
+                const data = await res.json();
+                const journals = data.journals || [];
+                
+                let nextNum = 1;
+                
+                if (journals.length > 0) {
+                    // Ambil No. Bukti dari baris terakhir (terbaru)
+                    const lastNoBukti = journals[journals.length - 1][2]; // Index 2 adalah kolom No_Bukti
+                    
+                    // Ekstrak angka dari format "RAJ/BK-005" atau "RAJ/BM-001"
+                    // Regex mencari angka setelah tanda strip (-)
+                    const match = String(lastNoBukti).match(/-(\d+)$/);
+                    
+                    if (match && match[1]) {
+                        nextNum = parseInt(match[1], 10) + 1;
+                    }
+                }
+                
+                // Format menjadi 3 digit (001, 002, dst)
+                const formattedNum = String(nextNum).padStart(3, '0');
+                const newNoBukti = `RAJ/BK-${formattedNum}`;
+                
+                document.getElementById('refNumber').value = newNoBukti;
+                
+            } catch (e) {
+                console.error("Gagal generate no bukti:", e);
+                // Fallback jika error
+                document.getElementById('refNumber').value = "RAJ/BK-001";
+            }
+        }
 
         // FUNGSI FORMAT RUPIAH UNTUK INPUT MASKING (GLOBAL)
         window.formatInputRupiah = function(angka) {
@@ -397,7 +604,7 @@
             const user = JSON.parse(localStorage.getItem('financeRajUser'));
             const journalData = {
                 tanggal: document.getElementById('transDate').value,
-                noBukti: document.getElementById('refNumber').value,
+                noBukti: document.getElementById('refNumber').value, // Ambil dari auto-generated
                 keterangan: document.getElementById('description').value,
                 inputBy: user.email, inputByName: user.fullName, items: items, createdAt: new Date().toISOString()
             };
