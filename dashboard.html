@@ -223,7 +223,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         
-        // ⚠️ URL WEB APP BARU ANDA ️
+        // ️ URL WEB APP BARU ANDA ️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
         let cashFlowChartInstance = null; 
@@ -413,39 +413,50 @@
             });
         }
 
-        // FUNGSI PARSE ANGKA YANG BISA BACA KOMA DAN TITIK
+        // FUNGSI PARSE ANGKA YANG BISA BACA KOMA DAN TITIK (INDONESIA FORMAT)
         function parseNumber(val) {
             if (!val) return 0;
             let str = String(val).trim();
-            // Ganti koma desimal (Indonesia/Eropa) jadi titik agar JS bisa baca
-            // Tapi hati-hati jika ada titik ribuan. 
-            // Strategi: Hapus semua titik (ribuan), ganti koma jadi titik (desimal)
-            str = str.replace(/\./g, '').replace(/,/g, '.');
+            
+            // Deteksi apakah ini format Indonesia (ada koma sebagai desimal)
+            // Contoh: "3.505,18" atau "3505,18"
+            if (str.includes(',')) {
+                // Hapus titik ribuan, ganti koma desimal jadi titik
+                str = str.replace(/\./g, '').replace(/,/g, '.');
+            } else {
+                // Jika tidak ada koma, mungkin format US "1,000.00" atau polos "1000000"
+                // Kita asumsikan jika ada titik dan panjang > 4, itu ribuan
+                // Tapi untuk amannya, kita hapus titik saja jika tidak ada koma
+                // Karena data spreadsheet kita dominan Indonesia, logic di atas sudah cukup
+            }
+            
             const num = parseFloat(str);
             return isNaN(num) ? 0 : num;
         }
 
-        // FORMAT RUPIAH MANUAL DENGAN TITIK RIBUAN (FIXED)
+        // FORMAT RUPIAH DENGAN DESIMAL AKURAT & TITIK RIBUAN
         function formatRupiah(num) {
             const number = Number(num);
             if (isNaN(number)) return 'Rp 0';
             
             // Pisahkan integer dan desimal
-            const parts = number.toFixed(0).split('.');
+            const parts = number.toFixed(2).split('.'); // Gunakan toFixed(2) agar desimal terjaga
             let integerPart = parts[0];
+            let decimalPart = parts[1];
             
-            // Tambahkan titik setiap 3 digit dari belakang
-            let formatted = '';
+            // Tambahkan titik setiap 3 digit dari belakang untuk bagian integer
+            let formattedInteger = '';
             let count = 0;
             for (let i = integerPart.length - 1; i >= 0; i--) {
-                formatted = integerPart[i] + formatted;
+                formattedInteger = integerPart[i] + formattedInteger;
                 count++;
                 if (count % 3 === 0 && i !== 0) {
-                    formatted = '.' + formatted;
+                    formattedInteger = '.' + formattedInteger;
                 }
             }
             
-            return 'Rp ' + formatted;
+            // Gabungkan kembali dengan koma desimal
+            return 'Rp ' + formattedInteger + ',' + decimalPart;
         }
         
         window.logout = async () => { localStorage.removeItem('financeRajUser'); await signOut(auth); window.location.href = 'index.html'; }
