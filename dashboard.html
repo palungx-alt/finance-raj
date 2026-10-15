@@ -324,13 +324,17 @@
             });
         }
 
-        // FUNGSI FORMAT RUPIAH DENGAN TITIK PEMISAH RIBUAN
+        // FUNGSI FORMAT RUPIAH DENGAN TITIK PEMISAH RIBUAN (STANDAR INDONESIA)
         function formatRupiah(num) { 
+            const number = Number(num);
+            if (isNaN(number)) return 'Rp 0';
+            
             return new Intl.NumberFormat('id-ID', { 
                 style: 'currency', 
                 currency: 'IDR', 
+                minimumFractionDigits: 0,
                 maximumFractionDigits: 0 
-            }).format(num); 
+            }).format(number); 
         }
         
         window.logout = async () => { localStorage.removeItem('financeRajUser'); await signOut(auth); window.location.href = 'index.html'; }
