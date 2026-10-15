@@ -266,8 +266,10 @@
                     let a=0, l=0, e=0, r=0, x=0;
                     allTransactions.forEach(tx => {
                         const code = String(tx[6]||'').trim();
-                        const d = Number(String(tx[8]).replace(/\./g,'')) || 0;
-                        const c = Number(String(tx[9]).replace(/\./g,'')) || 0;
+                        // Gunakan parseNumber yang bisa baca koma/titik
+                        const d = parseNumber(tx[8]);
+                        const c = parseNumber(tx[9]);
+                        
                         if(code.startsWith('1-')) a += (d-c);
                         else if(code.startsWith('2-')) l += (c-d);
                         else if(code.startsWith('3-')) e += (c-d);
@@ -312,8 +314,8 @@
                         <td style="font-weight:600; color:var(--primary);">${tx[2] || '-'}</td>
                         <td>${tx[3]}</td>
                         <td><span style="font-size:12px; color:var(--text-sec);">${tx[6]} - ${tx[7]}</span></td>
-                        <td style="text-align:right; color:#10b981; font-weight:600;">${Number(tx[8]) ? formatRupiah(tx[8]) : '-'}</td>
-                        <td style="text-align:right; color:#ef4444; font-weight:600;">${Number(tx[9]) ? formatRupiah(tx[9]) : '-'}</td>
+                        <td style="text-align:right; color:#10b981; font-weight:600;">${parseNumber(tx[8]) ? formatRupiah(parseNumber(tx[8])) : '-'}</td>
+                        <td style="text-align:right; color:#ef4444; font-weight:600;">${parseNumber(tx[9]) ? formatRupiah(parseNumber(tx[9])) : '-'}</td>
                     </tr>
                 `).join('');
             }
@@ -346,8 +348,8 @@
                 "Keterangan": tx[3],
                 "Kode Akun": tx[6],
                 "Nama Akun": tx[7],
-                "Debit": Number(tx[8]) || 0,
-                "Kredit": Number(tx[9]) || 0,
+                "Debit": parseNumber(tx[8]),
+                "Kredit": parseNumber(tx[9]),
                 "Tipe": tx[10]
             }));
 
@@ -364,16 +366,27 @@
             const ctx = document.getElementById('cashFlowChart').getContext('2d');
             if (cashFlowChartInstance) cashFlowChartInstance.destroy();
 
+            // Cari bulan terakhir dari data transaksi agar grafik dinamis
+            let lastMonthIndex = -1;
+            transactions.forEach(tx => {
+                const d = new Date(tx[1]);
+                if(d.getMonth() > lastMonthIndex) lastMonthIndex = d.getMonth();
+            });
+
+            // Jika tidak ada data valid, default ke Oktober (9)
+            if(lastMonthIndex === -1) lastMonthIndex = 9; 
+
             const months = ['Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt'];
             const incomeData = [0, 0, 0, 0, 0, 0]; 
             const expenseData = [0, 0, 0, 0, 0, 0];
 
             transactions.forEach(tx => {
                 const d = new Date(tx[1]);
-                if(d.getMonth() === 9) { // Oktober
+                // Hanya tampilkan data di bulan terakhir yang tersedia
+                if(d.getMonth() === lastMonthIndex) {
                     const code = String(tx[6]);
-                    if(code.startsWith('4-')) incomeData[5] += (Number(String(tx[9]).replace(/\./g,''))||0);
-                    if(code.startsWith('5-')) expenseData[5] += (Number(String(tx[8]).replace(/\./g,''))||0);
+                    if(code.startsWith('4-')) incomeData[lastMonthIndex] += parseNumber(tx[9]);
+                    if(code.startsWith('5-')) expenseData[lastMonthIndex] += parseNumber(tx[8]);
                 }
             });
 
@@ -393,6 +406,18 @@
                     scales: { y: { beginAtZero: true } } 
                 }
             });
+        }
+
+        // FUNGSI PARSE ANGKA YANG BISA BACA KOMA DAN TITIK
+        function parseNumber(val) {
+            if (!val) return 0;
+            let str = String(val).trim();
+            // Ganti koma desimal (Indonesia/Eropa) jadi titik agar JS bisa baca
+            // Tapi hati-hati jika ada titik ribuan. 
+            // Strategi: Hapus semua titik (ribuan), ganti koma jadi titik (desimal)
+            str = str.replace(/\./g, '').replace(/,/g, '.');
+            const num = parseFloat(str);
+            return isNaN(num) ? 0 : num;
         }
 
         // FORMAT RUPIAH MANUAL DENGAN TITIK RIBUAN (FIXED)
