@@ -18,6 +18,7 @@
             --border: #e2e8f0;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
             --radius: 16px;
             --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
         }
@@ -91,7 +92,7 @@
         /* Header Label Debit/Kredit */
         .entry-header {
             display: grid; 
-            grid-template-columns: 1fr 100px 100px 40px; 
+            grid-template-columns: 1fr 100px 100px 80px; 
             gap: 8px; padding: 12px 16px; 
             background: #f1f5f9; border-bottom: 1px solid var(--border);
             font-size: 11px; font-weight: 700; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px;
@@ -99,7 +100,7 @@
         
         .entry-row { 
             display: grid; 
-            grid-template-columns: 1fr 100px 100px 40px; 
+            grid-template-columns: 1fr 100px 100px 80px; 
             gap: 8px; padding: 12px 16px; 
             background: white; border-bottom: 1px solid var(--border);
             align-items: center;
@@ -112,11 +113,15 @@
         }
         .entry-row select:focus, .entry-row input:focus { border-color: var(--primary); outline: none; }
         
-        .btn-delete { 
-            background: #fee2e2; border: none; color: var(--danger); 
-            width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        .action-buttons { display: flex; gap: 6px; justify-content: center; }
+        .btn-action { 
+            width: 32px; height: 32px; border-radius: 8px; border: none; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center; 
+            transition: 0.2s; font-size: 12px;
         }
+        .btn-edit { background: #fef3c7; color: var(--warning); }
+        .btn-edit:hover { background: var(--warning); color: white; }
+        .btn-delete { background: #fee2e2; color: var(--danger); }
         .btn-delete:hover { background: var(--danger); color: white; }
 
         /* FREE TEXT INPUT STYLE */
@@ -180,7 +185,8 @@
             
             .mobile-label { font-size: 11px; color: var(--text-sec); margin-bottom: 4px; display: block; font-weight: 600; }
             
-            .btn-delete { width: 100%; height: 44px; margin-top: 8px; }
+            .action-buttons { justify-content: flex-start; margin-top: 8px; }
+            .btn-action { width: 100%; height: 40px; }
             
             .container { padding: 0 16px; margin-top: 16px; }
             .form-card { padding: 20px 16px; border-radius: 12px; }
@@ -207,8 +213,14 @@
                     <input type="date" id="transDate" class="form-control">
                 </div>
                 <div class="form-group">
-                    <label>No. Bukti / Referensi</label>
-                    <input type="text" id="refNumber" class="form-control" placeholder="Auto-generated" readonly style="background:#f1f5f9; cursor:not-allowed;">
+                    <label>Jenis & No. Bukti</label>
+                    <div style="display:flex; gap:8px;">
+                        <select id="proofType" class="form-control" style="width:100px;" onchange="generateNextNoBukti()">
+                            <option value="BK">BK (Keluar)</option>
+                            <option value="BM">BM (Masuk)</option>
+                        </select>
+                        <input type="text" id="refNumber" class="form-control" placeholder="Auto-generated" readonly style="background:#f1f5f9; cursor:not-allowed; flex:1;">
+                    </div>
                 </div>
             </div>
             
@@ -225,7 +237,7 @@
                 <div>Akun (COA)</div>
                 <div style="text-align:center;">Debit (Rp)</div>
                 <div style="text-align:center;">Kredit (Rp)</div>
-                <div></div>
+                <div style="text-align:center;">Aksi</div>
             </div>
             
             <div id="journalEntries">
@@ -268,68 +280,67 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // ⚠️ URL WEB APP BARU ANDA ⚠️
+        // ️ URL WEB APP BARU ANDA ️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
-        // COA BARU SESUAI EXCEL RAJ WASTE MANAGEMENT
-        const coaData = [
-            { code: '1-1000', name: 'Aset Lancar' }, { code: '1-1100', name: 'Kas dan Setara Kas' },
-            { code: '1-1200', name: 'Bank (Rekening Utama)' }, { code: '1-1300', name: 'Piutang Usaha' },
-            { code: '1-1400', name: 'Perlengkapan Operasional' }, { code: '1-1500', name: 'Persediaan Bahan Baku' },
-            { code: '1-1600', name: 'Sewa Dibayar di Muka' }, { code: '1-2000', name: 'Aset Tetap' },
-            { code: '1-2100', name: 'Tanah' }, { code: '1-2200', name: 'Bangunan Kantor dan Gudang' },
-            { code: '1-2250', name: 'Akumulasi Penyusutan Bangunan' }, { code: '1-2300', name: 'Armada & Kendaraan' },
-            { code: '1-2350', name: 'Akumulasi Penyusutan Kendaraan' }, { code: '1-2400', name: 'Mesin Pengolahan Limbah' },
-            { code: '1-2450', name: 'Akumulasi Penyusutan Mesin' }, { code: '1-2500', name: 'Peralatan Kantor' },
-            { code: '1-2550', name: 'Akumulasi Penyusutan Peralatan Kantor' }, { code: '2-1000', name: 'Kewajiban Jangka Pendek' },
-            { code: '2-1100', name: 'Utang Usaha' }, { code: '2-1200', name: 'Utang Gaji dan Tunjangan' },
-            { code: '2-1300', name: 'Utang Pajak' }, { code: '2-1400', name: 'Pendapatan Diterima di Muka' },
-            { code: '2-2000', name: 'Kewajiban Jangka Panjang' }, { code: '2-2100', name: 'Utang Bank / Kredit Kendaraan' },
-            { code: '2-2200', name: 'Utang Sewa Pembiayaan' }, { code: '3-1000', name: 'Modal Pemilik / Sekutu' },
-            { code: '3-2000', name: 'Prive Pemilik / Sekutu' }, { code: '3-3000', name: 'Laba Ditahan' },
-            { code: '3-4000', name: 'Ikhtisar Laba Rugi' }, { code: '4-1000', name: 'Pendapatan Operasional' },
-            { code: '4-1100', name: 'Pendapatan Jasa Pengangkutan Sampah' }, { code: '4-1200', name: 'Pendapatan Jasa Pengolahan/Pemusnahan Limbah' },
-            { code: '4-1300', name: 'Pendapatan Penjualan Material Daur Ulang' }, { code: '4-1400', name: 'Pendapatan Sewa Kontainer' },
-            { code: '4-2000', name: 'Pendapatan Lain-lain' }, { code: '5-1000', name: 'Beban Operasional Langsung' },
-            { code: '5-1100', name: 'Beban Bahan Bakar Truk Armada' }, { code: '5-1200', name: 'Beban Tol, Parkir, dan Retribusi TPA' },
-            { code: '5-1300', name: 'Beban Gaji Sopir & Petugas Pemilah' }, { code: '5-1400', name: 'Beban Perawatan Truk dan Armada' },
-            { code: '5-1500', name: 'Beban Perawatan Mesin Pengolah Limbah' }, { code: '5-1600', name: 'Beban Perlengkapan K3' }
-        ];
+        // COA AKAN DILOAD DARI SERVER AGAR SELALU UPDATE
+        let coaData = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             const user = JSON.parse(localStorage.getItem('financeRajUser'));
             if (!user) window.location.href = 'index.html';
             
             document.getElementById('transDate').valueAsDate = new Date();
+            
+            // Load COA terbaru dari server dulu sebelum render form
+            await refreshCOA();
             await generateNextNoBukti();
             
             window.addEntryRow();
             window.addEntryRow();
         });
 
-        // FUNGSI GENERATE NO BUKTI OTOMATIS
+        // FUNGSI REFRESH COA DARI SERVER (FIX MASALAH AKUN TIDAK MUNCUL)
+        async function refreshCOA() {
+            try {
+                const res = await fetch(`${GAS_URL}?action=getCOA`);
+                const data = await res.json();
+                if(data.status === 'success') {
+                    coaData = data.accounts;
+                }
+            } catch(e) { console.error("Gagal load COA:", e); }
+        }
+
+        // FUNGSI GENERATE NO BUKTI OTOMATIS (SUPPORT BM & BK)
         async function generateNextNoBukti() {
             try {
+                const proofType = document.getElementById('proofType').value; // BM atau BK
                 const res = await fetch(`${GAS_URL}?action=getJurnal`);
                 const data = await res.json();
                 const journals = data.journals || [];
                 
                 let nextNum = 1;
                 
-                if (journals.length > 0) {
-                    const lastNoBukti = journals[journals.length - 1][2];
-                    const match = String(lastNoBukti).match(/-(\d+)$/);
+                // Cari nomor terakhir sesuai jenis bukti (BM atau BK)
+                for(let i = journals.length - 1; i >= 0; i--) {
+                    const noBukti = String(journals[i][2]);
+                    // Cek apakah formatnya cocok (RAJ/BM-xxx atau RAJ/BK-xxx)
+                    const regex = new RegExp(`RAJ/${proofType}-(\\d+)$`);
+                    const match = noBukti.match(regex);
+                    
                     if (match && match[1]) {
                         nextNum = parseInt(match[1], 10) + 1;
+                        break; // Ketemu yang terakhir, stop loop
                     }
                 }
                 
                 const formattedNum = String(nextNum).padStart(3, '0');
-                document.getElementById('refNumber').value = `RAJ/BK-${formattedNum}`;
+                document.getElementById('refNumber').value = `RAJ/${proofType}-${formattedNum}`;
                 
             } catch (e) {
                 console.error("Gagal generate no bukti:", e);
-                document.getElementById('refNumber').value = "RAJ/BK-001";
+                const proofType = document.getElementById('proofType').value;
+                document.getElementById('refNumber').value = `RAJ/${proofType}-001`;
             }
         }
 
@@ -394,9 +405,52 @@
                 </div>
                 <div>${lblDebit}<input type="text" class="debit-input" placeholder="0" oninput="this.value=window.formatInputRupiah(this.value); window.updateBalance()" onfocus="this.select()" inputmode="numeric"></div>
                 <div>${lblKredit}<input type="text" class="credit-input" placeholder="0" oninput="this.value=window.formatInputRupiah(this.value); window.updateBalance()" onfocus="this.select()" inputmode="numeric"></div>
-                <div><button class="btn-delete" onclick="this.closest('.entry-row').remove(); window.updateBalance();"><i class="fas fa-trash-alt"></i></button></div>
+                <div>
+                    <div class="action-buttons">
+                        <button class="btn-action btn-edit" title="Edit Baris" onclick="window.editRow(this)"><i class="fas fa-pen"></i></button>
+                        <button class="btn-action btn-delete" title="Hapus Baris" onclick="this.closest('.entry-row').remove(); window.updateBalance();"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
             `;
             container.appendChild(row);
+        }
+
+        // FUNGSI EDIT BARIS (MEMBUKA DROPDOWN DAN MENGISI NILAI)
+        window.editRow = function(btn) {
+            const row = btn.closest('.entry-row');
+            const select = row.querySelector('.coa-select');
+            const freeContainer = row.querySelector('.free-text-container');
+            
+            // Jika sedang dalam mode edit (tombol jadi save), simpan perubahan
+            if(btn.classList.contains('btn-save')) {
+                btn.classList.remove('btn-save');
+                btn.classList.add('btn-edit');
+                btn.innerHTML = '<i class="fas fa-pen"></i>';
+                btn.title = "Edit Baris";
+                
+                // Disable inputs kembali
+                select.disabled = false;
+                row.querySelectorAll('input').forEach(inp => inp.disabled = false);
+                row.querySelector('.btn-delete').disabled = false;
+                return;
+            }
+
+            // Masuk mode edit
+            btn.classList.remove('btn-edit');
+            btn.classList.add('btn-save');
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            btn.title = "Simpan Perubahan";
+            
+            // Enable inputs
+            select.disabled = false;
+            row.querySelectorAll('input').forEach(inp => inp.disabled = false);
+            row.querySelector('.btn-delete').disabled = false;
+            
+            // Fokus ke input pertama yang kosong atau debit
+            const debitInput = row.querySelector('.debit-input');
+            if(debitInput.value === '0' || debitInput.value === '') {
+                debitInput.focus();
+            }
         }
 
         window.handleAccountChange = function(selectEl) {
@@ -444,19 +498,15 @@
                 let code, name, addToCOA = false;
 
                 if (select.value === 'FREE_TEXT') {
-                    // AMBIL DARI INPUT MANUAL
                     code = row.querySelector('.free-code-input').value.trim();
                     name = row.querySelector('.free-name-input').value.trim();
-                    // BACA STATUS CHECKBOX
                     addToCOA = row.querySelector('input[type="checkbox"]').checked; 
                     
-                    // VALIDASI: Kode akun wajib diisi dan formatnya harus benar (angka-strip-angka)
                     if (!code || !name || !/^\d+-\d+$/.test(code)) {
                         isValid = false;
                         row.querySelector('.free-code-input').style.borderColor = 'red';
                     }
                 } else {
-                    // AMBIL DARI DROPDOWN
                     code = select.value;
                     name = select.options[select.selectedIndex].text;
                 }
@@ -465,7 +515,6 @@
                 const credit = window.unformatRupiah(row.querySelector('.credit-input').value);
 
                 if ((debit > 0 || credit > 0) && code) {
-                    // KIRIM FLAG addToCOA KE BACKEND
                     items.push({ code, name, debit, credit, type: debit > 0 ? 'debit' : 'kredit', amount: debit > 0 ? debit : credit, addToCOA });
                 }
             });
@@ -486,7 +535,11 @@
 
             try {
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'addJurnalFromWeb', data: journalData }) });
-                alert("✅ Jurnal berhasil disimpan ke Spreadsheet!\nCek sheet 'JURNAL_WEB'.");
+                
+                // Refresh COA setelah simpan agar akun baru langsung muncul下次
+                await refreshCOA();
+                
+                alert("✅ Jurnal berhasil disimpan!");
                 window.location.href = 'dashboard.html';
             } catch(e) {
                 console.error(e);
