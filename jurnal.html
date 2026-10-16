@@ -8,186 +8,61 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-glow: rgba(79, 70, 229, 0.15);
-            --bg-body: #f8fafc;
-            --surface: #ffffff;
-            --text-main: #0f172a;
-            --text-sec: #64748b;
-            --border: #e2e8f0;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --radius: 16px;
-            --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-        }
-
+        /* CSS SAMA SEPERTI SEBELUMNYA, TIDAK PERLU DIUBAH */
+        :root { --primary: #4f46e5; --primary-glow: rgba(79, 70, 229, 0.15); --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --radius: 16px; --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            background: var(--bg-body); 
-            color: var(--text-main); 
-            min-height: 100vh; 
-            padding-bottom: 40px;
-        }
-
-        /* HEADER FUTURISTIK */
-        .top-bar { 
-            background: var(--surface);
-            padding: 16px 24px; 
-            position: sticky; top: 0; z-index: 100;
-            border-bottom: 1px solid var(--border);
-            backdrop-filter: blur(10px);
-            display: flex; align-items: center; justify-content: space-between;
-        }
+        body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
+        .top-bar { background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; }
         .brand-area { display: flex; align-items: center; gap: 12px; }
         .brand-logo { width: 32px; height: auto; }
         .page-title h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; margin: 0; }
         .page-title p { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
-        
-        .btn-back { 
-            background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; 
-            cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px; 
-            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
-        }
+        .btn-back { background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
         .btn-back:hover { background: var(--border); }
-
-        /* CONTAINER UTAMA */
         .container { max-width: 800px; margin: 24px auto; padding: 0 20px; }
-
-        .form-card { 
-            background: var(--surface); 
-            padding: 24px; 
-            border-radius: var(--radius); 
-            box-shadow: var(--shadow); 
-            border: 1px solid var(--border);
-            margin-bottom: 24px;
-        }
-
+        .form-card { background: var(--surface); padding: 24px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 24px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
-        
-        .form-control { 
-            width: 100%; padding: 14px 16px; 
-            background: var(--bg-body); border: 1px solid var(--border); 
-            border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; 
-            color: var(--text-main);
-        }
-        .form-control:focus { 
-            border-color: var(--primary); 
-            background: white;
-            box-shadow: 0 0 0 4px var(--primary-glow); 
-        }
-
-        /* TABEL JURNAL RESPONSIF DENGAN LABEL DI ATAS */
+        .form-control { width: 100%; padding: 14px 16px; background: var(--bg-body); border: 1px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; color: var(--text-main); }
+        .form-control:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px var(--primary-glow); }
         .section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-        
-        .entries-container { 
-            background: var(--bg-body); border-radius: 12px; overflow: hidden; 
-            border: 1px solid var(--border); margin-bottom: 16px;
-        }
-
-        /* Header Label Debit/Kredit */
-        .entry-header {
-            display: grid; 
-            grid-template-columns: 1fr 100px 100px 80px; 
-            gap: 8px; padding: 12px 16px; 
-            background: #f1f5f9; border-bottom: 1px solid var(--border);
-            font-size: 11px; font-weight: 700; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        
-        .entry-row { 
-            display: grid; 
-            grid-template-columns: 1fr 100px 100px 80px; 
-            gap: 8px; padding: 12px 16px; 
-            background: white; border-bottom: 1px solid var(--border);
-            align-items: center;
-        }
+        .entries-container { background: var(--bg-body); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 16px; }
+        .entry-header { display: grid; grid-template-columns: 1fr 100px 100px 80px; gap: 8px; padding: 12px 16px; background: #f1f5f9; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; }
+        .entry-row { display: grid; grid-template-columns: 1fr 100px 100px 80px; gap: 8px; padding: 12px 16px; background: white; border-bottom: 1px solid var(--border); align-items: center; }
         .entry-row:last-child { border-bottom: none; }
-        
-        .entry-row select, .entry-row input { 
-            width: 100%; padding: 10px; border: 1px solid var(--border); 
-            border-radius: 8px; font-size: 14px; background: white;
-        }
+        .entry-row select, .entry-row input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: white; }
         .entry-row select:focus, .entry-row input:focus { border-color: var(--primary); outline: none; }
-        
         .action-buttons { display: flex; gap: 6px; justify-content: center; }
-        .btn-action { 
-            width: 32px; height: 32px; border-radius: 8px; border: none; 
-            cursor: pointer; display: flex; align-items: center; justify-content: center; 
-            transition: 0.2s; font-size: 12px;
-        }
+        .btn-action { width: 32px; height: 32px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 12px; }
         .btn-edit { background: #fef3c7; color: var(--warning); }
         .btn-edit:hover { background: var(--warning); color: white; }
         .btn-delete { background: #fee2e2; color: var(--danger); }
         .btn-delete:hover { background: var(--danger); color: white; }
-
-        /* FREE TEXT INPUT STYLE */
-        .free-text-container { 
-            display: none; margin-top: 8px; padding: 12px; 
-            background: #f8fafc; border-radius: 8px; border: 1px dashed var(--border);
-        }
+        .free-text-container { display: none; margin-top: 8px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px dashed var(--border); }
         .free-text-row { display: grid; grid-template-columns: 100px 1fr; gap: 8px; margin-bottom: 8px; align-items: center; }
-        .free-text-row:last-child { margin-bottom: 0; }
         .free-label { font-size: 11px; font-weight: 600; color: var(--text-sec); }
-        
         .checkbox-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
         .checkbox-wrapper input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
         .checkbox-wrapper label { font-size: 12px; color: var(--text-sec); cursor: pointer; user-select: none; }
-
-        .btn-add-row { 
-            background: white; border: 2px dashed var(--border); color: var(--primary); 
-            width: 100%; padding: 14px; border-radius: 12px; cursor: pointer; 
-            font-weight: 600; font-size: 14px; transition: 0.2s; display: flex; 
-            align-items: center; justify-content: center; gap: 8px;
-        }
+        .btn-add-row { background: white; border: 2px dashed var(--border); color: var(--primary); width: 100%; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-add-row:hover { border-color: var(--primary); background: var(--primary-glow); }
-
-        /* STATUS BALANCE CARD */
-        .balance-card { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 20px; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); 
-            border-radius: var(--radius); margin-bottom: 24px; border: 1px solid #dbeafe; 
-        }
-        .status-badge { 
-            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; 
-            text-transform: uppercase; letter-spacing: 0.5px;
-        }
+        .balance-card { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border-radius: var(--radius); margin-bottom: 24px; border: 1px solid #dbeafe; }
+        .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .status-balanced { background: #d1fae5; color: #065f46; }
         .status-unbalanced { background: #fee2e2; color: #991b1b; }
-
-        /* TOMBOL SIMPAN */
-        .btn-submit { 
-            width: 100%; padding: 18px; 
-            background: var(--primary); color: white; border: none; 
-            border-radius: 14px; font-size: 16px; font-weight: 700; 
-            cursor: pointer; transition: 0.3s; 
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
+        .btn-submit { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
         .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; background: var(--text-sec); }
-
-        /* MOBILE OPTIMIZATION */
         @media (max-width: 600px) {
             .form-row { grid-template-columns: 1fr; gap: 0; }
             .form-group { margin-bottom: 16px; }
-            
-            .entry-header { display: none; } 
-            
-            .entry-row { 
-                grid-template-columns: 1fr; gap: 10px; 
-                padding: 16px; border-bottom: 2px solid var(--bg-body);
-            }
+            .entry-header { display: none; }
+            .entry-row { grid-template-columns: 1fr; gap: 10px; padding: 16px; border-bottom: 2px solid var(--bg-body); }
             .entry-row > div { width: 100%; }
-            
             .mobile-label { font-size: 11px; color: var(--text-sec); margin-bottom: 4px; display: block; font-weight: 600; }
-            
             .action-buttons { justify-content: flex-start; margin-top: 8px; }
             .btn-action { width: 100%; height: 40px; }
-            
             .container { padding: 0 16px; margin-top: 16px; }
             .form-card { padding: 20px 16px; border-radius: 12px; }
         }
@@ -215,9 +90,9 @@
                 <div class="form-group">
                     <label>Jenis & No. Bukti</label>
                     <div style="display:flex; gap:8px;">
-                        <select id="proofType" class="form-control" style="width:100px;" onchange="generateNextNoBukti()">
-                            <option value="BK">BK (Keluar)</option>
-                            <option value="BM">BM (Masuk)</option>
+                        <select id="proofType" class="form-control" style="width:120px;" onchange="generateNextNoBukti()">
+                            <option value="BKK">BKK (Keluar)</option>
+                            <option value="BKM">BKM (Masuk)</option>
                         </select>
                         <input type="text" id="refNumber" class="form-control" placeholder="Auto-generated" readonly style="background:#f1f5f9; cursor:not-allowed; flex:1;">
                     </div>
@@ -267,23 +142,11 @@
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg",
-            authDomain: "finance-raj.firebaseapp.com",
-            projectId: "finance-raj",
-            storageBucket: "finance-raj.firebasestorage.app",
-            messagingSenderId: "138468278392",
-            appId: "1:138468278392:web:215731466beb7f89566d8d",
-            measurementId: "G-BMG4L7P2DP"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg", authDomain: "finance-raj.firebaseapp.com", projectId: "finance-raj", storageBucket: "finance-raj.firebasestorage.app", messagingSenderId: "138468278392", appId: "1:138468278392:web:215731466beb7f89566d8d", measurementId: "G-BMG4L7P2DP" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-
-        // ️ URL WEB APP BARU ANDA ️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
-        // COA AKAN DILOAD DARI SERVER AGAR SELALU UPDATE
         let coaData = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -292,7 +155,7 @@
             
             document.getElementById('transDate').valueAsDate = new Date();
             
-            // Load COA terbaru dari server dulu sebelum render form
+            // Load COA & Generate No Bukti
             await refreshCOA();
             await generateNextNoBukti();
             
@@ -300,51 +163,44 @@
             window.addEntryRow();
         });
 
-        // FUNGSI REFRESH COA DARI SERVER (FIX MASALAH AKUN TIDAK MUNCUL)
+        // FUNGSI REFRESH COA DENGAN FILTER DATA SAMPAH
         async function refreshCOA() {
             try {
                 const res = await fetch(`${GAS_URL}?action=getCOA`);
                 const data = await res.json();
                 if(data.status === 'success') {
-                    coaData = data.accounts;
+                    // Filter hanya data yang kode akunnya valid (format X-XXXX)
+                    coaData = data.accounts.filter(acc => /^\d+-\d+$/.test(String(acc.code)));
                 }
             } catch(e) { console.error("Gagal load COA:", e); }
         }
 
-        // FUNGSI GENERATE NO BUKTI OTOMATIS (SUPPORT BM & BK)
+        // FUNGSI GENERATE NO BUKTI FORMAT BARU (BKM/BKK/MM/YYYY/XXX)
         async function generateNextNoBukti() {
             try {
-                const proofType = document.getElementById('proofType').value; // BM atau BK
-                const res = await fetch(`${GAS_URL}?action=getJurnal`);
+                const proofType = document.getElementById('proofType').value; // BKM atau BKK
+                const res = await fetch(`${GAS_URL}?action=getNextProofNumber&type=${proofType}`);
                 const data = await res.json();
-                const journals = data.journals || [];
                 
-                let nextNum = 1;
-                
-                // Cari nomor terakhir sesuai jenis bukti (BM atau BK)
-                for(let i = journals.length - 1; i >= 0; i--) {
-                    const noBukti = String(journals[i][2]);
-                    // Cek apakah formatnya cocok (RAJ/BM-xxx atau RAJ/BK-xxx)
-                    const regex = new RegExp(`RAJ/${proofType}-(\\d+)$`);
-                    const match = noBukti.match(regex);
+                if(data.status === 'success') {
+                    const nextNum = String(data.nextNum).padStart(3, '0');
+                    const now = new Date();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const year = now.getFullYear();
                     
-                    if (match && match[1]) {
-                        nextNum = parseInt(match[1], 10) + 1;
-                        break; // Ketemu yang terakhir, stop loop
-                    }
+                    // Format: BKM/MM/YYYY/001
+                    document.getElementById('refNumber').value = `${proofType}/${month}/${year}/${nextNum}`;
                 }
-                
-                const formattedNum = String(nextNum).padStart(3, '0');
-                document.getElementById('refNumber').value = `RAJ/${proofType}-${formattedNum}`;
-                
             } catch (e) {
                 console.error("Gagal generate no bukti:", e);
                 const proofType = document.getElementById('proofType').value;
-                document.getElementById('refNumber').value = `RAJ/${proofType}-001`;
+                const now = new Date();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+                document.getElementById('refNumber').value = `${proofType}/${month}/${year}/001`;
             }
         }
 
-        // FUNGSI FORMAT RUPIAH UNTUK INPUT MASKING (GLOBAL)
         window.formatInputRupiah = function(angka) {
             if (!angka) return '';
             let number_string = angka.toString().replace(/[^,\d]/g, '').toString();
@@ -352,17 +208,11 @@
             let sisa = split[0].length % 3;
             let rupiah = split[0].substr(0, sisa);
             let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-            
-            if (ribuan) {
-                let separator = sisa ? '.' : '';
-                rupiah += separator + ribuan.join('.');
-            }
-            
+            if (ribuan) { let separator = sisa ? '.' : ''; rupiah += separator + ribuan.join('.'); }
             rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
             return rupiah;
         }
 
-        // FUNGSI UNFORMAT RUPIAH KE ANGKA MURNI (GLOBAL)
         window.unformatRupiah = function(rupiah) {
             if (!rupiah) return 0;
             return parseFloat(rupiah.toString().replace(/\./g, '').replace(/,/g, '.')) || 0;
@@ -386,8 +236,6 @@
                 <div>
                     ${lblAkun}
                     <select class="coa-select" onchange="window.handleAccountChange(this)">${options}</select>
-                    
-                    <!-- CONTAINER INPUT MANUAL DENGAN CHECKBOX -->
                     <div class="free-text-container">
                         <div class="free-text-row">
                             <div class="free-label">Kode Akun:</div>
@@ -415,42 +263,26 @@
             container.appendChild(row);
         }
 
-        // FUNGSI EDIT BARIS (MEMBUKA DROPDOWN DAN MENGISI NILAI)
         window.editRow = function(btn) {
             const row = btn.closest('.entry-row');
             const select = row.querySelector('.coa-select');
-            const freeContainer = row.querySelector('.free-text-container');
             
-            // Jika sedang dalam mode edit (tombol jadi save), simpan perubahan
             if(btn.classList.contains('btn-save')) {
                 btn.classList.remove('btn-save');
                 btn.classList.add('btn-edit');
                 btn.innerHTML = '<i class="fas fa-pen"></i>';
-                btn.title = "Edit Baris";
-                
-                // Disable inputs kembali
                 select.disabled = false;
                 row.querySelectorAll('input').forEach(inp => inp.disabled = false);
                 row.querySelector('.btn-delete').disabled = false;
                 return;
             }
 
-            // Masuk mode edit
             btn.classList.remove('btn-edit');
             btn.classList.add('btn-save');
             btn.innerHTML = '<i class="fas fa-check"></i>';
-            btn.title = "Simpan Perubahan";
-            
-            // Enable inputs
             select.disabled = false;
             row.querySelectorAll('input').forEach(inp => inp.disabled = false);
             row.querySelector('.btn-delete').disabled = false;
-            
-            // Fokus ke input pertama yang kosong atau debit
-            const debitInput = row.querySelector('.debit-input');
-            if(debitInput.value === '0' || debitInput.value === '') {
-                debitInput.focus();
-            }
         }
 
         window.handleAccountChange = function(selectEl) {
@@ -535,10 +367,7 @@
 
             try {
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'addJurnalFromWeb', data: journalData }) });
-                
-                // Refresh COA setelah simpan agar akun baru langsung muncul下次
-                await refreshCOA();
-                
+                await refreshCOA(); // Refresh COA setelah simpan
                 alert("✅ Jurnal berhasil disimpan!");
                 window.location.href = 'dashboard.html';
             } catch(e) {
