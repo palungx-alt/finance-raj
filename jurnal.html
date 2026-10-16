@@ -119,173 +119,14 @@
         }
         .btn-delete:hover { background: var(--danger); color: white; }
 
-        .free-text-input { display: none; margin-top: 8px; }
-
-        .btn-add-row { 
-            background: white; border: 2px dashed var(--border); color: var(--primary); 
-            width: 100%; padding: 14px; border-radius: 12px; cursor: pointer; 
-            font-weight: 600; font-size: 14px; transition: 0.2s; display: flex; 
-            align-items: center; justify-content: center; gap: 8px;
+        /* FREE TEXT INPUT STYLE */
+        .free-text-container { 
+            display: none; margin-top: 8px; padding: 10px; 
+            background: #f8fafc; border-radius: 8px; border: 1px dashed var(--border);
         }
-        .btn-add-row:hover { border-color: var(--primary); background: var(--primary-glow); }
-
-        /* STATUS BALANCE CARD */
-        .balance-card { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 20px; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); 
-            border-radius: var(--radius); margin-bottom: 24px; border: 1px solid #dbeafe; 
-        }
-        .status-badge { 
-            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; 
-            text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .status-balanced { background: #d1fae5; color: #065f46; }
-        .status-unbalanced { background: #fee2e2; color: #991b1b; }
-
-        /* TOMBOL SIMPAN */
-        .btn-submit { 
-            width: 100%; padding: 18px; 
-            background: var(--primary); color: white; border: none; 
-            border-radius: 14px; font-size: 16px; font-weight: 700; 
-            cursor: pointer; transition: 0.3s; 
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-            displayTentu bisa! Fitur **Auto-Generate Nomor Bukti** sangat berguna agar user tidak perlu mengetik manual dan menghindari duplikasi nomor.
-
-Logika yang akan kita terapkan adalah:
-1.  Sistem akan membaca data terakhir di sheet `JURNAL_WEB`.
-2.  Mengambil nomor urut terakhir dari No. Bukti (misal: `RAJ/BK-005` → ambil angka `5`).
-3.  Menambah 1 menjadi `6`, lalu memformatnya kembali menjadi `RAJ/BK-006`.
-4.  Jika belum ada data, sistem akan mulai dari `RAJ/BK-001`.
-
-Berikut adalah perbaikan pada **FULL SCRIPT `jurnal.html`**. Saya telah menambahkan fungsi `generateNextNoBukti()` yang otomatis mengisi kolom "No. Bukti" saat halaman dimuat.
-
-### 📄 FILE: `jurnal.html` (With Auto No. Bukti)
-
-Silakan ganti seluruh isi file `jurnal.html` di GitHub Anda dengan kode ini:
-
-```html
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FinanceRAJ - Input Jurnal</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-glow: rgba(79, 70, 229, 0.15);
-            --bg-body: #f8fafc;
-            --surface: #ffffff;
-            --text-main: #0f172a;
-            --text-sec: #64748b;
-            --border: #e2e8f0;
-            --success: #10b981;
-            --danger: #ef4444;
-            --radius: 16px;
-            --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            background: var(--bg-body); 
-            color: var(--text-main); 
-            min-height: 100vh; 
-            padding-bottom: 40px;
-        }
-
-        /* HEADER FUTURISTIK */
-        .top-bar { 
-            background: var(--surface);
-            padding: 16px 24px; 
-            position: sticky; top: 0; z-index: 100;
-            border-bottom: 1px solid var(--border);
-            backdrop-filter: blur(10px);
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .brand-area { display: flex; align-items: center; gap: 12px; }
-        .brand-logo { width: 32px; height: auto; }
-        .page-title h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; margin: 0; }
-        .page-title p { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
-        
-        .btn-back { 
-            background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; 
-            cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px; 
-            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
-        }
-        .btn-back:hover { background: var(--border); }
-
-        /* CONTAINER UTAMA */
-        .container { max-width: 800px; margin: 24px auto; padding: 0 20px; }
-
-        .form-card { 
-            background: var(--surface); 
-            padding: 24px; 
-            border-radius: var(--radius); 
-            box-shadow: var(--shadow); 
-            border: 1px solid var(--border);
-            margin-bottom: 24px;
-        }
-
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
-        
-        .form-control { 
-            width: 100%; padding: 14px 16px; 
-            background: var(--bg-body); border: 1px solid var(--border); 
-            border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; 
-            color: var(--text-main);
-        }
-        .form-control:focus { 
-            border-color: var(--primary); 
-            background: white;
-            box-shadow: 0 0 0 4px var(--primary-glow); 
-        }
-
-        /* TABEL JURNAL RESPONSIF DENGAN LABEL DI ATAS */
-        .section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-        
-        .entries-container { 
-            background: var(--bg-body); border-radius: 12px; overflow: hidden; 
-            border: 1px solid var(--border); margin-bottom: 16px;
-        }
-
-        /* Header Label Debit/Kredit */
-        .entry-header {
-            display: grid; 
-            grid-template-columns: 1fr 100px 100px 40px; 
-            gap: 8px; padding: 12px 16px; 
-            background: #f1f5f9; border-bottom: 1px solid var(--border);
-            font-size: 11px; font-weight: 700; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        
-        .entry-row { 
-            display: grid; 
-            grid-template-columns: 1fr 100px 100px 40px; 
-            gap: 8px; padding: 12px 16px; 
-            background: white; border-bottom: 1px solid var(--border);
-            align-items: center;
-        }
-        .entry-row:last-child { border-bottom: none; }
-        
-        .entry-row select, .entry-row input { 
-            width: 100%; padding: 10px; border: 1px solid var(--border); 
-            border-radius: 8px; font-size: 14px; background: white;
-        }
-        .entry-row select:focus, .entry-row input:focus { border-color: var(--primary); outline: none; }
-        
-        .btn-delete { 
-            background: #fee2e2; border: none; color: var(--danger); 
-            width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; transition: 0.2s;
-        }
-        .btn-delete:hover { background: var(--danger); color: white; }
-
-        .free-text-input { display: none; margin-top: 8px; }
+        .free-text-row { display: grid; grid-template-columns: 100px 1fr; gap: 8px; margin-bottom: 8px; }
+        .free-text-row:last-child { margin-bottom: 0; }
+        .free-label { font-size: 11px; font-weight: 600; color: var(--text-sec); display: flex; align-items: center; }
 
         .btn-add-row { 
             background: white; border: 2px dashed var(--border); color: var(--primary); 
@@ -325,7 +166,7 @@ Silakan ganti seluruh isi file `jurnal.html` di GitHub Anda dengan kode ini:
             .form-row { grid-template-columns: 1fr; gap: 0; }
             .form-group { margin-bottom: 16px; }
             
-            .entry-header { display: none; } /* Sembunyikan header di HP agar tidak sempit */
+            .entry-header { display: none; } 
             
             .entry-row { 
                 grid-template-columns: 1fr; gap: 10px; 
@@ -333,7 +174,6 @@ Silakan ganti seluruh isi file `jurnal.html` di GitHub Anda dengan kode ini:
             }
             .entry-row > div { width: 100%; }
             
-            /* Label kecil di atas input mobile */
             .mobile-label { font-size: 11px; color: var(--text-sec); margin-bottom: 4px; display: block; font-weight: 600; }
             
             .btn-delete { width: 100%; height: 44px; margin-top: 8px; }
@@ -346,7 +186,6 @@ Silakan ganti seluruh isi file `jurnal.html` di GitHub Anda dengan kode ini:
 <body>
     <div class="top-bar">
         <div class="brand-area">
-            <!-- LOGO INTEGRATION -->
             <img src="assets/logo.png" alt="Logo" class="brand-logo" onerror="this.style.display='none'">
             <div class="page-title">
                 <h1>Input Jurnal</h1>
@@ -365,7 +204,6 @@ Silakan ganti seluruh isi file `jurnal.html` di GitHub Anda dengan kode ini:
                 </div>
                 <div class="form-group">
                     <label>No. Bukti / Referensi</label>
-                    <!-- Input ini sekarang readonly karena diisi otomatis -->
                     <input type="text" id="refNumber" class="form-control" placeholder="Auto-generated" readonly style="background:#f1f5f9; cursor:not-allowed;">
                 </div>
             </div>
@@ -379,7 +217,6 @@ Silakan ganti seluruh isi file `jurnal.html` di GitHub Anda dengan kode ini:
         <div class="section-title"><i class="fas fa-list-ul" style="color:var(--primary)"></i> Detail Akun (Debit & Kredit)</div>
         
         <div class="entries-container">
-            <!-- HEADER LABEL DEBIT KREDIT (Hanya muncul di Desktop) -->
             <div class="entry-header">
                 <div>Akun (COA)</div>
                 <div style="text-align:center;">Debit (Rp)</div>
@@ -460,8 +297,6 @@ Silakan ganti seluruh isi file `jurnal.html` di GitHub Anda dengan kode ini:
             if (!user) window.location.href = 'index.html';
             
             document.getElementById('transDate').valueAsDate = new Date();
-            
-            // Generate No. Bukti Otomatis saat halaman dimuat
             await generateNextNoBukti();
             
             window.addEntryRow();
@@ -478,27 +313,18 @@ Silakan ganti seluruh isi file `jurnal.html` di GitHub Anda dengan kode ini:
                 let nextNum = 1;
                 
                 if (journals.length > 0) {
-                    // Ambil No. Bukti dari baris terakhir (terbaru)
-                    const lastNoBukti = journals[journals.length - 1][2]; // Index 2 adalah kolom No_Bukti
-                    
-                    // Ekstrak angka dari format "RAJ/BK-005" atau "RAJ/BM-001"
-                    // Regex mencari angka setelah tanda strip (-)
+                    const lastNoBukti = journals[journals.length - 1][2];
                     const match = String(lastNoBukti).match(/-(\d+)$/);
-                    
                     if (match && match[1]) {
                         nextNum = parseInt(match[1], 10) + 1;
                     }
                 }
                 
-                // Format menjadi 3 digit (001, 002, dst)
                 const formattedNum = String(nextNum).padStart(3, '0');
-                const newNoBukti = `RAJ/BK-${formattedNum}`;
-                
-                document.getElementById('refNumber').value = newNoBukti;
+                document.getElementById('refNumber').value = `RAJ/BK-${formattedNum}`;
                 
             } catch (e) {
                 console.error("Gagal generate no bukti:", e);
-                // Fallback jika error
                 document.getElementById('refNumber').value = "RAJ/BK-001";
             }
         }
@@ -542,7 +368,22 @@ Silakan ganti seluruh isi file `jurnal.html` di GitHub Anda dengan kode ini:
             const lblKredit = isMobile ? '<span class="mobile-label">Kredit (Rp)</span>' : '';
 
             row.innerHTML = `
-                <div>${lblAkun}<select class="coa-select" onchange="window.handleAccountChange(this)">${options}</select><input type="text" class="free-text-input form-control" placeholder="Ketik nama akun..."></div>
+                <div>
+                    ${lblAkun}
+                    <select class="coa-select" onchange="window.handleAccountChange(this)">${options}</select>
+                    
+                    <!-- CONTAINER INPUT MANUAL -->
+                    <div class="free-text-container">
+                        <div class="free-text-row">
+                            <div class="free-label">Kode Akun:</div>
+                            <input type="text" class="free-code-input form-control" placeholder="Cth: 5-1700" style="padding:8px; font-size:13px;">
+                        </div>
+                        <div class="free-text-row">
+                            <div class="free-label">Nama Akun:</div>
+                            <input type="text" class="free-name-input form-control" placeholder="Cth: Beban Bunga Bank" style="padding:8px; font-size:13px;">
+                        </div>
+                    </div>
+                </div>
                 <div>${lblDebit}<input type="text" class="debit-input" placeholder="0" oninput="this.value=window.formatInputRupiah(this.value); window.updateBalance()" onfocus="this.select()" inputmode="numeric"></div>
                 <div>${lblKredit}<input type="text" class="credit-input" placeholder="0" oninput="this.value=window.formatInputRupiah(this.value); window.updateBalance()" onfocus="this.select()" inputmode="numeric"></div>
                 <div><button class="btn-delete" onclick="this.closest('.entry-row').remove(); window.updateBalance();"><i class="fas fa-trash-alt"></i></button></div>
@@ -551,16 +392,18 @@ Silakan ganti seluruh isi file `jurnal.html` di GitHub Anda dengan kode ini:
         }
 
         window.handleAccountChange = function(selectEl) {
-            const freeInput = selectEl.nextElementSibling;
-            if (selectEl.value === 'FREE_TEXT') { freeInput.style.display = 'block'; freeInput.focus(); } 
-            else { freeInput.style.display = 'none'; freeInput.value = ''; }
+            const freeContainer = selectEl.nextElementSibling;
+            if (selectEl.value === 'FREE_TEXT') { 
+                freeContainer.style.display = 'block'; 
+                freeContainer.querySelector('.free-code-input').focus();
+            } else { 
+                freeContainer.style.display = 'none'; 
+            }
             window.updateBalance();
         }
 
         window.updateBalance = function() {
             let totalDebit = 0, totalCredit = 0;
-            
-            // Gunakan unformatRupiah alih-alih Number() biasa
             document.querySelectorAll('.debit-input').forEach(i => totalDebit += window.unformatRupiah(i.value));
             document.querySelectorAll('.credit-input').forEach(i => totalCredit += window.unformatRupiah(i.value));
             
@@ -585,14 +428,29 @@ Silakan ganti seluruh isi file `jurnal.html` di GitHub Anda dengan kode ini:
             btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
 
             const items = [];
+            let isValid = true;
+
             document.querySelectorAll('.entry-row').forEach(row => {
                 const select = row.querySelector('.coa-select');
-                const freeInput = row.querySelector('.free-text-input');
-                let code = select.value, name = select.options[select.selectedIndex].text;
+                const freeContainer = row.querySelector('.free-text-container');
+                let code, name;
+
+                if (select.value === 'FREE_TEXT') {
+                    // AMBIL DARI INPUT MANUAL
+                    code = row.querySelector('.free-code-input').value.trim();
+                    name = row.querySelector('.free-name-input').value.trim();
+                    
+                    // VALIDASI: Kode akun wajib diisi dan formatnya harus benar (angka-strip-angka)
+                    if (!code || !name || !/^\d+-\d+$/.test(code)) {
+                        isValid = false;
+                        row.querySelector('.free-code-input').style.borderColor = 'red';
+                    }
+                } else {
+                    // AMBIL DARI DROPDOWN
+                    code = select.value;
+                    name = select.options[select.selectedIndex].text;
+                }
                 
-                if (code === 'FREE_TEXT') { code = 'FREE-' + Date.now(); name = freeInput.value || 'Akun Lainnya'; }
-                
-                // Gunakan unformatRupiah saat mengambil data untuk dikirim ke backend
                 const debit = window.unformatRupiah(row.querySelector('.debit-input').value);
                 const credit = window.unformatRupiah(row.querySelector('.credit-input').value);
 
@@ -601,10 +459,16 @@ Silakan ganti seluruh isi file `jurnal.html` di GitHub Anda dengan kode ini:
                 }
             });
 
+            if (!isValid) {
+                alert("⚠️ Mohon lengkapi Kode Akun (format: X-XXXX) dan Nama Akun untuk baris 'LAINNYA'.");
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Jurnal';
+                return;
+            }
+
             const user = JSON.parse(localStorage.getItem('financeRajUser'));
             const journalData = {
                 tanggal: document.getElementById('transDate').value,
-                noBukti: document.getElementById('refNumber').value, // Ambil dari auto-generated
+                noBukti: document.getElementById('refNumber').value,
                 keterangan: document.getElementById('description').value,
                 inputBy: user.email, inputByName: user.fullName, items: items, createdAt: new Date().toISOString()
             };
