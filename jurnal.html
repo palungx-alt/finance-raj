@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* CSS SAMA SEPERTI SEBELUMNYA */
         :root { --primary: #4f46e5; --primary-glow: rgba(79, 70, 229, 0.15); --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --radius: 16px; --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
@@ -145,22 +144,9 @@
         const firebaseConfig = { apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg", authDomain: "finance-raj.firebaseapp.com", projectId: "finance-raj", storageBucket: "finance-raj.firebasestorage.app", messagingSenderId: "138468278392", appId: "1:138468278392:web:215731466beb7f89566d8d", measurementId: "G-BMG4L7P2DP" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        
-        // ️ PASTIKAN URL INI SUDAH BENAR SESUAI DEPLOYMENT TERBARU ANDA ⚠️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
         let coaData = [];
-
-        // DATA FALLBACK JIKA SERVER GAGAL DILOAD
-        const fallbackCOA = [
-            { code: '1-1100', name: 'Kas dan Setara Kas' },
-            { code: '1-1200', name: 'Bank (Rekening Utama)' },
-            { code: '2-1100', name: 'Utang Usaha' },
-            { code: '3-1000', name: 'Modal Pemilik / Sekutu' },
-            { code: '4-1000', name: 'Pendapatan Operasional' },
-            { code: '5-1000', name: 'Beban Operasional Langsung' },
-            { code: '5-1700', name: 'Beban Entertainment dan Konsumsi' }
-        ];
 
         document.addEventListener('DOMContentLoaded', async () => {
             const user = JSON.parse(localStorage.getItem('financeRajUser'));
@@ -176,32 +162,31 @@
             window.addEntryRow();
         });
 
-        // FUNGSI REFRESH COA DENGAN LOGGING & FALLBACK
+        // FUNGSI REFRESH COA - TANPA FILTER REGEX KETAT
         async function refreshCOA() {
             console.log("Memuat data COA dari server...");
             try {
                 const res = await fetch(`${GAS_URL}?action=getCOA`);
                 const data = await res.json();
                 
-                if(data.status === 'success' && data.accounts.length > 0) {
-                    // Filter hanya data yang kode akunnya valid (format X-XXXX)
-                    coaData = data.accounts.filter(acc => /^\d+-\d+$/.test(String(acc.code)));
-                    console.log(`Berhasil memuat ${coaData.length} akun dari server.`);
+                if(data.status === 'success' && data.accounts && data.accounts.length > 0) {
+                    // LANGSUNG PAKAI SEMUA DATA DARI SERVER, TANPA FILTER
+                    coaData = data.accounts;
+                    console.log(`✅ Berhasil memuat ${coaData.length} akun dari server.`);
                 } else {
-                    console.warn("Data COA dari server kosong, menggunakan fallback.");
-                    coaData = fallbackCOA;
+                    console.warn("Data COA kosong dari server");
+                    coaData = [];
                 }
             } catch(e) { 
-                console.error("Gagal load COA dari server:", e); 
-                console.log("Menggunakan data fallback lokal.");
-                coaData = fallbackCOA; 
+                console.error("Gagal load COA:", e); 
+                coaData = [];
             }
         }
 
         // FUNGSI GENERATE NO BUKTI FORMAT BARU (BKM/BKK/MM/YYYY/XXX)
         async function generateNextNoBukti() {
             try {
-                const proofType = document.getElementById('proofType').value; // BKM atau BKK
+                const proofType = document.getElementById('proofType').value;
                 const res = await fetch(`${GAS_URL}?action=getNextProofNumber&type=${proofType}`);
                 const data = await res.json();
                 
@@ -210,8 +195,6 @@
                     const now = new Date();
                     const month = String(now.getMonth() + 1).padStart(2, '0');
                     const year = now.getFullYear();
-                    
-                    // Format: BKM/MM/YYYY/001
                     document.getElementById('refNumber').value = `${proofType}/${month}/${year}/${nextNum}`;
                 }
             } catch (e) {
@@ -375,7 +358,7 @@
             });
 
             if (!isValid) {
-                alert("⚠️ Mohon lengkapi Kode Akun (format: X-XXXX) dan Nama Akun untuk baris 'LAINNYA'.");
+                alert("️ Mohon lengkapi Kode Akun (format: X-XXXX) dan Nama Akun untuk baris 'LAINNYA'.");
                 btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Jurnal';
                 return;
             }
@@ -390,7 +373,7 @@
 
             try {
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'addJurnalFromWeb', data: journalData }) });
-                await refreshCOA(); // Refresh COA setelah simpan
+                await refreshCOA();
                 alert("✅ Jurnal berhasil disimpan!");
                 window.location.href = 'dashboard.html';
             } catch(e) {
