@@ -121,12 +121,16 @@
 
         /* FREE TEXT INPUT STYLE */
         .free-text-container { 
-            display: none; margin-top: 8px; padding: 10px; 
+            display: none; margin-top: 8px; padding: 12px; 
             background: #f8fafc; border-radius: 8px; border: 1px dashed var(--border);
         }
-        .free-text-row { display: grid; grid-template-columns: 100px 1fr; gap: 8px; margin-bottom: 8px; }
+        .free-text-row { display: grid; grid-template-columns: 100px 1fr; gap: 8px; margin-bottom: 8px; align-items: center; }
         .free-text-row:last-child { margin-bottom: 0; }
-        .free-label { font-size: 11px; font-weight: 600; color: var(--text-sec); display: flex; align-items: center; }
+        .free-label { font-size: 11px; font-weight: 600; color: var(--text-sec); }
+        
+        .checkbox-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+        .checkbox-wrapper input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+        .checkbox-wrapper label { font-size: 12px; color: var(--text-sec); cursor: pointer; user-select: none; }
 
         .btn-add-row { 
             background: white; border: 2px dashed var(--border); color: var(--primary); 
@@ -372,7 +376,7 @@
                     ${lblAkun}
                     <select class="coa-select" onchange="window.handleAccountChange(this)">${options}</select>
                     
-                    <!-- CONTAINER INPUT MANUAL -->
+                    <!-- CONTAINER INPUT MANUAL DENGAN CHECKBOX -->
                     <div class="free-text-container">
                         <div class="free-text-row">
                             <div class="free-label">Kode Akun:</div>
@@ -381,6 +385,10 @@
                         <div class="free-text-row">
                             <div class="free-label">Nama Akun:</div>
                             <input type="text" class="free-name-input form-control" placeholder="Cth: Beban Bunga Bank" style="padding:8px; font-size:13px;">
+                        </div>
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="addToCOACheck_${Date.now()}">
+                            <label for="addToCOACheck_${Date.now()}">Simpan permanen ke daftar COA</label>
                         </div>
                     </div>
                 </div>
@@ -433,12 +441,14 @@
             document.querySelectorAll('.entry-row').forEach(row => {
                 const select = row.querySelector('.coa-select');
                 const freeContainer = row.querySelector('.free-text-container');
-                let code, name;
+                let code, name, addToCOA = false;
 
                 if (select.value === 'FREE_TEXT') {
                     // AMBIL DARI INPUT MANUAL
                     code = row.querySelector('.free-code-input').value.trim();
                     name = row.querySelector('.free-name-input').value.trim();
+                    // BACA STATUS CHECKBOX
+                    addToCOA = row.querySelector('input[type="checkbox"]').checked; 
                     
                     // VALIDASI: Kode akun wajib diisi dan formatnya harus benar (angka-strip-angka)
                     if (!code || !name || !/^\d+-\d+$/.test(code)) {
@@ -455,7 +465,8 @@
                 const credit = window.unformatRupiah(row.querySelector('.credit-input').value);
 
                 if ((debit > 0 || credit > 0) && code) {
-                    items.push({ code, name, debit, credit, type: debit > 0 ? 'debit' : 'kredit', amount: debit > 0 ? debit : credit });
+                    // KIRIM FLAG addToCOA KE BACKEND
+                    items.push({ code, name, debit, credit, type: debit > 0 ? 'debit' : 'kredit', amount: debit > 0 ? debit : credit, addToCOA });
                 }
             });
 
