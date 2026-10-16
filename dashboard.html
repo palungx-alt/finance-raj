@@ -320,12 +320,24 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         
-        // ⚠️ URL WEB APP BARU ANDA ️
+        // ⚠️ URL WEB APP BARU ANDA ⚠️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
         let cashFlowChartInstance = null; 
         let allTransactions = []; 
-        let coaData = []; // Untuk dropdown edit
+        
+        // DATA FALLBACK COA JIKA SERVER GAGAL
+        const fallbackCOA = [
+            { code: '1-1100', name: 'Kas dan Setara Kas' },
+            { code: '1-1200', name: 'Bank (Rekening Utama)' },
+            { code: '2-1100', name: 'Utang Usaha' },
+            { code: '3-1000', name: 'Modal Pemilik / Sekutu' },
+            { code: '4-1000', name: 'Pendapatan Operasional' },
+            { code: '5-1000', name: 'Beban Operasional Langsung' },
+            { code: '5-1700', name: 'Beban Entertainment dan Konsumsi' }
+        ];
+        
+        let coaData = [...fallbackCOA]; // Default pakai fallback dulu
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
@@ -345,13 +357,30 @@
         });
 
         async function loadCOAForEdit() {
+            console.log("Memuat data COA untuk fitur Edit...");
             try {
                 const res = await fetch(`${GAS_URL}?action=getCOA`);
                 const data = await res.json();
-                if(data.status === 'success') {
-                    coaData = data.accounts.filter(acc => /^\d+-\d+$/.test(String(acc.code)));
+                
+                if(data.status === 'success' && data.accounts && data.accounts.length > 0) {
+                    // Filter hanya data yang kode akunnya valid (format X-XXXX)
+                    const validAccounts = data.accounts.filter(acc => /^\d+-\d+$/.test(String(acc.code)));
+                    if(validAccounts.length > 0) {
+                        coaData = validAccounts;
+                        console.log(`✅ Berhasil memuat ${coaData.length} akun dari server.`);
+                    } else {
+                        console.warn("⚠️ Data dari server ada tapi tidak ada yang valid formatnya. Pakai fallback.");
+                        coaData = fallbackCOA;
+                    }
+                } else {
+                    console.warn("⚠️ Data COA dari server kosong. Pakai fallback.");
+                    coaData = fallbackCOA;
                 }
-            } catch(e) { console.error("Gagal load COA:", e); }
+            } catch(e) { 
+                console.error(" Gagal load COA dari server:", e); 
+                console.log("Menggunakan data fallback lokal.");
+                coaData = fallbackCOA; 
+            }
         }
 
         async function loadTransactionsFromSheets() {
@@ -490,6 +519,8 @@
             const tx = allTransactions[index];
             if(!tx) return;
 
+            console.log("Membuka modal edit untuk index:", index, "Data:", tx);
+
             document.getElementById('editJournalId').value = tx[0]; // ID_Jurnal
             document.getElementById('editOriginalIndex').value = index;
             document.getElementById('editDate').value = tx[1]; // Tanggal YYYY-MM-DD
@@ -498,12 +529,18 @@
             
             // Isi Dropdown Akun
             const accSelect = document.getElementById('editAccount');
-            accSelect.innerHTML = '';
+            accSelect.innerHTML = '<option value="">-- Pilih Akun --</option>';
+            
+            console.log("Jumlah akun di dropdown:", coaData.length);
+            
             coaData.forEach(acc => {
                 const opt = document.createElement('option');
                 opt.value = acc.code;
                 opt.text = `${acc.code} - ${acc.name}`;
-                if(acc.code === String(tx[6]).trim()) opt.selected = true;
+                if(String(acc.code).trim() === String(tx[6]).trim()) {
+                    opt.selected = true;
+                    console.log("Akun terpilih:", acc.code);
+                }
                 accSelect.appendChild(opt);
             });
 
