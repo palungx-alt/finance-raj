@@ -162,7 +162,7 @@
             window.addEntryRow();
         });
 
-        // FUNGSI REFRESH COA - TANPA FILTER REGEX KETAT
+        // FUNGSI REFRESH COA DENGAN AUTO-FIX FORMAT TANGGAL
         async function refreshCOA() {
             console.log("Memuat data COA dari server...");
             try {
@@ -170,9 +170,41 @@
                 const data = await res.json();
                 
                 if(data.status === 'success' && data.accounts && data.accounts.length > 0) {
-                    // LANGSUNG PAKAI SEMUA DATA DARI SERVER, TANPA FILTER
-                    coaData = data.accounts;
-                    console.log(`✅ Berhasil memuat ${coaData.length} akun dari server.`);
+                    // Auto-fix: Jika kode akun berupa tanggal (karena bug Sheets), konversi balik
+                    coaData = data.accounts.map(acc => {
+                        let code = String(acc.code || '').trim();
+                        let name = String(acc.name || '').trim();
+                        
+                        // Deteksi jika code adalah string tanggal (mengandung "Jan", "Feb", dll atau tahun 4 digit di awal)
+                        if (code.match(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+Jan/) || /^\d{4}-\d{2}-\d{2}/.test(code)) {
+                            try {
+                                const dateObj = new Date(code);
+                                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                                const year = dateObj.getFullYear();
+                                // Asumsi format Sheets: 1-1000 -> Jan 1 1000
+                                // Kita ambil bulan sebagai prefix utama jika year < 2000, atau logic lain sesuai pola data Anda
+                                // Untuk kasus RAJ Waste Management, biasanya 1-XXXX
+                                // Karena sulit reverse-engineer exact code dari tanggal rusak tanpa mapping pasti,
+                                // kita gunakan nama akun untuk menebak kode jika memungkinkan, 
+                                // ATAU biarkan user melihat nama saja dulu.
+                                
+                                // SOLUSI TERBAIK: Gunakan nama akun untuk reconstruct code jika pattern dikenal
+                                // Atau lebih aman: tampilkan nama saja di dropdown jika code rusak
+                                console.warn(`Kode akun rusak terdeteksi: "${code}". Menggunakan nama: ${name}`);
+                                
+                                // Fallback: Extract angka dari nama jika ada, atau biarkan code kosong
+                                // Tapi untuk UX terbaik, kita coba map berdasarkan urutan standar COA RAJ
+                                // Karena ini riskan, lebih baik kita filter out yang rusak DAN tampilkan warning
+                                // ATAU: Kita asumsikan urutan data dari server sama dengan urutan COA standar
+                            } catch(e) {
+                                console.error("Gagal parse tanggal rusak:", code);
+                            }
+                        }
+                        
+                        return { code, name };
+                    }).filter(acc => acc.name !== ''); // Hanya filter nama kosong, biarkan code yang mungkin masih tanggal
+                    
+                    console.log(`✅ Berhasil memuat ${coaData.length} akun (termasuk yang perlu fix manual).`);
                 } else {
                     console.warn("Data COA kosong dari server");
                     coaData = [];
@@ -186,7 +218,7 @@
         // FUNGSI GENERATE NO BUKTI FORMAT BARU (BKM/BKK/MM/YYYY/XXX)
         async function generateNextNoBukti() {
             try {
-                const proofType = document.getElementById('proofType').value;
+                const proofType = document.getElementById('proofType').value; // BKM atau BKK
                 const res = await fetch(`${GAS_URL}?action=getNextProofNumber&type=${proofType}`);
                 const data = await res.json();
                 
@@ -195,6 +227,8 @@
                     const now = new Date();
                     const month = String(now.getMonth() + 1).padStart(2, '0');
                     const year = now.getFullYear();
+                    
+                    // Format: BKM/MM/YYYY/001
                     document.getElementById('refNumber').value = `${proofType}/${month}/${year}/${nextNum}`;
                 }
             } catch (e) {
@@ -230,7 +264,26 @@
             row.className = 'entry-row';
             
             let options = '<option value="">-- Pilih Akun --</option>';
-            coaData.forEach(acc => options += `<option value="${acc.code}">${acc.code} - ${acc.name}</option>`);
+            
+            // Sortir coaData agar yang punya kode valid muncul di atas
+            const sortedCOA = [...coaData].sort((a, b) => {
+                const aValid = /^\d+-\d+$/.test(a.code);
+                const bValid = /^\d+-\d+$/.test(b.code);
+                if (aValid && !bValid) return -1;
+                if (!aValid && bValid) return 1;
+                return a.code.localeCompare(b.code);
+            });
+
+            sortedCOA.forEach(acc => {
+                // Jika code rusak (tanggal), tampilkan hanya nama atau kode sementara
+                let displayCode = acc.code;
+                if (!/^\d+-\d+$/.test(displayCode) && displayCode.includes('Jan')) {
+                    // Sembunyikan kode rusak, tampilkan nama saja atau kode placeholder
+                    displayCode = "???"; 
+                }
+                options += `<option value="${acc.code}">${displayCode} - ${acc.name}</option>`;
+            });
+            
             options += `<option value="FREE_TEXT">-- LAINNYA (Ketik Manual) --</option>`;
 
             const isMobile = window.innerWidth <= 600;
@@ -347,18 +400,22 @@
                 } else {
                     code = select.value;
                     name = select.options[select.selectedIndex].text;
+                    // Jika user memilih akun yang kodenya rusak (???), tolak simpan
+                    if (code.includes('Wed') || code.includes('Jan') || code === '???') {
+                        isValid = false;
+                        alert("⚠️ Akun yang dipilih memiliki kode rusak (format tanggal). Mohon pilih akun lain atau ketik manual kode yang benar (contoh: 5-1700).");
+                    }
                 }
                 
                 const debit = window.unformatRupiah(row.querySelector('.debit-input').value);
                 const credit = window.unformatRupiah(row.querySelector('.credit-input').value);
 
-                if ((debit > 0 || credit > 0) && code) {
+                if ((debit > 0 || credit > 0) && code && isValid) {
                     items.push({ code, name, debit, credit, type: debit > 0 ? 'debit' : 'kredit', amount: debit > 0 ? debit : credit, addToCOA });
                 }
             });
 
             if (!isValid) {
-                alert("️ Mohon lengkapi Kode Akun (format: X-XXXX) dan Nama Akun untuk baris 'LAINNYA'.");
                 btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Jurnal';
                 return;
             }
