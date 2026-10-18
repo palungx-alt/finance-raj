@@ -53,6 +53,18 @@
         .btn-submit { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
         .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; background: var(--text-sec); }
+        
+        /* Tombol Generate Manual */
+        .btn-generate { 
+            background: var(--bg-body); border: 1px solid var(--border); color: var(--text-sec); 
+            width: 48px; height: 48px; border-radius: 12px; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .btn-generate:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-generate:active { transform: scale(0.95); }
+        .btn-generate i { font-size: 18px; }
+
         @media (max-width: 600px) {
             .form-row { grid-template-columns: 1fr; gap: 0; }
             .form-group { margin-bottom: 16px; }
@@ -88,12 +100,16 @@
                 </div>
                 <div class="form-group">
                     <label>Jenis & No. Bukti</label>
-                    <div style="display:flex; gap:8px;">
-                        <select id="proofType" class="form-control" style="width:120px;" onchange="generateNextNoBukti()">
+                    <!-- Wrapper Flex untuk Dropdown + Input + Tombol Generate -->
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <select id="proofType" class="form-control" style="width:110px;">
                             <option value="BKK">BKK (Keluar)</option>
                             <option value="BKM">BKM (Masuk)</option>
                         </select>
-                        <input type="text" id="refNumber" class="form-control" placeholder="Auto-generated" readonly style="background:#f1f5f9; cursor:not-allowed; flex:1;">
+                        <input type="text" id="refNumber" class="form-control" placeholder="Klik tombol generate" readonly style="background:#f1f5f9; cursor:not-allowed; flex:1;">
+                        <button class="btn-generate" id="btnGenProof" title="Generate Nomor Baru">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -154,9 +170,32 @@
             
             document.getElementById('transDate').valueAsDate = new Date();
             
-            // Load COA & Generate No Bukti
+            // Load COA & Generate No Bukti Awal
             await refreshCOA();
             await generateNextNoBukti();
+            
+            // Event Listener untuk Tombol Generate Manual
+            document.getElementById('btnGenProof').addEventListener('click', async () => {
+                const btn = document.getElementById('btnGenProof');
+                const icon = btn.querySelector('i');
+                
+                // Animasi putar saat loading
+                icon.classList.add('fa-spin');
+                btn.disabled = true;
+                
+                await generateNextNoBukti();
+                
+                // Hapus animasi setelah selesai
+                setTimeout(() => {
+                    icon.classList.remove('fa-spin');
+                    btn.disabled = false;
+                }, 500);
+            });
+
+            // Event Listener untuk perubahan Jenis Bukti (Dropdown)
+            document.getElementById('proofType').addEventListener('change', async () => {
+                await generateNextNoBukti();
+            });
             
             window.addEntryRow();
             window.addEntryRow();
@@ -170,41 +209,18 @@
                 const data = await res.json();
                 
                 if(data.status === 'success' && data.accounts && data.accounts.length > 0) {
-                    // Auto-fix: Jika kode akun berupa tanggal (karena bug Sheets), konversi balik
                     coaData = data.accounts.map(acc => {
                         let code = String(acc.code || '').trim();
                         let name = String(acc.name || '').trim();
                         
-                        // Deteksi jika code adalah string tanggal (mengandung "Jan", "Feb", dll atau tahun 4 digit di awal)
+                        // Deteksi jika code adalah string tanggal rusak
                         if (code.match(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+Jan/) || /^\d{4}-\d{2}-\d{2}/.test(code)) {
-                            try {
-                                const dateObj = new Date(code);
-                                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                                const year = dateObj.getFullYear();
-                                // Asumsi format Sheets: 1-1000 -> Jan 1 1000
-                                // Kita ambil bulan sebagai prefix utama jika year < 2000, atau logic lain sesuai pola data Anda
-                                // Untuk kasus RAJ Waste Management, biasanya 1-XXXX
-                                // Karena sulit reverse-engineer exact code dari tanggal rusak tanpa mapping pasti,
-                                // kita gunakan nama akun untuk menebak kode jika memungkinkan, 
-                                // ATAU biarkan user melihat nama saja dulu.
-                                
-                                // SOLUSI TERBAIK: Gunakan nama akun untuk reconstruct code jika pattern dikenal
-                                // Atau lebih aman: tampilkan nama saja di dropdown jika code rusak
-                                console.warn(`Kode akun rusak terdeteksi: "${code}". Menggunakan nama: ${name}`);
-                                
-                                // Fallback: Extract angka dari nama jika ada, atau biarkan code kosong
-                                // Tapi untuk UX terbaik, kita coba map berdasarkan urutan standar COA RAJ
-                                // Karena ini riskan, lebih baik kita filter out yang rusak DAN tampilkan warning
-                                // ATAU: Kita asumsikan urutan data dari server sama dengan urutan COA standar
-                            } catch(e) {
-                                console.error("Gagal parse tanggal rusak:", code);
-                            }
+                            console.warn(`Kode akun rusak terdeteksi: "${code}". Nama: ${name}`);
                         }
-                        
                         return { code, name };
-                    }).filter(acc => acc.name !== ''); // Hanya filter nama kosong, biarkan code yang mungkin masih tanggal
+                    }).filter(acc => acc.name !== '');
                     
-                    console.log(`✅ Berhasil memuat ${coaData.length} akun (termasuk yang perlu fix manual).`);
+                    console.log(`✅ Berhasil memuat ${coaData.length} akun.`);
                 } else {
                     console.warn("Data COA kosong dari server");
                     coaData = [];
@@ -215,10 +231,10 @@
             }
         }
 
-        // FUNGSI GENERATE NO BUKTI FORMAT BARU (BKM/BKK/MM/YYYY/XXX)
+        // FUNGSI GENERATE NO BUKTI (DIPANGGIL OLEH TOMBOL & DROPDOWN)
         async function generateNextNoBukti() {
             try {
-                const proofType = document.getElementById('proofType').value; // BKM atau BKK
+                const proofType = document.getElementById('proofType').value;
                 const res = await fetch(`${GAS_URL}?action=getNextProofNumber&type=${proofType}`);
                 const data = await res.json();
                 
@@ -227,8 +243,6 @@
                     const now = new Date();
                     const month = String(now.getMonth() + 1).padStart(2, '0');
                     const year = now.getFullYear();
-                    
-                    // Format: BKM/MM/YYYY/001
                     document.getElementById('refNumber').value = `${proofType}/${month}/${year}/${nextNum}`;
                 }
             } catch (e) {
@@ -265,7 +279,6 @@
             
             let options = '<option value="">-- Pilih Akun --</option>';
             
-            // Sortir coaData agar yang punya kode valid muncul di atas
             const sortedCOA = [...coaData].sort((a, b) => {
                 const aValid = /^\d+-\d+$/.test(a.code);
                 const bValid = /^\d+-\d+$/.test(b.code);
@@ -275,10 +288,8 @@
             });
 
             sortedCOA.forEach(acc => {
-                // Jika code rusak (tanggal), tampilkan hanya nama atau kode sementara
                 let displayCode = acc.code;
                 if (!/^\d+-\d+$/.test(displayCode) && displayCode.includes('Jan')) {
-                    // Sembunyikan kode rusak, tampilkan nama saja atau kode placeholder
                     displayCode = "???"; 
                 }
                 options += `<option value="${acc.code}">${displayCode} - ${acc.name}</option>`;
@@ -400,10 +411,9 @@
                 } else {
                     code = select.value;
                     name = select.options[select.selectedIndex].text;
-                    // Jika user memilih akun yang kodenya rusak (???), tolak simpan
                     if (code.includes('Wed') || code.includes('Jan') || code === '???') {
                         isValid = false;
-                        alert("⚠️ Akun yang dipilih memiliki kode rusak (format tanggal). Mohon pilih akun lain atau ketik manual kode yang benar (contoh: 5-1700).");
+                        alert("⚠️ Akun yang dipilih memiliki kode rusak. Mohon pilih akun lain.");
                     }
                 }
                 
