@@ -135,9 +135,9 @@
         }
         .ledger-filter select:focus { border-color: var(--primary); background-color: white; }
 
-        /* ========== PRINT STYLE ========== */
+        /* ========== PRINT STYLE - DIPERBAIKI AGAR AESTHETIC ========== */
         @media print {
-            @page { margin: 8mm; size: A4; }
+            @page { margin: 10mm; size: A4; }
             body { background: white; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             
             .top-bar, .tab-nav-wrapper, .action-buttons, .ledger-filter, .footer-note, .no-print, .mobile-cards, .period-filter-bar { display: none !important; }
@@ -148,33 +148,88 @@
                 border-radius: 0;
             }
             
-            /* KOP SURAT HANYA GAMBAR CENTER DI ATAS */
+            /* KOP SURAT BESAR & CENTER - PROFESSIONAL LOOK */
             .print-header { 
                 display: block !important; 
                 text-align: center; 
-                margin-bottom: 12px; 
-                padding-bottom: 10px; 
-                border-bottom: 2px solid #000; 
+                margin-bottom: 20px; 
+                padding-bottom: 15px; 
+                border-bottom: 4px double #000; /* Garis double tebal agar tegas */
             }
             .print-header img { 
-                max-width: 120px; 
+                max-width: 200px; /* Diperbesar signifikan */
+                width: 100%; 
                 height: auto; 
                 display: inline-block; 
+                margin-bottom: 5px;
             }
-            .print-header-text { display: none !important; } /* Sembunyikan teks kop surat */
+            .print-header-text { display: none !important; } 
             
             .screen-header { display: none; }
             .desktop-table { display: block !important; }
-            .print-title { display: block !important; text-align: center; margin: 12px 0 2px 0; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-            .print-subtitle { display: block !important; text-align: center; margin-bottom: 2px; font-size: 11px; color: #333; }
-            .print-period { display: block !important; text-align: center; margin-bottom: 12px; font-size: 11px; font-weight: 700; }
             
-            table { margin-top: 0; }
-            th { color: #000; border-bottom: 2px solid #000; font-size: 9px; padding: 4px 6px; }
-            td { border-bottom: 1px solid #ddd; font-size: 10px; padding: 4px 6px; }
-            .section-title { color: #000; border-bottom: 1px solid #000; font-size: 10px; margin-top: 8px; }
-            .total-row td { color: #000; border-top: 2px solid #000; font-size: 11px; }
-            .indent-1 { padding-left: 14px !important; }
+            /* Judul Laporan */
+            .print-title { 
+                display: block !important; 
+                text-align: center; 
+                margin: 20px 0 5px 0; 
+                font-size: 18px; 
+                font-weight: 800; 
+                text-transform: uppercase; 
+                letter-spacing: 1px;
+                color: #000;
+            }
+            .print-subtitle { 
+                display: block !important; 
+                text-align: center; 
+                margin-bottom: 5px; 
+                font-size: 13px; 
+                color: #444; 
+                font-weight: 600;
+            }
+            .print-period { 
+                display: block !important; 
+                text-align: center; 
+                margin-bottom: 20px; 
+                font-size: 12px; 
+                font-weight: 700; 
+                color: #333;
+            }
+            
+            /* Tabel Print Rapi */
+            table { margin-top: 0; width: 100%; }
+            tr { page-break-inside: avoid; }
+            th { 
+                color: #000; 
+                border-bottom: 2px solid #000; 
+                font-size: 10px; 
+                padding: 8px 10px; 
+                text-transform: uppercase;
+                font-weight: 800;
+            }
+            td { 
+                border-bottom: 1px solid #eee; 
+                font-size: 11px; 
+                padding: 8px 10px; 
+                color: #222;
+            }
+            .section-title { 
+                color: #000; 
+                border-bottom: 1px solid #000; 
+                font-size: 11px; 
+                margin-top: 15px; 
+                padding-bottom: 5px;
+                font-weight: 800;
+            }
+            .total-row td { 
+                color: #000; 
+                border-top: 3px double #000; 
+                border-bottom: none;
+                font-size: 12px; 
+                font-weight: 800;
+                padding-top: 10px;
+            }
+            .indent-1 { padding-left: 16px !important; }
         }
 
         .print-header, .print-title, .print-subtitle, .print-period { display: none; }
