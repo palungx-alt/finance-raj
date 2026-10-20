@@ -166,7 +166,16 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg", authDomain: "finance-raj.firebaseapp.com", projectId: "finance-raj", storageBucket: "finance-raj.firebasestorage.app", messagingSenderId: "138468278392", appId: "1:138468278392:web:215731466beb7f89566d8d", measurementId: "G-BMG4L7P2DP" };
+        // ✅ GANTI DENGAN YANG BARU INI:
+const firebaseConfig = {
+    apiKey: "AIzaSyBcvWifKsakt37g6AFFd6U3rYrdTrkHqjw",
+    authDomain: "kawanarus.firebaseapp.com",
+    projectId: "kawanarus",
+    storageBucket: "kawanarus.firebasestorage.app",
+    messagingSenderId: "228773711599",
+    appId: "1:228773711599:web:92a76d505c440f4c5e151a",
+    measurementId: "G-7E4DL0CJ75"
+};
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
