@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceRAJ - Rekonsiliasi Bank</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    
+    <style>
+        :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
+        
+        .top-bar { background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .brand-area { display: flex; align-items: center; gap: 12px; }
+        .btn-back { background: var(--bg-body); border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-back:hover { background: var(--border); }
+        .action-buttons { display: flex; gap: 8px; }
+        .btn-action { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 13px; }
+        .btn-action:hover { opacity: 0.9; }
+        .btn-outline { background: white; color: var(--text-main); border: 1px solid var(--border); }
+        .btn-outline:hover { background: var(--bg-body); }
+        
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        
+        /* UPLOAD AREA */
+        .upload-card { 
+            background: var(--surface); padding: 30px; border-radius: var(--radius); 
+            border: 2px dashed var(--border); text-align: center; margin-bottom: 30px; 
+            transition: 0.2s; cursor: pointer;
+        }
+        .upload-card:hover, .upload-card.dragover { border-color: var(--primary); background: #eff6ff; }
+        .upload-icon { font-size: 40px; color: var(--primary); margin-bottom: 16px; }
+        .upload-text { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+        .upload-sub { font-size: 13px; color: var(--text-sec); }
+        #fileInput { display: none; }
+
+        /* SUMMARY CARDS */
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 30px; }
+        .summary-card { background: var(--surface); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .summary-label { font-size: 12px; color: var(--text-sec); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+        .summary-value { font-size: 24px; font-weight: 800; }
+        .text-success { color: var(--success); }
+        .text-danger { color: var(--danger); }
+        .text-warning { color: var(--warning); }
+
+        /* TABLE STYLE */
+        .table-container { background: var(--surface); border-radius: var(--radius); box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); border: 1px solid var(--border); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th { text-align: left; padding: 14px 16px; font-size: 12px; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); font-weight: 700; white-space: nowrap; }
+        td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr.matched td { background: #ecfdf5; }
+        tr.unmatched td { background: #fffbeb; }
+        
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .badge-matched { background: #d1fae5; color: #065f46; }
+        .badge-unmatched { background: #fef3c7; color: #92400e; }
+        .badge-missing { background: #fee2e2; color: #991b1b; }
+
+        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn-match { background: var(--primary); color: white; }
+        .btn-journal { background: var(--success); color: white; }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 16px; margin-top: 16px; }
+            .summary-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="brand-area">
+            <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</button>
+            <img src="assets/logo.png" alt="Logo" style="width:32px;" onerror="this.style.display='none'">
+            <div><h1 style="font-size:18px; font-weight:700;">Rekonsiliasi Bank</h1><p style="font-size:12px; color:var(--text-sec);">Cocokkan Buku vs Mutasi Bank</p></div>
+        </div>
+        <div class="action-buttons">
+            <button class="btn-action btn-outline" onclick="resetRecon()"><i class="fas fa-redo"></i> Reset</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- UPLOAD AREA -->
+        <div class="upload-card" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+            <div class="upload-text">Klik atau Seret File Mutasi Bank Di Sini</div>
+            <div class="upload-sub">Format: CSV atau Excel (.xlsx)</div>
+            <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="handleFile(this.files[0])">
+        </div>
+
+        <!-- SUMMARY CARDS -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Saldo Buku</div>
+                <div class="summary-value" id="sumBook">Rp 0</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Saldo Bank</div>
+                <div class="summary-value" id="sumBank">Rp 0</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Selisih</div>
+                <div class="summary-value text-danger" id="sumDiff">Rp 0</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Status Match</div>
+                <div class="summary-value text-success" id="sumStatus">0%</div>
+            </div>
+        </div>
+
+        <!-- RECONCILIATION TABLE -->
+        <div class="table-container">
+            <table id="reconTable">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Keterangan</th>
+                        <th class="text-right">Nominal</th>
+                        <th>Sumber</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="reconBody">
+                    <tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-sec);">Upload file mutasi bank untuk memulai rekonsiliasi</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg", authDomain: "finance-raj.firebaseapp.com", projectId: "finance-raj", storageBucket: "finance-raj.firebasestorage.app", messagingSenderId: "138468278392", appId: "1:138468278392:web:215731466beb7f89566d8d", measurementId: "G-BMG4L7P2DP" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
+
+        let bookTransactions = [];
+        let bankTransactions = [];
+        let reconData = [];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'index.html'; return; }
+            await loadBookTransactions();
+        });
+
+        async function loadBookTransactions() {
+            try {
+                const res = await fetch(`${GAS_URL}?action=getJurnal`);
+                const data = await res.json();
+                // Filter hanya transaksi Kas/Bank (1-1100, 1-1200)
+                bookTransactions = (data.journals || []).filter(tx => 
+                    ['1-1100', '1-1200'].includes(String(tx[6]).trim())
+                ).map(tx => ({
+                    date: tx[1], desc: tx[3], amount: parseNumber(tx[8]) - parseNumber(tx[9]), 
+                    id: tx[0], matched: false
+                }));
+                updateSummary();
+            } catch(e) { console.error(e); }
+        }
+
+        // DRAG & DROP HANDLER
+        const dropZone = document.getElementById('dropZone');
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault(); dropZone.classList.remove('dragover');
+            if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+
+        function handleFile(file) {
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type:'array'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header:1});
+                
+                // Parse Bank Data (Asumsi kolom: Tanggal, Keterangan, Nominal)
+                bankTransactions = jsonData.slice(1).map(row => ({
+                    date: row[0], desc: row[1], amount: parseFloat(row[2]) || 0, 
+                    source: 'bank', matched: false
+                })).filter(t => !isNaN(t.amount));
+
+                performAutoMatching();
+                renderTable();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function performAutoMatching() {
+            reconData = [...bookTransactions.map(t => ({...t, source:'book'})), ...bankTransactions];
+            
+            // Simple matching logic: same amount within +/- 3 days
+            reconData.forEach(item => {
+                if(item.matched) return;
+                const match = reconData.find(other => 
+                    other !== item && !other.matched && 
+                    Math.abs(other.amount - item.amount) < 100 && // Tolerance Rp 100
+                    Math.abs(new Date(item.date) - new Date(other.date)) < 3 * 24*60*60*1000
+                );
+                if(match) { item.matched = true; match.matched = true; }
+            });
+            updateSummary();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('reconBody');
+            if(reconData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">Tidak ada data</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = reconData.sort((a,b) => new Date(b.date) - new Date(a.date)).map(item => {
+                const statusClass = item.matched ? 'matched' : 'unmatched';
+                const badge = item.matched ? '<span class="badge badge-matched">Matched</span>' : '<span class="badge badge-unmatched">Unmatched</span>';
+                const actionBtn = !item.matched && item.source === 'bank' 
+                    ? `<button class="btn-sm btn-journal" onclick="createJournal('${item.desc}', ${item.amount})"><i class="fas fa-plus"></i> Input Jurnal</button>` 
+                    : '-';
+                    
+                return `
+                    <tr class="${statusClass}">
+                        <td>${new Date(item.date).toLocaleDateString('id-ID')}</td>
+                        <td>${item.desc}</td>
+                        <td class="text-right font-bold">${formatRupiah(Math.abs(item.amount))}</td>
+                        <td>${item.source === 'book' ? '📒 Buku' : '🏦 Bank'}</td>
+                        <td>${badge}</td>
+                        <td>${actionBtn}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateSummary() {
+            const bookTotal = bookTransactions.reduce((s,t) => s + t.amount, 0);
+            const bankTotal = bankTransactions.reduce((s,t) => s + t.amount, 0);
+            const matchedCount = reconData.filter(t => t.matched).length / 2; // Pair counted twice
+            const totalItems = Math.max(bookTransactions.length, bankTransactions.length);
+            const matchPercent = totalItems > 0 ? Math.round((matchedCount / totalItems) * 100) : 0;
+
+            document.getElementById('sumBook').textContent = formatRupiah(bookTotal);
+            document.getElementById('sumBank').textContent = formatRupiah(bankTotal);
+            document.getElementById('sumDiff').textContent = formatRupiah(bookTotal - bankTotal);
+            document.getElementById('sumStatus').textContent = `${matchPercent}%`;
+            
+            // Color coding for difference
+            const diffEl = document.getElementById('sumDiff');
+            diffEl.className = `summary-value ${Math.abs(bookTotal - bankTotal) < 1000 ? 'text-success' : 'text-danger'}`;
+        }
+
+        window.createJournal = async function(desc, amount) {
+            const user = JSON.parse(localStorage.getItem('financeRajUser'));
+            if(!confirm(`Buat jurnal otomatis untuk: ${desc} sebesar ${formatRupiah(amount)}?`)) return;
+            
+            // Determine debit/credit based on sign
+            const isDebit = amount > 0;
+            const payload = {
+                action: 'addJurnalFromWeb',
+                data: {
+                    tanggal: new Date().toISOString().split('T')[0],
+                    noBukti: 'RECON-AUTO',
+                    keterangan: `Rekonsiliasi: ${desc}`,
+                    inputBy: user.email, inputByName: user.fullName,
+                    items: [{
+                        code: isDebit ? '1-1200' : '5-1000', // Default to Bank or Expense
+                        name: isDebit ? 'Bank' : 'Beban Lain-lain',
+                        debit: isDebit ? amount : 0,
+                        credit: isDebit ? 0 : amount,
+                        type: isDebit ? 'debit' : 'kredit'
+                    }]
+                }
+            };
+
+            try {
+                await fetch(GAS_URL, { method:'POST', body:JSON.stringify(payload) });
+                alert("✅ Jurnal berhasil dibuat!");
+                loadBookTransactions(); // Refresh book data
+            } catch(e) { alert("Gagal: " + e.message); }
+        }
+
+        window.resetRecon = function() {
+            if(confirm("Reset semua data rekonsiliasi?")) {
+                bankTransactions = [];
+                reconData = [];
+                renderTable();
+                updateSummary();
+                document.getElementById('fileInput').value = '';
+            }
+        }
+
+        function parseNumber(val) { if(!val) return 0; let s=String(val).trim(); if(s.includes(',')) s=s.replace(/\./g,'').replace(/,/g,'.'); const n=parseFloat(s); return isNaN(n)?0:n; }
+        function formatRupiah(num) { const n=Number(num); if(isNaN(n)) return '0'; const p=n.toFixed(2).split('.'); let int=p[0], dec=p[1], fmt='', cnt=0; for(let i=int.length-1;i>=0;i--){fmt=int[i]+fmt;cnt++;if(cnt%3===0&&i!==0)fmt='.'+fmt;} return fmt+','+dec; }
+    </script>
+</body>
+</html>
