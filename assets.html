@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceRAJ - Fixed Asset Register</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    
+    <style>
+        :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; --success: #10b981; --danger: #ef4444; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
+        
+        .top-bar { background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .brand-area { display: flex; align-items: center; gap: 12px; }
+        .btn-back { background: var(--bg-body); border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-back:hover { background: var(--border); }
+        .action-buttons { display: flex; gap: 8px; }
+        .btn-action { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 13px; }
+        .btn-action:hover { opacity: 0.9; }
+        .btn-outline { background: white; color: var(--text-main); border: 1px solid var(--border); }
+        .btn-outline:hover { background: var(--bg-body); }
+        
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        
+        /* FORM CARD */
+        .form-card { background: var(--surface); padding: 24px; border-radius: var(--radius); box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); border: 1px solid var(--border); margin-bottom: 30px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
+        .form-control { width: 100%; padding: 12px 16px; background: var(--bg-body); border: 1px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; transition: 0.2s; }
+        .form-control:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
+        
+        /* TABLE STYLE */
+        .table-container { background: var(--surface); border-radius: var(--radius); box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); border: 1px solid var(--border); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th { text-align: left; padding: 14px 16px; font-size: 12px; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); font-weight: 700; white-space: nowrap; }
+        td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8fafc; }
+        
+        .text-right { text-align: right; }
+        .font-bold { font-weight: 700; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .badge-active { background: #ecfdf5; color: var(--success); }
+        .badge-inactive { background: #fef2f2; color: var(--danger); }
+        
+        .btn-icon { background: none; border: none; cursor: pointer; padding: 6px; border-radius: 6px; transition: 0.2s; margin-right: 4px; }
+        .btn-edit { color: var(--primary); }
+        .btn-edit:hover { background: #eff6ff; }
+        .btn-delete { color: var(--danger); }
+        .btn-delete:hover { background: #fee2e2; }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 16px; margin-top: 16px; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="brand-area">
+            <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</button>
+            <img src="assets/logo.png" alt="Logo" style="width:32px;" onerror="this.style.display='none'">
+            <div><h1 style="font-size:18px; font-weight:700;">Fixed Asset Register</h1><p style="font-size:12px; color:var(--text-sec);">CV Rezeki Amanah Jaya Group</p></div>
+        </div>
+        <div class="action-buttons">
+            <button class="btn-action btn-outline" onclick="exportAssets()"><i class="fas fa-file-excel"></i> Export Excel</button>
+            <button class="btn-action" id="btnSaveAsset"><i class="fas fa-save"></i> Simpan Aset</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- FORM INPUT ASET -->
+        <div class="form-card">
+            <h2 style="font-size:16px; font-weight:700; margin-bottom:20px; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-plus-circle" style="color:var(--primary);"></i> 
+                <span id="formTitle">Tambah Aset Baru</span>
+            </h2>
+            <input type="hidden" id="assetId">
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nama Aset</label>
+                    <input type="text" id="assetName" class="form-control" placeholder="Cth: Truk Box Mitsubishi Canter">
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Perolehan</label>
+                    <input type="date" id="acqDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Harga Perolehan (Rp)</label>
+                    <input type="text" id="acqCost" class="form-control" placeholder="0" oninput="this.value=formatInputRupiah(this.value); calculateDepreciation()">
+                </div>
+                <div class="form-group">
+                    <label>Umur Ekonomis (Tahun)</label>
+                    <input type="number" id="usefulLife" class="form-control" placeholder="Cth: 5" min="1" oninput="calculateDepreciation()">
+                </div>
+                <div class="form-group">
+                    <label>Metode Penyusutan</label>
+                    <select id="depMethod" class="form-control" onchange="calculateDepreciation()">
+                        <option value="straight_line">Garis Lurus (Straight Line)</option>
+                        <option value="declining_balance">Saldo Menurun (Declining Balance)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Akun Aset (COA)</label>
+                    <select id="assetAccount" class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label>Akun Akumulasi Penyusutan (COA)</label>
+                    <select id="accumAccount" class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="assetStatus" class="form-control">
+                        <option value="Active">Aktif</option>
+                        <option value="Disposed">Dihapuskan/Dijual</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- PREVIEW KALKULASI PENYUSUTAN -->
+            <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px dashed var(--border); margin-top:10px;">
+                <div style="font-size:13px; font-weight:700; color:var(--text-sec); margin-bottom:12px;">PREVIEW KALKULASI PENYUSUTAN BULANAN</div>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px;">
+                    <div>
+                        <div style="font-size:11px; color:var(--text-sec);">Beban Penyusutan/Bulan</div>
+                        <div id="previewMonthlyDep" style="font-size:18px; font-weight:800; color:var(--primary);">Rp 0</div>
+                    </div>
+                    <div>
+                        <div style="font-size:11px; color:var(--text-sec);">Total Penyusutan/Tahun</div>
+                        <div id="previewYearlyDep" style="font-size:18px; font-weight:800; color:var(--text-main);">Rp 0</div>
+                    </div>
+                    <div>
+                        <div style="font-size:11px; color:var(--text-sec);">Nilai Sisa (Residu)</div>
+                        <div id="previewResidual" style="font-size:18px; font-weight:800; color:var(--text-sec);">Rp 0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABEL DAFTAR ASET -->
+        <div class="table-container">
+            <table id="assetTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nama Aset</th>
+                        <th>Tgl Perolehan</th>
+                        <th class="text-right">Harga Perolehan</th>
+                        <th class="text-right">Akum. Penyusutan</th>
+                        <th class="text-right">Nilai Buku</th>
+                        <th>Metode</th>
+                        <th>Status</th>
+                        <th style="text-align:center;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="assetTableBody">
+                    <tr><td colspan="9" style="text-align:center; padding:40px;">Memuat data aset...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg", authDomain: "finance-raj.firebaseapp.com", projectId: "finance-raj", storageBucket: "finance-raj.firebasestorage.app", messagingSenderId: "138468278392", appId: "1:138468278392:web:215731466beb7f89566d8d", measurementId: "G-BMG4L7P2DP" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
+
+        let allAssets = [];
+        let coaList = [];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'index.html'; return; }
+            await loadData();
+        });
+
+        async function loadData() {
+            try {
+                const [resAssets, resCOA] = await Promise.all([
+                    fetch(`${GAS_URL}?action=getAssets`),
+                    fetch(`${GAS_URL}?action=getCOA`)
+                ]);
+                
+                const dataAssets = await resAssets.json();
+                const dataCOA = await resCOA.json();
+                
+                allAssets = dataAssets.assets || [];
+                coaList = dataCOA.accounts || [];
+                
+                populateCOADropdowns();
+                renderAssetTable();
+            } catch(e) { console.error("Gagal memuat data:", e); }
+        }
+
+        function populateCOADropdowns() {
+            const assetAccSelect = document.getElementById('assetAccount');
+            const accumAccSelect = document.getElementById('accumAccount');
+            
+            // Filter akun aset (1-2xxx) dan akumulasi penyusutan
+            const assetAccounts = coaList.filter(a => a.code.startsWith('1-2') && !a.name.toLowerCase().includes('akumulasi'));
+            const accumAccounts = coaList.filter(a => a.code.startsWith('1-2') && a.name.toLowerCase().includes('akumulasi'));
+            
+            assetAccSelect.innerHTML = '<option value="">-- Pilih Akun Aset --</option>';
+            accumAccSelect.innerHTML = '<option value="">-- Pilih Akun Akumulasi --</option>';
+            
+            assetAccounts.forEach(a => assetAccSelect.innerHTML += `<option value="${a.code}">${a.code} - ${a.name}</option>`);
+            accumAccounts.forEach(a => accumAccSelect.innerHTML += `<option value="${a.code}">${a.code} - ${a.name}</option>`);
+        }
+
+        window.formatInputRupiah = function(angka) {
+            if (!angka) return '';
+            let number_string = angka.toString().replace(/[^,\d]/g, '').toString();
+            let split = number_string.split(',');
+            let sisa = split[0].length % 3;
+            let rupiah = split[0].substr(0, sisa);
+            let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+            if (ribuan) { let separator = sisa ? '.' : ''; rupiah += separator + ribuan.join('.'); }
+            rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+            return rupiah;
+        }
+
+        window.unformatRupiah = function(rupiah) {
+            if (!rupiah) return 0;
+            return parseFloat(rupiah.toString().replace(/\./g, '').replace(/,/g, '.')) || 0;
+        }
+
+        window.calculateDepreciation = function() {
+            const cost = unformatRupiah(document.getElementById('acqCost').value);
+            const lifeYears = parseInt(document.getElementById('usefulLife').value) || 0;
+            const method = document.getElementById('depMethod').value;
+            
+            let monthlyDep = 0;
+            let residual = 0; // Asumsi residu 0 untuk simplicity
+            
+            if (cost > 0 && lifeYears > 0) {
+                if (method === 'straight_line') {
+                    monthlyDep = (cost - residual) / (lifeYears * 12);
+                } else {
+                    // Declining balance (double declining as example)
+                    const rate = (2 / lifeYears);
+                    monthlyDep = (cost * rate) / 12; 
+                }
+            }
+            
+            document.getElementById('previewMonthlyDep').textContent = formatRupiah(monthlyDep);
+            document.getElementById('previewYearlyDep').textContent = formatRupiah(monthlyDep * 12);
+            document.getElementById('previewResidual').textContent = formatRupiah(residual);
+        }
+
+        function formatRupiah(num) { 
+            const n = Number(num); 
+            if(isNaN(n)) return '0'; 
+            const p = n.toFixed(2).split('.'); 
+            let int=p[0], dec=p[1], fmt='', cnt=0; 
+            for(let i=int.length-1;i>=0;i--){fmt=int[i]+fmt;cnt++;if(cnt%3===0&&i!==0)fmt='.'+fmt;} 
+            return fmt+','+dec; 
+        }
+
+        window.renderAssetTable = function() {
+            const tbody = document.getElementById('assetTableBody');
+            if(allAssets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:40px;">Belum ada data aset. Silakan tambah aset baru.</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = allAssets.map(asset => {
+                const bookValue = (asset.acqCost || 0) - (asset.accumDep || 0);
+                return `
+                    <tr>
+                        <td style="font-weight:600; color:var(--primary);">${asset.id}</td>
+                        <td>${asset.name}</td>
+                        <td>${new Date(asset.acqDate).toLocaleDateString('id-ID')}</td>
+                        <td class="text-right">${formatRupiah(asset.acqCost)}</td>
+                        <td class="text-right">${formatRupiah(asset.accumDep || 0)}</td>
+                        <td class="text-right font-bold">${formatRupiah(bookValue)}</td>
+                        <td>${asset.depMethod === 'straight_line' ? 'Garis Lurus' : 'Saldo Menurun'}</td>
+                        <td><span class="badge ${asset.status === 'Active' ? 'badge-active' : 'badge-inactive'}">${asset.status}</span></td>
+                        <td style="text-align:center;">
+                            <button class="btn-icon btn-edit" onclick="editAsset('${asset.id}')"><i class="fas fa-pen"></i></button>
+                            <button class="btn-icon btn-delete" onclick="deleteAsset('${asset.id}')"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('btnSaveAsset').addEventListener('click', async () => {
+            const id = document.getElementById('assetId').value;
+            const payload = {
+                action: id ? 'updateAsset' : 'addAsset',
+                assetData: {
+                    id: id || 'AST-' + Date.now(),
+                    name: document.getElementById('assetName').value,
+                    acqDate: document.getElementById('acqDate').value,
+                    acqCost: unformatRupiah(document.getElementById('acqCost').value),
+                    usefulLife: parseInt(document.getElementById('usefulLife').value),
+                    depMethod: document.getElementById('depMethod').value,
+                    assetAccount: document.getElementById('assetAccount').value,
+                    accumAccount: document.getElementById('accumAccount').value,
+                    status: document.getElementById('assetStatus').value,
+                    accumDep: id ? (allAssets.find(a=>a.id===id)?.accumDep || 0) : 0
+                }
+            };
+
+            if(!payload.assetData.name || !payload.assetData.acqDate || !payload.assetData.acqCost) {
+                return alert("Mohon lengkapi Nama, Tanggal Perolehan, dan Harga Perolehan!");
+            }
+
+            const btn = document.getElementById('btnSaveAsset');
+            const originalText = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+            try {
+                const res = await fetch(GAS_URL, { method:'POST', body:JSON.stringify(payload) });
+                const result = await res.json();
+                if(result.status === 'success') {
+                    alert("✅ Data aset berhasil disimpan!");
+                    resetForm();
+                    loadData();
+                } else { alert("Error: " + result.message); }
+            } catch(e) { alert("Gagal menyimpan: " + e.message); }
+            finally { btn.disabled = false; btn.innerHTML = originalText; }
+        });
+
+        window.editAsset = function(id) {
+            const asset = allAssets.find(a => a.id === id);
+            if(!asset) return;
+            
+            document.getElementById('assetId').value = asset.id;
+            document.getElementById('assetName').value = asset.name;
+            document.getElementById('acqDate').value = asset.acqDate;
+            document.getElementById('acqCost').value = formatInputRupiah(asset.acqCost);
+            document.getElementById('usefulLife').value = asset.usefulLife;
+            document.getElementById('depMethod').value = asset.depMethod;
+            document.getElementById('assetAccount').value = asset.assetAccount;
+            document.getElementById('accumAccount').value = asset.accumAccount;
+            document.getElementById('assetStatus').value = asset.status;
+            
+            document.getElementById('formTitle').textContent = "Edit Aset: " + asset.name;
+            document.getElementById('btnSaveAsset').innerHTML = '<i class="fas fa-save"></i> Update Aset';
+            calculateDepreciation();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.deleteAsset = async function(id) {
+            if(!confirm("Apakah Anda yakin ingin menghapus aset ini? Data tidak dapat dikembalikan.")) return;
+            
+            try {
+                const res = await fetch(GAS_URL, { method:'POST', body:JSON.stringify({ action: 'deleteAsset', assetId: id }) });
+                const result = await res.json();
+                if(result.status === 'success') {
+                    alert("Aset berhasil dihapus!");
+                    loadData();
+                } else { alert("Error: " + result.message); }
+            } catch(e) { alert("Gagal menghapus: " + e.message); }
+        }
+
+        function resetForm() {
+            document.getElementById('assetId').value = '';
+            document.getElementById('assetName').value = '';
+            document.getElementById('acqDate').value = '';
+            document.getElementById('acqCost').value = '';
+            document.getElementById('usefulLife').value = '';
+            document.getElementById('depMethod').value = 'straight_line';
+            document.getElementById('assetAccount').value = '';
+            document.getElementById('accumAccount').value = '';
+            document.getElementById('assetStatus').value = 'Active';
+            document.getElementById('formTitle').textContent = "Tambah Aset Baru";
+            document.getElementById('btnSaveAsset').innerHTML = '<i class="fas fa-save"></i> Simpan Aset';
+            calculateDepreciation();
+        }
+
+        window.exportAssets = function() {
+            if (typeof XLSX === 'undefined' || allAssets.length === 0) return alert("Tidak ada data untuk diekspor!");
+            
+            const wsData = [['FIXED ASSET REGISTER'], ['CV Rezeki Amanah Jaya Group'], [], 
+                           ['ID', 'Nama Aset', 'Tgl Perolehan', 'Harga Perolehan', 'Akum. Penyusutan', 'Nilai Buku', 'Metode', 'Status']];
+            
+            allAssets.forEach(a => {
+                wsData.push([
+                    a.id, a.name, new Date(a.acqDate).toLocaleDateString('id-ID'), 
+                    a.acqCost, a.accumDep || 0, (a.acqCost - (a.accumDep||0)), 
+                    a.depMethod, a.status
+                ]);
+            });
+            
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Aset Tetap");
+            XLSX.writeFile(wb, `Fixed_Asset_Register_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+    </script>
+</body>
+</html>
