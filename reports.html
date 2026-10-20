@@ -437,7 +437,7 @@
             tbody.innerHTML = html;
         }
 
-        // EXPORT TO EXCEL (FIXED & SAFE)
+        // FUNGSI EXPORT TO EXCEL (UPDATED: SUPPORT SEMUA AKUN DI BUKU BESAR)
         window.exportToExcel = function() {
             if (typeof XLSX === 'undefined') {
                 alert("Library Excel sedang dimuat. Mohon tunggu sebentar atau refresh halaman.");
@@ -447,49 +447,115 @@
             const activeTab = document.querySelector('.report-section.active').id;
             let wsData = [];
             let fileName = 'Laporan.xlsx';
+            
+            // Helper untuk membersihkan angka agar jadi number murni di Excel
             const cleanNum = (str) => {
                 if(!str || str === '-') return '';
                 return parseFloat(String(str).replace(/[^0-9,-]/g, '').replace(',', '.')) || 0;
             };
 
-            if(activeTab === 'neraca') {
-                fileName = `Neraca_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
-                wsData = [['NERACA (BALANCE SHEET)'], [currentPeriodText], [], ['Kode Akun', 'Nama Akun', 'Debit (Rp)', 'Kredit (Rp)']];
-                document.querySelectorAll('#bodyNeraca tr').forEach(row => {
-                    const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
-                    cells[2] = cleanNum(cells[2]); cells[3] = cleanNum(cells[3]);
-                    wsData.push(cells);
-                });
-            } else if(activeTab === 'labarugi') {
-                fileName = `Laba_Rugi_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
-                wsData = [['LAPORAN LABA RUGI'], [currentPeriodText], [], ['Kode Akun', 'Keterangan', 'Jumlah (Rp)']];
-                document.querySelectorAll('#bodyLR tr').forEach(row => {
-                    const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
-                    cells[2] = cleanNum(cells[2]);
-                    wsData.push(cells);
-                });
-            } else if(activeTab === 'aruskas') {
-                fileName = `Arus_Kas_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
-                wsData = [['LAPORAN ARUS KAS'], [currentPeriodText], [], ['Kode', 'Keterangan', 'Jumlah (Rp)']];
-                document.querySelectorAll('#bodyAK tr').forEach(row => {
-                    const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
-                    cells[2] = cleanNum(cells[2]);
-                    wsData.push(cells);
-                });
-            } else if(activeTab === 'bukubesar') {
+            // LOGIKA KHUSUS BUKU BESAR
+            if(activeTab === 'bukubesar') {
                 const accSelect = document.getElementById('accountSelect');
                 const accCode = accSelect.value;
-                if(!accCode) return alert("Pilih akun terlebih dahulu!");
                 
-                const accName = accSelect.options[accSelect.selectedIndex]?.text || accCode;
-                fileName = `Buku_Besar_${accCode}_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
-                
-                wsData = [['BUKU BESAR'], [`Akun: ${accName}`], [currentPeriodText], [], ['Tanggal', 'No. Bukti', 'Keterangan', 'Debit', 'Kredit', 'Saldo']];
-                document.querySelectorAll('#bodyBB tr').forEach(row => {
-                    const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
-                    cells[3] = cleanNum(cells[3]); cells[4] = cleanNum(cells[4]); cells[5] = cleanNum(cells[5]);
-                    wsData.push(cells);
-                });
+                // JIKA TIDAK ADA AKUN YANG DIPILIH -> EXPORT SEMUA AKUN
+                if(!accCode) {
+                    fileName = `Buku_Besar_Semua_Akun_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
+                    
+                    // Header Utama
+                    wsData = [
+                        ['BUKU BESAR (GENERAL LEDGER) - SEMUA AKUN'], 
+                        [`CV Rezeki Amanah Jaya Group`], 
+                        [currentPeriodText], 
+                        [] 
+                    ];
+
+                    // Loop setiap akun di COA
+                    coaList.forEach(acc => {
+                        // Filter transaksi untuk akun ini
+                        const txs = allTransactions.filter(tx => String(tx[6]).trim() === acc.code)
+                                                   .sort((a,b) => new Date(a[1]) - new Date(b[1]));
+                        
+                        // Hanya masukkan ke Excel jika ada transaksinya
+                        if(txs.length > 0) {
+                            // Tambahkan baris kosong sebagai pemisah & Header Akun
+                            wsData.push([]); 
+                            wsData.push([`${acc.code} - ${acc.name}`]);
+                            wsData.push(['Tanggal', 'No. Bukti', 'Keterangan', 'Debit', 'Kredit', 'Saldo']);
+                            
+                            let runningBalance = 0;
+                            const isAssetOrExpense = acc.code.startsWith('1-') || acc.code.startsWith('5-');
+
+                            txs.forEach(tx => {
+                                const d = parseNumber(tx[8]);
+                                const c = parseNumber(tx[9]);
+                                
+                                if(isAssetOrExpense) runningBalance += (d - c);
+                                else runningBalance += (c - d);
+
+                                wsData.push([
+                                    new Date(tx[1]).toLocaleDateString('id-ID'),
+                                    tx[2],
+                                    tx[3],
+                                    d, // Simpan sebagai angka murni
+                                    c, // Simpan sebagai angka murni
+                                    runningBalance // Simpan sebagai angka murni
+                                ]);
+                            });
+
+                            // Baris Saldo Akhir per Akun
+                            wsData.push(['', '', 'SALDO AKHIR', '', '', runningBalance]);
+                        }
+                    });
+
+                    // Jika tidak ada transaksi sama sekali
+                    if(wsData.length === 4) {
+                        wsData.push(['Tidak ada transaksi pada periode ini.']);
+                    }
+
+                } 
+                // JIKA ADA AKUN YANG DIPILIH -> EXPORT SATU AKUN SAJA (Logika Lama)
+                else {
+                    const accName = accSelect.options[accSelect.selectedIndex]?.text || accCode;
+                    fileName = `Buku_Besar_${accCode}_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
+                    
+                    wsData = [['BUKU BESAR'], [`Akun: ${accName}`], [currentPeriodText], [], ['Tanggal', 'No. Bukti', 'Keterangan', 'Debit', 'Kredit', 'Saldo']];
+                    document.querySelectorAll('#bodyBB tr').forEach(row => {
+                        const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
+                        cells[3] = cleanNum(cells[3]); cells[4] = cleanNum(cells[4]); cells[5] = cleanNum(cells[5]);
+                        wsData.push(cells);
+                    });
+                }
+            } 
+            
+            // LOGIKA UNTUK LAPORAN LAINNYA (NERACA, LR, ARUS KAS)
+            else {
+                if(activeTab === 'neraca') {
+                    fileName = `Neraca_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
+                    wsData = [['NERACA (BALANCE SHEET)'], [currentPeriodText], [], ['Kode Akun', 'Nama Akun', 'Debit (Rp)', 'Kredit (Rp)']];
+                    document.querySelectorAll('#bodyNeraca tr').forEach(row => {
+                        const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
+                        cells[2] = cleanNum(cells[2]); cells[3] = cleanNum(cells[3]);
+                        wsData.push(cells);
+                    });
+                } else if(activeTab === 'labarugi') {
+                    fileName = `Laba_Rugi_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
+                    wsData = [['LAPORAN LABA RUGI'], [currentPeriodText], [], ['Kode Akun', 'Keterangan', 'Jumlah (Rp)']];
+                    document.querySelectorAll('#bodyLR tr').forEach(row => {
+                        const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
+                        cells[2] = cleanNum(cells[2]);
+                        wsData.push(cells);
+                    });
+                } else if(activeTab === 'aruskas') {
+                    fileName = `Arus_Kas_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
+                    wsData = [['LAPORAN ARUS KAS'], [currentPeriodText], [], ['Kode', 'Keterangan', 'Jumlah (Rp)']];
+                    document.querySelectorAll('#bodyAK tr').forEach(row => {
+                        const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
+                        cells[2] = cleanNum(cells[2]);
+                        wsData.push(cells);
+                    });
+                }
             }
 
             try {
