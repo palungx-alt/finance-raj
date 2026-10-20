@@ -3,37 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinanceRAJ - Laporan Neraca</title>
+    <title>FinanceRAJ - Laporan Keuangan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS untuk Export Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     
     <style>
-        :root {
-            --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; 
-            --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0;
-            --radius: 16px; --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-        }
+        :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
-
-        .top-bar { background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-        .btn-back { background: var(--bg-body); border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; text-decoration: none; }
+        
+        .top-bar { background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .brand-area { display: flex; align-items: center; gap: 12px; }
+        .btn-back { background: var(--bg-body); border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
         .btn-back:hover { background: var(--border); }
+        .action-buttons { display: flex; gap: 8px; }
+        .btn-action { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 13px; }
+        .btn-action:hover { opacity: 0.9; }
+        .btn-outline { background: white; color: var(--text-main); border: 1px solid var(--border); }
+        .btn-outline:hover { background: var(--bg-body); }
         
-        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
         
+        /* REPORT CARD STYLE */
         .report-card { 
             background: var(--surface); padding: 40px; border-radius: var(--radius); 
-            box-shadow: var(--shadow); border: 1px solid var(--border);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); border: 1px solid var(--border);
+            margin-bottom: 30px; page-break-inside: avoid;
         }
         
         .report-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--primary); padding-bottom: 20px; }
-        .report-header h1 { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
-        .report-header p { font-size: 14px; color: var(--text-sec); }
+        .report-header h1 { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .report-header p { font-size: 14px; color: var(--text-sec); font-weight: 500; }
+        .report-period { margin-top: 10px; font-size: 13px; color: var(--primary); font-weight: 700; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; padding: 12px 16px; font-size: 12px; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); }
-        td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        th { text-align: left; padding: 12px 16px; font-size: 12px; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); font-weight: 700; }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
         
         .text-right { text-align: right; }
         .font-bold { font-weight: 700; }
@@ -43,52 +50,146 @@
             border-top: 2px solid var(--text-main); border-bottom: none; 
             font-size: 16px; font-weight: 800; color: var(--primary); padding-top: 20px;
         }
-
+        
         .section-title { 
             font-size: 14px; font-weight: 700; color: var(--primary); 
-            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 20px; margin-bottom: 10px;
-            border-bottom: 1px dashed var(--border); padding-bottom: 5px;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 24px; margin-bottom: 12px;
+            border-bottom: 1px dashed var(--border); padding-bottom: 6px;
         }
+        
+        .indent-1 { padding-left: 32px !important; }
+        
+        .footer-note { margin-top: 40px; text-align: center; font-size: 12px; color: var(--text-sec); line-height: 1.6; }
+        
+        /* TAB NAVIGATION */
+        .tab-nav { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { 
+            background: white; border: 1px solid var(--border); padding: 10px 20px; 
+            border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-sec); 
+            cursor: pointer; white-space: nowrap; transition: 0.2s;
+        }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .report-section { display: none; }
+        .report-section.active { display: block; }
+
+        /* FILTER BUKU BESAR */
+        .ledger-filter { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        .ledger-filter select { padding: 10px 16px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; flex: 1; min-width: 200px; }
+        .ledger-filter select:focus { border-color: var(--primary); }
 
         @media print {
-            .top-bar { display: none; }
+            body { background: white; padding: 0; }
+            .top-bar, .tab-nav, .action-buttons, .ledger-filter { display: none !important; }
             .container { margin: 0; padding: 0; max-width: 100%; }
-            .report-card { box-shadow: none; border: none; padding: 0; }
-            body { background: white; }
+            .report-card { box-shadow: none; border: none; padding: 20px 0; margin-bottom: 0; page-break-after: always; }
+            .report-card:last-child { page-break-after: auto; }
+            .section-title { color: #000; border-bottom-color: #ccc; }
+            .total-row td { color: #000; border-top-color: #000; }
+            th { color: #000; border-bottom-color: #000; }
+            td { border-bottom-color: #eee; }
         }
     </style>
 </head>
 <body>
     <div class="top-bar">
-        <a href="dashboard.html" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
-        <button onclick="window.print()" class="btn-back" style="background:var(--primary); color:white;"><i class="fas fa-print"></i> Cetak PDF</button>
+        <div class="brand-area">
+            <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</button>
+            <img src="assets/logo.png" alt="Logo" style="width:32px;" onerror="this.style.display='none'">
+            <div><h1 style="font-size:18px; font-weight:700;">Laporan Keuangan</h1><p style="font-size:12px; color:var(--text-sec);">CV Rezeki Amanah Jaya Group</p></div>
+        </div>
+        <div class="action-buttons">
+            <button class="btn-action btn-outline" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
+            <button class="btn-action" onclick="window.print()"><i class="fas fa-print"></i> Cetak PDF</button>
+        </div>
     </div>
 
     <div class="container">
-        <div class="report-card">
-            <div class="report-header">
-                <h1>NERACA (BALANCE SHEET)</h1>
-                <p>CV Rezeki Amanah Jaya Group</p>
-                <p id="reportPeriod" style="margin-top:8px; font-weight:600;">Periode: Oktober 2026</p>
-            </div>
+        <!-- TAB NAVIGASI -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('neraca')">Neraca</button>
+            <button class="tab-btn" onclick="switchTab('labarugi')">Laba Rugi</button>
+            <button class="tab-btn" onclick="switchTab('aruskas')">Arus Kas</button>
+            <button class="tab-btn" onclick="switchTab('bukubesar')">Buku Besar</button>
+        </div>
 
-            <table id="balanceSheetTable">
-                <thead>
-                    <tr>
-                        <th style="width:15%">Kode Akun</th>
-                        <th>Nama Akun</th>
-                        <th class="text-right" style="width:20%">Debit (Rp)</th>
-                        <th class="text-right" style="width:20%">Kredit (Rp)</th>
-                    </tr>
-                </thead>
-                <tbody id="reportBody">
-                    <tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-sec);">Memuat data laporan...</td></tr>
-                </tbody>
-            </table>
-            
-            <div style="margin-top:40px; text-align:center; font-size:12px; color:var(--text-sec);">
-                Dicetak otomatis oleh Sistem FinanceRAJ<br>
-                CV Rezeki Amanah Jaya Group
+        <!-- 1. NERACA -->
+        <div id="neraca" class="report-section active">
+            <div class="report-card">
+                <div class="report-header">
+                    <h1>Neraca (Balance Sheet)</h1>
+                    <p>CV Rezeki Amanah Jaya Group</p>
+                    <div class="report-period" id="periodNeraca">Periode: Oktober 2026</div>
+                </div>
+                <table id="tableNeraca">
+                    <thead><tr><th style="width:15%">Kode</th><th>Nama Akun</th><th class="text-right" style="width:25%">Debit (Rp)</th><th class="text-right" style="width:25%">Kredit (Rp)</th></tr></thead>
+                    <tbody id="bodyNeraca"><tr><td colspan="4" style="text-align:center; padding:40px;">Memuat...</td></tr></tbody>
+                </table>
+                <div class="footer-note">Dicetak otomatis oleh Sistem FinanceRAJ<br>Dokumen ini sah tanpa tanda tangan basah</div>
+            </div>
+        </div>
+
+        <!-- 2. LABA RUGI -->
+        <div id="labarugi" class="report-section">
+            <div class="report-card">
+                <div class="report-header">
+                    <h1>Laporan Laba Rugi</h1>
+                    <p>CV Rezeki Amanah Jaya Group</p>
+                    <div class="report-period" id="periodLR">Periode: Oktober 2026</div>
+                </div>
+                <table id="tableLR">
+                    <thead><tr><th style="width:15%">Kode</th><th>Keterangan</th><th class="text-right" style="width:30%">Jumlah (Rp)</th></tr></thead>
+                    <tbody id="bodyLR"><tr><td colspan="3" style="text-align:center; padding:40px;">Memuat...</td></tr></tbody>
+                </table>
+                <div class="footer-note">Dicetak otomatis oleh Sistem FinanceRAJ<br>Dokumen ini sah tanpa tanda tangan basah</div>
+            </div>
+        </div>
+
+        <!-- 3. ARUS KAS -->
+        <div id="aruskas" class="report-section">
+            <div class="report-card">
+                <div class="report-header">
+                    <h1>Laporan Arus Kas</h1>
+                    <p>CV Rezeki Amanah Jaya Group</p>
+                    <div class="report-period" id="periodAK">Periode: Oktober 2026</div>
+                </div>
+                <table id="tableAK">
+                    <thead><tr><th style="width:15%">Kode</th><th>Keterangan</th><th class="text-right" style="width:30%">Jumlah (Rp)</th></tr></thead>
+                    <tbody id="bodyAK"><tr><td colspan="3" style="text-align:center; padding:40px;">Memuat...</td></tr></tbody>
+                </table>
+                <div class="footer-note">Dicetak otomatis oleh Sistem FinanceRAJ<br>Dokumen ini sah tanpa tanda tangan basah</div>
+            </div>
+        </div>
+
+        <!-- 4. BUKU BESAR -->
+        <div id="bukubesar" class="report-section">
+            <div class="report-card">
+                <div class="report-header">
+                    <h1>Buku Besar (General Ledger)</h1>
+                    <p>CV Rezeki Amanah Jaya Group</p>
+                    <div class="report-period" id="periodBB">Periode: Oktober 2026</div>
+                </div>
+                
+                <div class="ledger-filter">
+                    <select id="accountSelect" onchange="renderBukuBesar()">
+                        <option value="">-- Pilih Akun --</option>
+                    </select>
+                </div>
+
+                <table id="tableBB">
+                    <thead>
+                        <tr>
+                            <th style="width:15%">Tanggal</th>
+                            <th style="width:20%">No. Bukti</th>
+                            <th>Keterangan</th>
+                            <th class="text-right" style="width:15%">Debit</th>
+                            <th class="text-right" style="width:15%">Kredit</th>
+                            <th class="text-right" style="width:15%">Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyBB"><tr><td colspan="6" style="text-align:center; padding:40px;">Pilih akun untuk melihat buku besar</td></tr></tbody>
+                </table>
+                <div class="footer-note">Dicetak otomatis oleh Sistem FinanceRAJ<br>Dokumen ini sah tanpa tanda tangan basah</div>
             </div>
         </div>
     </div>
@@ -97,199 +198,248 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg",
-            authDomain: "finance-raj.firebaseapp.com",
-            projectId: "finance-raj",
-            storageBucket: "finance-raj.firebasestorage.app",
-            messagingSenderId: "138468278392",
-            appId: "1:138468278392:web:215731466beb7f89566d8d",
-            measurementId: "G-BMG4L7P2DP"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg", authDomain: "finance-raj.firebaseapp.com", projectId: "finance-raj", storageBucket: "finance-raj.firebasestorage.app", messagingSenderId: "138468278392", appId: "1:138468278392:web:215731466beb7f89566d8d", measurementId: "G-BMG4L7P2DP" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        
-        // ⚠️ URL WEB APP BARU ANDA ⚠️
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
-        // DAFTAR LENGKAP AKUN NERACA (ASET, LIABILITAS, EKUITAS)
-        const balanceSheetAccounts = [
-            // ASET
-            { code: '1-1100', name: 'Kas dan Setara Kas', type: 'asset' },
-            { code: '1-1200', name: 'Bank (Rekening Utama)', type: 'asset' },
-            { code: '1-1300', name: 'Piutang Usaha', type: 'asset' },
-            { code: '1-1400', name: 'Perlengkapan Operasional', type: 'asset' },
-            { code: '1-1500', name: 'Persediaan Bahan Baku', type: 'asset' },
-            { code: '1-1600', name: 'Sewa Dibayar di Muka', type: 'asset' },
-            { code: '1-2100', name: 'Tanah', type: 'asset' },
-            { code: '1-2200', name: 'Bangunan Kantor dan Gudang', type: 'asset' },
-            { code: '1-2250', name: 'Akumulasi Penyusutan Bangunan', type: 'asset_contra' },
-            { code: '1-2300', name: 'Armada & Kendaraan', type: 'asset' },
-            { code: '1-2350', name: 'Akumulasi Penyusutan Kendaraan', type: 'asset_contra' },
-            { code: '1-2400', name: 'Mesin Pengolahan Limbah', type: 'asset' },
-            { code: '1-2450', name: 'Akumulasi Penyusutan Mesin', type: 'asset_contra' },
-            { code: '1-2500', name: 'Peralatan Kantor', type: 'asset' },
-            { code: '1-2550', name: 'Akumulasi Penyusutan Peralatan Kantor', type: 'asset_contra' },
-            
-            // LIABILITAS
-            { code: '2-1100', name: 'Utang Usaha', type: 'liability' },
-            { code: '2-1200', name: 'Utang Gaji dan Tunjangan', type: 'liability' },
-            { code: '2-1300', name: 'Utang Pajak', type: 'liability' },
-            { code: '2-1400', name: 'Pendapatan Diterima di Muka', type: 'liability' },
-            { code: '2-2100', name: 'Utang Bank / Kredit Kendaraan', type: 'liability' },
-            { code: '2-2200', name: 'Utang Sewa Pembiayaan', type: 'liability' },
-            
-            // EKUITAS
-            { code: '3-1000', name: 'Modal Pemilik / Sekutu', type: 'equity' },
-            { code: '3-2000', name: 'Prive Pemilik / Sekutu', type: 'equity_contra' },
-            { code: '3-3000', name: 'Laba Ditahan', type: 'equity' }
-        ];
+        let allTransactions = [];
+        let coaList = [];
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
-            await generateBalanceSheet();
+            await loadReportData();
         });
 
-        async function generateBalanceSheet() {
+        async function loadReportData() {
             try {
-                // Ambil semua data jurnal
-                const res = await fetch(`${GAS_URL}?action=getJurnal`);
-                const data = await res.json();
-                const transactions = data.journals || [];
-
-                // Hitung saldo per akun
-                const accountBalances = {};
+                // Load Jurnal & COA secara paralel
+                const [resJurnal, resCOA] = await Promise.all([
+                    fetch(`${GAS_URL}?action=getJurnal`),
+                    fetch(`${GAS_URL}?action=getCOA`)
+                ]);
                 
-                transactions.forEach(tx => {
-                    const code = String(tx[6] || '').trim();
-                    const debit = parseNumber(tx[8]);
-                    const credit = parseNumber(tx[9]);
-                    
-                    if (!accountBalances[code]) accountBalances[code] = 0;
-                    
-                    // Logika saldo normal
-                    if (code.startsWith('1-') || code.startsWith('5-')) {
-                        accountBalances[code] += (debit - credit);
-                    } else {
-                        accountBalances[code] += (credit - debit);
-                    }
+                const dataJurnal = await resJurnal.json();
+                const dataCOA = await resCOA.json();
+                
+                allTransactions = (dataJurnal.journals || []).filter(tx => /^\d+-\d+$/.test(String(tx[6]||'').trim()));
+                coaList = dataCOA.accounts || [];
+                
+                // Populate Dropdown Buku Besar
+                const select = document.getElementById('accountSelect');
+                coaList.forEach(acc => {
+                    const opt = document.createElement('option');
+                    opt.value = acc.code;
+                    opt.text = `${acc.code} - ${acc.name}`;
+                    select.appendChild(opt);
                 });
 
-                // Render Tabel
-                const tbody = document.getElementById('reportBody');
-                let html = '';
-                let totalDebit = 0, totalCredit = 0;
+                renderNeraca();
+                renderLabaRugi();
+                renderArusKas();
+                
+                const now = new Date();
+                const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+                const periodText = `Periode: ${months[now.getMonth()]} ${now.getFullYear()}`;
+                document.getElementById('periodNeraca').textContent = periodText;
+                document.getElementById('periodLR').textContent = periodText;
+                document.getElementById('periodAK').textContent = periodText;
+                document.getElementById('periodBB').textContent = periodText;
+            } catch(e) { console.error(e); }
+        }
 
-                // Render Aset
-                html += `<tr><td colspan="4" class="section-title">ASET (HARTA)</td></tr>`;
-                balanceSheetAccounts.filter(a => a.type.includes('asset')).forEach(acc => {
-                    const balance = accountBalances[acc.code] || 0;
-                    const isContra = acc.type === 'asset_contra';
-                    const displayBalance = isContra ? Math.abs(balance) : balance;
-                    
-                    if (balance !== 0 || true) { // Tampilkan semua akun neraca
-                        const debitVal = (!isContra && balance > 0) ? balance : (isContra ? balance : 0);
-                        const creditVal = (isContra && balance > 0) ? balance : (!isContra && balance < 0 ? Math.abs(balance) : 0);
+        // RENDER NERACA
+        function renderNeraca() {
+            const balances = {};
+            allTransactions.forEach(tx => {
+                const code = String(tx[6]).trim();
+                const d = parseNumber(tx[8]); const c = parseNumber(tx[9]);
+                if(!balances[code]) balances[code] = 0;
+                if(code.startsWith('1-') || code.startsWith('5-')) balances[code] += (d-c);
+                else balances[code] += (c-d);
+            });
+
+            let html = '';
+            let totalDebit = 0, totalCredit = 0;
+            
+            const accounts = [
+                {group:'ASET (HARTA)', type:'asset', codes:['1-1100','1-1200','1-1300','1-1400','1-1500','1-1600','1-2100','1-2200','1-2250','1-2300','1-2350','1-2400','1-2450','1-2500','1-2550']},
+                {group:'KEWAJIBAN (UTANG)', type:'liab', codes:['2-1100','2-1200','2-1300','2-1400','2-2100','2-2200']},
+                {group:'MODAL (EKUITAS)', type:'eq', codes:['3-1000','3-2000','3-3000','3-4000']}
+            ];
+
+            accounts.forEach(cat => {
+                html += `<tr><td colspan="4" class="section-title">${cat.group}</td></tr>`;
+                cat.codes.forEach(code => {
+                    const bal = balances[code] || 0;
+                    if(bal !== 0 || true) {
+                        let dVal = 0, cVal = 0;
+                        if(cat.type === 'asset') { dVal = bal > 0 ? bal : 0; cVal = bal < 0 ? Math.abs(bal) : 0; }
+                        else { cVal = bal > 0 ? bal : 0; dVal = bal < 0 ? Math.abs(bal) : 0; }
                         
-                        // Untuk neraca sederhana, kita tampilkan saldo netto di kolom sesuai jenis akun
-                        // Aset normalnya Debit, Liab/Ekuitas normalnya Kredit
-                        const showDebit = (!isContra && balance >= 0) || (isContra && balance <= 0) ? Math.abs(balance) : 0;
-                        const showCredit = 0; 
-
-                        // Simplifikasi: Tampilkan saldo positif di kolom Debit untuk Aset
-                        html += `
-                            <tr>
-                                <td>${acc.code}</td>
-                                <td>${acc.name}</td>
-                                <td class="text-right">${showDebit ? formatRupiah(showDebit) : '-'}</td>
-                                <td class="text-right">-</td>
-                            </tr>
-                        `;
-                        totalDebit += showDebit;
+                        totalDebit += dVal; totalCredit += cVal;
+                        html += `<tr><td>${code}</td><td class="indent-1">${getAccName(code)}</td><td class="text-right">${dVal?formatRupiah(dVal):'-'}</td><td class="text-right">${cVal?formatRupiah(cVal):'-'}</td></tr>`;
                     }
                 });
+            });
 
-                // Render Liabilitas
-                html += `<tr><td colspan="4" class="section-title">KEWAJIBAN (UTANG)</td></tr>`;
-                balanceSheetAccounts.filter(a => a.type.includes('liability')).forEach(acc => {
-                    const balance = accountBalances[acc.code] || 0;
-                    const showCredit = balance >= 0 ? balance : 0;
-                    
-                    html += `
-                        <tr>
-                            <td>${acc.code}</td>
-                            <td>${acc.name}</td>
-                            <td class="text-right">-</td>
-                            <td class="text-right">${showCredit ? formatRupiah(showCredit) : '-'}</td>
-                        </tr>
-                    `;
-                    totalCredit += showCredit;
-                });
+            html += `<tr class="total-row bg-gray"><td colspan="2">TOTAL</td><td class="text-right">${formatRupiah(totalDebit)}</td><td class="text-right">${formatRupiah(totalCredit)}</td></tr>`;
+            document.getElementById('bodyNeraca').innerHTML = html;
+        }
 
-                // Render Ekuitas
-                html += `<tr><td colspan="4" class="section-title">MODAL (EKUITAS)</td></tr>`;
-                balanceSheetAccounts.filter(a => a.type.includes('equity')).forEach(acc => {
-                    const balance = accountBalances[acc.code] || 0;
-                    const isContra = acc.type === 'equity_contra';
-                    const showCredit = (!isContra && balance >= 0) ? balance : (isContra ? Math.abs(balance) : 0);
-                    
-                    html += `
-                        <tr>
-                            <td>${acc.code}</td>
-                            <td>${acc.name}</td>
-                            <td class="text-right">-</td>
-                            <td class="text-right">${showCredit ? formatRupiah(showCredit) : '-'}</td>
-                        </tr>
-                    `;
-                    totalCredit += showCredit;
-                });
+        // RENDER LABA RUGI
+        function renderLabaRugi() {
+            let rev = 0, exp = 0;
+            const revItems = [], expItems = [];
+            
+            allTransactions.forEach(tx => {
+                const code = String(tx[6]).trim();
+                const d = parseNumber(tx[8]); const c = parseNumber(tx[9]);
+                if(code.startsWith('4-')) { rev += c; revItems.push({code, name:getAccName(code), val:c}); }
+                if(code.startsWith('5-')) { exp += d; expItems.push({code, name:getAccName(code), val:d}); }
+            });
 
-                // Total Row
+            let html = '';
+            html += `<tr><td colspan="3" class="section-title">PENDAPATAN</td></tr>`;
+            revItems.forEach(i => html += `<tr><td>${i.code}</td><td class="indent-1">${i.name}</td><td class="text-right font-bold">${formatRupiah(i.val)}</td></tr>`);
+            html += `<tr class="bg-gray"><td colspan="2" class="text-right font-bold">Total Pendapatan</td><td class="text-right font-bold">${formatRupiah(rev)}</td></tr>`;
+            
+            html += `<tr><td colspan="3" class="section-title" style="margin-top:30px;">BEBAN</td></tr>`;
+            expItems.forEach(i => html += `<tr><td>${i.code}</td><td class="indent-1">${i.name}</td><td class="text-right font-bold">${formatRupiah(i.val)}</td></tr>`);
+            html += `<tr class="bg-gray"><td colspan="2" class="text-right font-bold">Total Beban</td><td class="text-right font-bold">${formatRupiah(exp)}</td></tr>`;
+            
+            const net = rev - exp;
+            html += `<tr class="total-row"><td colspan="2">LABA / (RUGI) BERSIH</td><td class="text-right">${formatRupiah(net)}</td></tr>`;
+            document.getElementById('bodyLR').innerHTML = html;
+        }
+
+        // RENDER ARUS KAS
+        function renderArusKas() {
+            let opIn = 0, opOut = 0;
+            
+            allTransactions.forEach(tx => {
+                const code = String(tx[6]).trim();
+                const d = parseNumber(tx[8]); const c = parseNumber(tx[9]);
+                if((code==='1-1100' || code==='1-1200') && c > 0) opIn += c;
+                if((code==='1-1100' || code==='1-1200') && d > 0) opOut += d;
+            });
+
+            let html = '';
+            html += `<tr><td colspan="3" class="section-title">ARUS KAS DARI AKTIVITAS OPERASI</td></tr>`;
+            html += `<tr><td></td><td class="indent-1">Penerimaan Kas</td><td class="text-right font-bold">${formatRupiah(opIn)}</td></tr>`;
+            html += `<tr><td></td><td class="indent-1">Pengeluaran Kas</td><td class="text-right font-bold">(${formatRupiah(opOut)})</td></tr>`;
+            
+            const netCash = opIn - opOut;
+            html += `<tr class="total-row"><td colspan="2">KENAIKAN / (PENURUNAN) KAS BERSIH</td><td class="text-right">${formatRupiah(netCash)}</td></tr>`;
+            document.getElementById('bodyAK').innerHTML = html;
+        }
+
+        // RENDER BUKU BESAR
+        window.renderBukuBesar = function() {
+            const selectedCode = document.getElementById('accountSelect').value;
+            const tbody = document.getElementById('bodyBB');
+            
+            if(!selectedCode) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">Pilih akun untuk melihat buku besar</td></tr>';
+                return;
+            }
+
+            // Filter transaksi untuk akun terpilih dan urutkan berdasarkan tanggal
+            const txs = allTransactions.filter(tx => String(tx[6]).trim() === selectedCode)
+                                       .sort((a,b) => new Date(a[1]) - new Date(b[1]));
+            
+            let html = '';
+            let runningBalance = 0;
+            const isAssetOrExpense = selectedCode.startsWith('1-') || selectedCode.startsWith('5-');
+
+            txs.forEach(tx => {
+                const d = parseNumber(tx[8]);
+                const c = parseNumber(tx[9]);
+                
+                // Hitung saldo berjalan sesuai jenis akun
+                if(isAssetOrExpense) runningBalance += (d - c);
+                else runningBalance += (c - d);
+
                 html += `
-                    <tr class="total-row bg-gray">
-                        <td colspan="2">TOTAL</td>
-                        <td class="text-right">${formatRupiah(totalDebit)}</td>
-                        <td class="text-right">${formatRupiah(totalCredit)}</td>
+                    <tr>
+                        <td>${new Date(tx[1]).toLocaleDateString('id-ID')}</td>
+                        <td>${tx[2]}</td>
+                        <td>${tx[3]}</td>
+                        <td class="text-right">${d?formatRupiah(d):'-'}</td>
+                        <td class="text-right">${c?formatRupiah(c):'-'}</td>
+                        <td class="text-right font-bold">${formatRupiah(runningBalance)}</td>
                     </tr>
                 `;
+            });
 
-                tbody.innerHTML = html;
-                
-                // Update Periode
-                const now = new Date();
-                const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                document.getElementById('reportPeriod').textContent = `Periode: ${months[now.getMonth()]} ${now.getFullYear()}`;
-
-            } catch (e) {
-                console.error(e);
-                document.getElementById('reportBody').innerHTML = `<tr><td colspan="4" style="text-align:center; color:red; padding:30px;">Error memuat laporan: ${e.message}</td></tr>`;
+            if(txs.length === 0) {
+                html = '<tr><td colspan="6" style="text-align:center; padding:40px;">Tidak ada transaksi untuk akun ini</td></tr>';
             }
+
+            // Tambahkan baris total saldo akhir
+            html += `<tr class="total-row bg-gray"><td colspan="5" class="text-right">SALDO AKHIR</td><td class="text-right">${formatRupiah(runningBalance)}</td></tr>`;
+            
+            tbody.innerHTML = html;
         }
 
-        // Helper Functions
-        function parseNumber(val) {
-            if (!val) return 0;
-            let str = String(val).trim();
-            if (str.includes(',')) str = str.replace(/\./g, '').replace(/,/g, '.');
-            const num = parseFloat(str);
-            return isNaN(num) ? 0 : num;
+        // EXPORT TO EXCEL
+        window.exportToExcel = function() {
+            const activeTab = document.querySelector('.report-section.active').id;
+            let wb = XLSX.utils.book_new();
+            let wsData = [];
+            let fileName = 'Laporan_Keuangan.xlsx';
+
+            const period = document.getElementById(`period${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}`).textContent;
+
+            if(activeTab === 'neraca') {
+                fileName = 'Neraca.xlsx';
+                wsData = [['NERACA (BALANCE SHEET)'], [period], [], ['Kode', 'Nama Akun', 'Debit (Rp)', 'Kredit (Rp)']];
+                document.querySelectorAll('#bodyNeraca tr').forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.replace(/Rp\s|,/g, '').trim());
+                    wsData.push(cells);
+                });
+            } else if(activeTab === 'labarugi') {
+                fileName = 'Laba_Rugi.xlsx';
+                wsData = [['LAPORAN LABA RUGI'], [period], [], ['Kode', 'Keterangan', 'Jumlah (Rp)']];
+                document.querySelectorAll('#bodyLR tr').forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.replace(/Rp\s|,/g, '').trim());
+                    wsData.push(cells);
+                });
+            } else if(activeTab === 'aruskas') {
+                fileName = 'Arus_Kas.xlsx';
+                wsData = [['LAPORAN ARUS KAS'], [period], [], ['Kode', 'Keterangan', 'Jumlah (Rp)']];
+                document.querySelectorAll('#bodyAK tr').forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.replace(/Rp\s|,/g, '').trim());
+                    wsData.push(cells);
+                });
+            } else if(activeTab === 'bukubesar') {
+                const accName = document.getElementById('accountSelect').options[document.getElementById('accountSelect').selectedIndex].text;
+                fileName = `Buku_Besar_${document.getElementById('accountSelect').value}.xlsx`;
+                wsData = [['BUKU BESAR'], [period], [`Akun: ${accName}`], [], ['Tanggal', 'No. Bukti', 'Keterangan', 'Debit', 'Kredit', 'Saldo']];
+                document.querySelectorAll('#bodyBB tr').forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.replace(/Rp\s|,/g, '').trim());
+                    wsData.push(cells);
+                });
+            }
+
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            XLSX.utils.book_append_sheet(wb, ws, "Laporan");
+            XLSX.writeFile(wb, fileName);
         }
 
-        function formatRupiah(num) {
-            const number = Number(num);
-            if (isNaN(number)) return '0';
-            const parts = number.toFixed(2).split('.');
-            let integerPart = parts[0];
-            let decimalPart = parts[1];
-            let formattedInteger = '';
-            let count = 0;
-            for (let i = integerPart.length - 1; i >= 0; i--) {
-                formattedInteger = integerPart[i] + formattedInteger;
-                count++;
-                if (count % 3 === 0 && i !== 0) formattedInteger = '.' + formattedInteger;
-            }
-            return formattedInteger + ',' + decimalPart;
+        // HELPER FUNCTIONS
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.report-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function parseNumber(val) { if(!val) return 0; let s=String(val).trim(); if(s.includes(',')) s=s.replace(/\./g,'').replace(/,/g,'.'); const n=parseFloat(s); return isNaN(n)?0:n; }
+        function formatRupiah(num) { const n=Number(num); if(isNaN(n)) return '0'; const p=n.toFixed(2).split('.'); let int=p[0], dec=p[1], fmt='', cnt=0; for(let i=int.length-1;i>=0;i--){fmt=int[i]+fmt;cnt++;if(cnt%3===0&&i!==0)fmt='.'+fmt;} return fmt+','+dec; }
+        function getAccName(code) { 
+            const map = {'1-1100':'Kas','1-1200':'Bank','1-1300':'Piutang Usaha','1-1400':'Perlengkapan','1-1500':'Persediaan','1-1600':'Sewa Dibayar','1-2100':'Tanah','1-2200':'Bangunan','1-2250':'Akum. Penyusutan Bangunan','1-2300':'Kendaraan','1-2350':'Akum. Penyusutan Kendaraan','1-2400':'Peralatan IT','1-2450':'Akum. Penyusutan Peralatan IT','1-2500':'Peralatan Kantor','1-2550':'Akum. Penyusutan Peralatan Kantor','2-1100':'Utang Usaha','2-1200':'Utang Gaji','2-1300':'Utang Pajak','2-1400':'Pendapatan Diterima','2-2100':'Utang Bank','2-2200':'Utang Sewa','3-1000':'Modal','3-2000':'Prive','3-3000':'Laba Ditahan','3-4000':'Ikhtisar LR','4-1000':'Pendapatan Operasional','4-1100':'Jasa Konsultasi','4-1200':'Jasa Development','4-1300':'Jasa Maintenance','4-1400':'Penjualan Lisensi','4-1500':'Jasa Training','4-2000':'Pendapatan Lain','5-1000':'Beban Operasional','5-1100':'Gaji Dev','5-1200':'Gaji Support','5-1300':'Server & Hosting','5-1400':'Lisensi Software','5-1500':'Internet','5-1600':'Perjalanan Dinas','5-1700':'Entertainment','5-1800':'Sewa Kantor','5-1900':'Listrik & Air','5-2000':'Penyusutan'};
+            return map[code] || code; 
         }
     </script>
 </body>
