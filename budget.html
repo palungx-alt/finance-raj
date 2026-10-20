@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceRAJ - Budgeting</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
+        
+        .top-bar { background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .brand-area { display: flex; align-items: center; gap: 12px; }
+        .btn-back { background: var(--bg-body); border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-back:hover { background: var(--border); }
+        .action-buttons { display: flex; gap: 8px; }
+        .btn-action { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 13px; }
+        .btn-action:hover { opacity: 0.9; }
+        
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+        
+        /* FORM CARD */
+        .form-card { background: var(--surface); padding: 24px; border-radius: var(--radius); box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); border: 1px solid var(--border); margin-bottom: 30px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
+        .form-control { width: 100%; padding: 12px 16px; background: var(--bg-body); border: 1px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; transition: 0.2s; }
+        .form-control:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
+        
+        /* TABLE STYLE */
+        .table-container { background: var(--surface); border-radius: var(--radius); box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); border: 1px solid var(--border); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th { text-align: left; padding: 14px 16px; font-size: 12px; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); font-weight: 700; white-space: nowrap; }
+        td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8fafc; }
+        
+        .text-right { text-align: right; }
+        .font-bold { font-weight: 700; }
+        
+        /* PROGRESS BAR FOR BUDGET STATUS */
+        .progress-wrapper { width: 100%; background: #e2e8f0; border-radius: 10px; height: 8px; margin-top: 6px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 10px; transition: width 0.3s ease; }
+        .status-text { font-size: 11px; margin-top: 4px; font-weight: 600; }
+        
+        .btn-icon { background: none; border: none; cursor: pointer; padding: 6px; border-radius: 6px; transition: 0.2s; }
+        .btn-delete { color: var(--danger); }
+        .btn-delete:hover { background: #fee2e2; }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 16px; margin-top: 16px; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="brand-area">
+            <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</button>
+            <img src="assets/logo.png" alt="Logo" style="width:32px;" onerror="this.style.display='none'">
+            <div><h1 style="font-size:18px; font-weight:700;">Budgeting & Anggaran</h1><p style="font-size:12px; color:var(--text-sec);">Kelola Target Keuangan Bulanan</p></div>
+        </div>
+        <div class="action-buttons">
+            <button class="btn-action" id="btnSaveBudget"><i class="fas fa-save"></i> Simpan Anggaran</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- FORM INPUT ANGGARAN -->
+        <div class="form-card">
+            <h2 style="font-size:16px; font-weight:700; margin-bottom:20px; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-bullseye" style="color:var(--primary);"></i> 
+                Tambah / Update Anggaran
+            </h2>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Periode (Bulan & Tahun)</label>
+                    <input type="month" id="budgetPeriod" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Akun COA</label>
+                    <select id="budgetAccount" class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label>Nominal Anggaran (Rp)</label>
+                    <input type="text" id="budgetAmount" class="form-control" placeholder="0" oninput="this.value=formatInputRupiah(this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Keterangan (Opsional)</label>
+                    <input type="text" id="budgetNote" class="form-control" placeholder="Cth: Anggaran Marketing Q4">
+                </div>
+            </div>
+        </div>
+
+        <!-- TABEL DAFTAR ANGGARAN -->
+        <div class="table-container">
+            <table id="budgetTable">
+                <thead>
+                    <tr>
+                        <th>Periode</th>
+                        <th>Akun</th>
+                        <th class="text-right">Anggaran</th>
+                        <th class="text-right">Realisasi</th>
+                        <th>Sisa / Lebih</th>
+                        <th style="width: 250px;">Status Penggunaan</th>
+                        <th style="text-align:center;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="budgetTableBody">
+                    <tr><td colspan="7" style="text-align:center; padding:40px;">Memuat data anggaran...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg", authDomain: "finance-raj.firebaseapp.com", projectId: "finance-raj", storageBucket: "finance-raj.firebasestorage.app", messagingSenderId: "138468278392", appId: "1:138468278392:web:215731466beb7f89566d8d", measurementId: "G-BMG4L7P2DP" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
+
+        let coaList = [];
+        let budgetData = [];
+        let actualData = {}; // Map: "YYYY-MM-CODE" -> total spent
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'index.html'; return; }
+            
+            // Set default period to current month
+            const now = new Date();
+            document.getElementById('budgetPeriod').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            
+            await loadData();
+        });
+
+        async function loadData() {
+            try {
+                const [resCOA, resBudget, resJurnal] = await Promise.all([
+                    fetch(`${GAS_URL}?action=getCOA`),
+                    fetch(`${GAS_URL}?action=getBudgets`),
+                    fetch(`${GAS_URL}?action=getJurnal`)
+                ]);
+                
+                const dataCOA = await resCOA.json();
+                const dataBudget = await resBudget.json();
+                const dataJurnal = await resJurnal.json();
+                
+                coaList = dataCOA.accounts || [];
+                budgetData = dataBudget.budgets || [];
+                
+                // Calculate Actual Spending from Journal
+                const journals = dataJurnal.journals || [];
+                journals.forEach(tx => {
+                    const code = String(tx[6]).trim();
+                    const dateStr = String(tx[1]).substring(0, 7); // YYYY-MM
+                    const amount = parseNumber(tx[8]) - parseNumber(tx[9]); // Debit - Credit
+                    
+                    // Only count expenses (5-xxxx) and liabilities/assets spending
+                    if(code.startsWith('5-') || (code.startsWith('1-') && amount > 0)) {
+                        const key = `${dateStr}-${code}`;
+                        actualData[key] = (actualData[key] || 0) + Math.abs(amount);
+                    }
+                });
+
+                populateCOADropdown();
+                renderBudgetTable();
+            } catch(e) { console.error("Gagal memuat data:", e); }
+        }
+
+        function populateCOADropdown() {
+            const select = document.getElementById('budgetAccount');
+            // Filter only Expense accounts (5-xxxx) for budgeting usually
+            const expenseAccounts = coaList.filter(a => a.code.startsWith('5-'));
+            
+            select.innerHTML = '<option value="">-- Pilih Akun Beban --</option>';
+            expenseAccounts.forEach(a => select.innerHTML += `<option value="${a.code}">${a.code} - ${a.name}</option>`);
+        }
+
+        window.formatInputRupiah = function(angka) {
+            if (!angka) return '';
+            let number_string = angka.toString().replace(/[^,\d]/g, '').toString();
+            let split = number_string.split(',');
+            let sisa = split[0].length % 3;
+            let rupiah = split[0].substr(0, sisa);
+            let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+            if (ribuan) { let separator = sisa ? '.' : ''; rupiah += separator + ribuan.join('.'); }
+            rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+            return rupiah;
+        }
+
+        window.unformatRupiah = function(rupiah) {
+            if (!rupiah) return 0;
+            return parseFloat(rupiah.toString().replace(/\./g, '').replace(/,/g, '.')) || 0;
+        }
+
+        function formatRupiah(num) { 
+            const n = Number(num); 
+            if(isNaN(n)) return '0'; 
+            const p = n.toFixed(2).split('.'); 
+            let int=p[0], dec=p[1], fmt='', cnt=0; 
+            for(let i=int.length-1;i>=0;i--){fmt=int[i]+fmt;cnt++;if(cnt%3===0&&i!==0)fmt='.'+fmt;} 
+            return fmt+','+dec; 
+        }
+
+        function parseNumber(val) { if(!val) return 0; let s=String(val).trim(); if(s.includes(',')) s=s.replace(/\./g,'').replace(/,/g,'.'); const n=parseFloat(s); return isNaN(n)?0:n; }
+
+        function getAccountName(code) {
+            const acc = coaList.find(a => a.code === code);
+            return acc ? `${acc.code} - ${acc.name}` : code;
+        }
+
+        window.renderBudgetTable = function() {
+            const tbody = document.getElementById('budgetTableBody');
+            if(budgetData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px;">Belum ada data anggaran.</td></tr>';
+                return;
+            }
+            
+            // Sort by period desc
+            budgetData.sort((a,b) => b.period.localeCompare(a.period));
+
+            tbody.innerHTML = budgetData.map(b => {
+                const actual = actualData[`${b.period}-${b.account}`] || 0;
+                const remaining = b.amount - actual;
+                const percent = b.amount > 0 ? Math.min((actual / b.amount) * 100, 100) : 0;
+                
+                let statusColor = 'var(--success)';
+                let statusText = 'Aman';
+                if(percent >= 100) { statusColor = 'var(--danger)'; statusText = 'Over Budget'; }
+                else if(percent >= 80) { statusColor = 'var(--warning)'; statusText = 'Hati-hati'; }
+
+                return `
+                    <tr>
+                        <td>${b.period}</td>
+                        <td>${getAccountName(b.account)}</td>
+                        <td class="text-right font-bold">${formatRupiah(b.amount)}</td>
+                        <td class="text-right">${formatRupiah(actual)}</td>
+                        <td class="text-right ${remaining < 0 ? 'text-danger font-bold' : ''}">${formatRupiah(remaining)}</td>
+                        <td>
+                            <div class="progress-wrapper">
+                                <div class="progress-fill" style="width: ${percent}%; background: ${statusColor};"></div>
+                            </div>
+                            <div class="status-text" style="color: ${statusColor};">${percent.toFixed(1)}% - ${statusText}</div>
+                        </td>
+                        <td style="text-align:center;">
+                            <button class="btn-icon btn-delete" onclick="deleteBudget('${b.id}')"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('btnSaveBudget').addEventListener('click', async () => {
+            const period = document.getElementById('budgetPeriod').value;
+            const account = document.getElementById('budgetAccount').value;
+            const amount = unformatRupiah(document.getElementById('budgetAmount').value);
+            const note = document.getElementById('budgetNote').value;
+
+            if(!period || !account || amount <= 0) {
+                return alert("Mohon lengkapi Periode, Akun, dan Nominal Anggaran!");
+            }
+
+            const payload = {
+                action: 'saveBudget',
+                budgetData: {
+                    id: `BUD-${period}-${account}`, // Unique ID based on period & account
+                    period: period,
+                    account: account,
+                    amount: amount,
+                    note: note
+                }
+            };
+
+            const btn = document.getElementById('btnSaveBudget');
+            const originalText = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+            try {
+                const res = await fetch(GAS_URL, { method:'POST', body:JSON.stringify(payload) });
+                const result = await res.json();
+                if(result.status === 'success') {
+                    alert("✅ Anggaran berhasil disimpan!");
+                    // Reset form partially
+                    document.getElementById('budgetAmount').value = '';
+                    document.getElementById('budgetNote').value = '';
+                    loadData(); // Refresh table
+                } else { alert("Error: " + result.message); }
+            } catch(e) { alert("Gagal menyimpan: " + e.message); }
+            finally { btn.disabled = false; btn.innerHTML = originalText; }
+        });
+
+        window.deleteBudget = async function(id) {
+            if(!confirm("Hapus anggaran ini?")) return;
+            
+            try {
+                const res = await fetch(GAS_URL, { method:'POST', body:JSON.stringify({ action: 'deleteBudget', budgetId: id }) });
+                const result = await res.json();
+                if(result.status === 'success') {
+                    loadData();
+                } else { alert("Error: " + result.message); }
+            } catch(e) { alert("Gagal menghapus: " + e.message); }
+        }
+    </script>
+</body>
+</html>
