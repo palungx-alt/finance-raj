@@ -124,9 +124,9 @@
         }
         .ledger-filter select:focus { border-color: var(--primary); background-color: white; }
 
-        /* PRINT STYLE - DIPERBAIKI */
+        /* ========== PRINT STYLE ========== */
         @media print {
-            @page { margin: 10mm; size: A4; }
+            @page { margin: 10mm 12mm; size: A4; }
             body { background: white; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             
             .top-bar, .tab-nav-wrapper, .action-buttons, .ledger-filter, .footer-note, .no-print, .mobile-cards, .period-filter-bar { display: none !important; }
@@ -137,25 +137,51 @@
                 border-radius: 0;
             }
             
-            /* KOP SURAT FORMAT LAMA - Logo besar di tengah */
-            .print-header { display: block !important; text-align: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 3px double #000; }
-            .print-header img { max-width: 100px; height: auto; margin-bottom: 12px; }
-            .print-header h2 { font-size: 18px; font-weight: 800; margin: 8px 0 4px 0; letter-spacing: 1px; }
-            .print-header p { font-size: 11px; margin: 2px 0; color: #333; }
+            /* KOP SURAT FORMAT ASLI - Logo + Teks Sejajar Horizontal */
+            .print-header { 
+                display: block !important; 
+                display: flex !important; 
+                align-items: center; 
+                gap: 16px; 
+                margin-bottom: 16px; 
+                padding-bottom: 12px; 
+                border-bottom: 3px double #000; 
+            }
+            .print-header img { 
+                max-width: 70px; 
+                height: auto; 
+                flex-shrink: 0; 
+            }
+            .print-header-text { 
+                flex: 1; 
+                text-align: left; 
+            }
+            .print-header-text h2 { 
+                font-size: 16px; 
+                font-weight: 800; 
+                margin: 0 0 4px 0; 
+                letter-spacing: 0.5px; 
+            }
+            .print-header-text p { 
+                font-size: 10px; 
+                margin: 2px 0; 
+                color: #333; 
+                line-height: 1.4; 
+            }
             
             .screen-header { display: none; }
             .desktop-table { display: block !important; }
-            .print-title { display: block !important; text-align: center; margin: 20px 0 4px 0; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-            .print-subtitle { display: block !important; text-align: center; margin-bottom: 4px; font-size: 12px; color: #333; }
-            .print-period { display: block !important; text-align: center; margin-bottom: 20px; font-size: 12px; font-weight: 700; }
+            .print-title { display: block !important; text-align: center; margin: 16px 0 4px 0; font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+            .print-subtitle { display: block !important; text-align: center; margin-bottom: 4px; font-size: 11px; color: #333; }
+            .print-period { display: block !important; text-align: center; margin-bottom: 16px; font-size: 11px; font-weight: 700; }
             
             table { margin-top: 0; }
             tr { page-break-inside: avoid; }
-            th { color: #000; border-bottom: 2px solid #000; font-size: 10px; padding: 6px 8px; }
-            td { border-bottom: 1px solid #ddd; font-size: 11px; padding: 6px 8px; }
-            .section-title { color: #000; border-bottom: 1px solid #000; font-size: 11px; margin-top: 12px; page-break-after: avoid; }
-            .total-row td { color: #000; border-top: 2px solid #000; font-size: 12px; page-break-before: avoid; }
-            .indent-1 { padding-left: 16px !important; }
+            th { color: #000; border-bottom: 2px solid #000; font-size: 9px; padding: 5px 6px; }
+            td { border-bottom: 1px solid #ddd; font-size: 10px; padding: 5px 6px; }
+            .section-title { color: #000; border-bottom: 1px solid #000; font-size: 10px; margin-top: 10px; page-break-after: avoid; }
+            .total-row td { color: #000; border-top: 2px solid #000; font-size: 11px; page-break-before: avoid; }
+            .indent-1 { padding-left: 14px !important; }
         }
 
         .print-header, .print-title, .print-subtitle, .print-period { display: none; }
@@ -229,9 +255,11 @@
             <div class="report-card">
                 <div class="print-header">
                     <img src="assets/kop-surat.png" alt="Kop Surat" onerror="this.style.display='none'">
-                    <h2>CV REZEKI AMANAH JAYA GROUP</h2>
-                    <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
-                    <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
+                    <div class="print-header-text">
+                        <h2>CV REZEKI AMANAH JAYA GROUP</h2>
+                        <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
+                        <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
+                    </div>
                 </div>
                 <div class="print-title">NERACA (BALANCE SHEET)</div>
                 <div class="print-subtitle">CV Rezeki Amanah Jaya Group</div>
@@ -259,9 +287,11 @@
             <div class="report-card">
                 <div class="print-header">
                     <img src="assets/kop-surat.png" alt="Kop Surat" onerror="this.style.display='none'">
-                    <h2>CV REZEKI AMANAH JAYA GROUP</h2>
-                    <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
-                    <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
+                    <div class="print-header-text">
+                        <h2>CV REZEKI AMANAH JAYA GROUP</h2>
+                        <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
+                        <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
+                    </div>
                 </div>
                 <div class="print-title">LAPORAN LABA RUGI</div>
                 <div class="print-subtitle">CV Rezeki Amanah Jaya Group</div>
@@ -289,9 +319,11 @@
             <div class="report-card">
                 <div class="print-header">
                     <img src="assets/kop-surat.png" alt="Kop Surat" onerror="this.style.display='none'">
-                    <h2>CV REZEKI AMANAH JAYA GROUP</h2>
-                    <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
-                    <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
+                    <div class="print-header-text">
+                        <h2>CV REZEKI AMANAH JAYA GROUP</h2>
+                        <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
+                        <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
+                    </div>
                 </div>
                 <div class="print-title">LAPORAN ARUS KAS</div>
                 <div class="print-subtitle">CV Rezeki Amanah Jaya Group</div>
@@ -319,9 +351,11 @@
             <div class="report-card">
                 <div class="print-header">
                     <img src="assets/kop-surat.png" alt="Kop Surat" onerror="this.style.display='none'">
-                    <h2>CV REZEKI AMANAH JAYA GROUP</h2>
-                    <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
-                    <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
+                    <div class="print-header-text">
+                        <h2>CV REZEKI AMANAH JAYA GROUP</h2>
+                        <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
+                        <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
+                    </div>
                 </div>
                 <div class="print-title">BUKU BESAR (GENERAL LEDGER)</div>
                 <div class="print-subtitle" id="printAccNameBB">CV Rezeki Amanah Jaya Group</div>
