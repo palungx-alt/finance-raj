@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FinanceRAJ - Rekonsiliasi Bank</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -10,25 +10,27 @@
     
     <style>
         :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
         
-        .top-bar { background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-        .brand-area { display: flex; align-items: center; gap: 12px; }
-        .btn-back { background: var(--bg-body); border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .top-bar { background: var(--surface); padding: 16px 20px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .brand-area { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+        .btn-back { background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; transition: 0.2s; flex-shrink: 0; }
         .btn-back:hover { background: var(--border); }
-        .action-buttons { display: flex; gap: 8px; }
-        .btn-action { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 13px; }
+        .page-title h1 { font-size: 18px; font-weight: 700; margin: 0; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .page-title p { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
+        .action-buttons { display: flex; gap: 8px; flex-shrink: 0; }
+        .btn-action { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 12px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 13px; white-space: nowrap; }
         .btn-action:hover { opacity: 0.9; }
         .btn-outline { background: white; color: var(--text-main); border: 1px solid var(--border); }
         .btn-outline:hover { background: var(--bg-body); }
         
-        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
         
         /* UPLOAD AREA */
         .upload-card { 
             background: var(--surface); padding: 30px; border-radius: var(--radius); 
-            border: 2px dashed var(--border); text-align: center; margin-bottom: 30px; 
+            border: 2px dashed var(--border); text-align: center; margin-bottom: 24px; 
             transition: 0.2s; cursor: pointer;
         }
         .upload-card:hover, .upload-card.dragover { border-color: var(--primary); background: #eff6ff; }
@@ -37,48 +39,72 @@
         .upload-sub { font-size: 13px; color: var(--text-sec); }
         #fileInput { display: none; }
 
-        /* SUMMARY CARDS */
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 30px; }
-        .summary-card { background: var(--surface); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); }
-        .summary-label { font-size: 12px; color: var(--text-sec); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
-        .summary-value { font-size: 24px; font-weight: 800; }
+        /* SUMMARY CARDS RESPONSIVE */
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
+        .summary-card { background: var(--surface); padding: 16px; border-radius: 12px; border: 1px solid var(--border); }
+        .summary-label { font-size: 11px; color: var(--text-sec); text-transform: uppercase; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px; }
+        .summary-value { font-size: 20px; font-weight: 800; word-break: break-word; }
         .text-success { color: var(--success); }
         .text-danger { color: var(--danger); }
         .text-warning { color: var(--warning); }
 
-        /* TABLE STYLE */
-        .table-container { background: var(--surface); border-radius: var(--radius); box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); border: 1px solid var(--border); overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        /* TABLE & CARD DUAL VIEW */
+        .desktop-table { display: none; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; background: var(--surface); border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); border: 1px solid var(--border); }
         th { text-align: left; padding: 14px 16px; font-size: 12px; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); font-weight: 700; white-space: nowrap; }
         td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
         tr.matched td { background: #ecfdf5; }
         tr.unmatched td { background: #fffbeb; }
         
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
         .badge-matched { background: #d1fae5; color: #065f46; }
         .badge-unmatched { background: #fef3c7; color: #92400e; }
-        .badge-missing { background: #fee2e2; color: #991b1b; }
-
-        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .btn-match { background: var(--primary); color: white; }
+        
+        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: 0.2s; white-space: nowrap; }
         .btn-journal { background: var(--success); color: white; }
+        .btn-journal:hover { opacity: 0.9; }
 
+        /* MOBILE CARD LIST */
+        .mobile-cards { display: flex; flex-direction: column; gap: 12px; }
+        .recon-card { 
+            background: var(--surface); border-radius: 12px; padding: 16px; 
+            border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px;
+        }
+        .recon-card.matched { border-left: 4px solid var(--success); background: #f0fdf4; }
+        .recon-card.unmatched { border-left: 4px solid var(--warning); background: #fffbeb; }
+        
+        .card-row { display: flex; justify-content: space-between; align-items: flex-start; }
+        .card-label { font-size: 11px; color: var(--text-sec); text-transform: uppercase; font-weight: 600; margin-bottom: 4px; }
+        .card-val { font-size: 14px; font-weight: 600; color: var(--text-main); word-break: break-word; }
+        .card-amount { font-size: 18px; font-weight: 800; }
+        
+        @media (min-width: 769px) {
+            .mobile-cards { display: none; }
+            .desktop-table { display: block; }
+            .btn-action span { display: inline; }
+        }
         @media (max-width: 768px) {
-            .container { padding: 0 16px; margin-top: 16px; }
+            .desktop-table { display: none; }
+            .mobile-cards { display: flex; }
+            .btn-action span { display: none; }
+            .btn-action { padding: 10px 12px; }
             .summary-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="top-bar">
+    <div class="top-bar no-print">
         <div class="brand-area">
-            <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</button>
+            <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i></button>
             <img src="assets/logo.png" alt="Logo" style="width:32px;" onerror="this.style.display='none'">
-            <div><h1 style="font-size:18px; font-weight:700;">Rekonsiliasi Bank</h1><p style="font-size:12px; color:var(--text-sec);">Cocokkan Buku vs Mutasi Bank</p></div>
+            <div class="page-title">
+                <h1>Rekonsiliasi Bank</h1>
+                <p>Cocokkan Buku vs Mutasi Bank</p>
+            </div>
         </div>
         <div class="action-buttons">
-            <button class="btn-action btn-outline" onclick="resetRecon()"><i class="fas fa-redo"></i> Reset</button>
+            <button class="btn-action btn-outline" onclick="resetRecon()"><i class="fas fa-redo"></i> <span>Reset</span></button>
         </div>
     </div>
 
@@ -111,8 +137,8 @@
             </div>
         </div>
 
-        <!-- RECONCILIATION TABLE -->
-        <div class="table-container">
+        <!-- DESKTOP TABLE -->
+        <div class="desktop-table">
             <table id="reconTable">
                 <thead>
                     <tr>
@@ -128,6 +154,11 @@
                     <tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-sec);">Upload file mutasi bank untuk memulai rekonsiliasi</td></tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- MOBILE CARDS -->
+        <div class="mobile-cards" id="mobileReconList">
+            <div style="text-align:center; padding:40px; color:var(--text-sec);">Upload file mutasi bank untuk memulai rekonsiliasi</div>
         </div>
     </div>
 
@@ -158,9 +189,10 @@
                     ['1-1100', '1-1200'].includes(String(tx[6]).trim())
                 ).map(tx => ({
                     date: tx[1], desc: tx[3], amount: parseNumber(tx[8]) - parseNumber(tx[9]), 
-                    id: tx[0], matched: false
+                    id: tx[0], matched: false, source: 'book'
                 }));
                 updateSummary();
+                renderRecon();
             } catch(e) { console.error(e); }
         }
 
@@ -183,45 +215,70 @@
                 const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header:1});
                 
                 // Parse Bank Data (Asumsi kolom: Tanggal, Keterangan, Nominal)
+                // User mungkin perlu menyesuaikan index kolom sesuai format bank mereka
                 bankTransactions = jsonData.slice(1).map(row => ({
-                    date: row[0], desc: row[1], amount: parseFloat(row[2]) || 0, 
+                    date: row[0] || new Date(), 
+                    desc: row[1] || '-', 
+                    amount: parseFloat(row[2]) || 0, 
                     source: 'bank', matched: false
-                })).filter(t => !isNaN(t.amount));
+                })).filter(t => !isNaN(t.amount) && t.amount !== 0);
 
                 performAutoMatching();
-                renderTable();
+                renderRecon();
             };
             reader.readAsArrayBuffer(file);
         }
 
         function performAutoMatching() {
-            reconData = [...bookTransactions.map(t => ({...t, source:'book'})), ...bankTransactions];
+            reconData = [...bookTransactions.map(t => ({...t})), ...bankTransactions];
             
             // Simple matching logic: same amount within +/- 3 days
-            reconData.forEach(item => {
-                if(item.matched) return;
-                const match = reconData.find(other => 
-                    other !== item && !other.matched && 
-                    Math.abs(other.amount - item.amount) < 100 && // Tolerance Rp 100
-                    Math.abs(new Date(item.date) - new Date(other.date)) < 3 * 24*60*60*1000
-                );
-                if(match) { item.matched = true; match.matched = true; }
-            });
+            // Reset match status first
+            reconData.forEach(item => item.matched = false);
+
+            for(let i=0; i<reconData.length; i++) {
+                if(reconData[i].matched) continue;
+                
+                for(let j=i+1; j<reconData.length; j++) {
+                    if(reconData[j].matched) continue;
+                    
+                    // Must be different sources (one book, one bank)
+                    if(reconData[i].source === reconData[j].source) continue;
+
+                    const diffAmount = Math.abs(reconData[i].amount - reconData[j].amount);
+                    const diffDays = Math.abs(new Date(reconData[i].date) - new Date(reconData[j].date)) / (1000 * 60 * 60 * 24);
+                    
+                    // Tolerance: Rp 100 and 3 days
+                    if(diffAmount < 100 && diffDays <= 3) {
+                        reconData[i].matched = true;
+                        reconData[j].matched = true;
+                        break; 
+                    }
+                }
+            }
             updateSummary();
         }
 
-        function renderTable() {
+        function renderRecon() {
             const tbody = document.getElementById('reconBody');
-            if(reconData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">Tidak ada data</td></tr>';
+            const mobileList = document.getElementById('mobileReconList');
+            
+            if(reconData.length === 0 && bankTransactions.length === 0) {
+                const emptyHtml = '<div style="text-align:center; padding:40px; color:var(--text-sec);">Upload file mutasi bank untuk memulai rekonsiliasi</div>';
+                tbody.innerHTML = `<tr><td colspan="6">${emptyHtml}</td></tr>`;
+                mobileList.innerHTML = emptyHtml;
                 return;
             }
             
-            tbody.innerHTML = reconData.sort((a,b) => new Date(b.date) - new Date(a.date)).map(item => {
+            // Sort by date desc
+            const sortedData = [...reconData].sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            // Render Desktop Table
+            tbody.innerHTML = sortedData.map(item => {
                 const statusClass = item.matched ? 'matched' : 'unmatched';
                 const badge = item.matched ? '<span class="badge badge-matched">Matched</span>' : '<span class="badge badge-unmatched">Unmatched</span>';
                 const actionBtn = !item.matched && item.source === 'bank' 
-                    ? `<button class="btn-sm btn-journal" onclick="createJournal('${item.desc}', ${item.amount})"><i class="fas fa-plus"></i> Input Jurnal</button>` 
+                    ? `<button class="btn-sm btn-journal" onclick="createJournal('${escapeHtml(item.desc)}', ${item.amount})"><i class="fas fa-plus"></i> Input Jurnal</button>` 
                     : '-';
                     
                 return `
@@ -235,67 +292,117 @@
                     </tr>
                 `;
             }).join('');
+
+            // Render Mobile Cards
+            mobileList.innerHTML = sortedData.map(item => {
+                const cardClass = item.matched ? 'matched' : 'unmatched';
+                const statusText = item.matched ? '✅ Cocok' : '⚠️ Belum Cocok';
+                const actionBtn = !item.matched && item.source === 'bank' 
+                    ? `<button class="btn-sm btn-journal" style="width:100%; margin-top:8px;" onclick="createJournal('${escapeHtml(item.desc)}', ${item.amount})"><i class="fas fa-plus"></i> Input ke Jurnal</button>` 
+                    : '';
+                    
+                return `
+                    <div class="recon-card ${cardClass}">
+                        <div class="card-row">
+                            <div>
+                                <div class="card-label">Tanggal</div>
+                                <div class="card-val">${new Date(item.date).toLocaleDateString('id-ID')}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div class="card-label">Status</div>
+                                <div class="card-val" style="color:${item.matched ? 'var(--success)' : 'var(--warning)'}">${statusText}</div>
+                            </div>
+                        </div>
+                        <div class="card-row">
+                            <div style="flex:1; margin-right:12px;">
+                                <div class="card-label">Keterangan</div>
+                                <div class="card-val">${item.desc}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div class="card-label">Nominal</div>
+                                <div class="card-amount">${formatRupiah(Math.abs(item.amount))}</div>
+                                <div style="font-size:11px; color:var(--text-sec); margin-top:4px;">${item.source === 'book' ? 'Dari Buku' : 'Dari Bank'}</div>
+                            </div>
+                        </div>
+                        ${actionBtn}
+                    </div>
+                `;
+            }).join('');
         }
 
         function updateSummary() {
             const bookTotal = bookTransactions.reduce((s,t) => s + t.amount, 0);
             const bankTotal = bankTransactions.reduce((s,t) => s + t.amount, 0);
-            const matchedCount = reconData.filter(t => t.matched).length / 2; // Pair counted twice
-            const totalItems = Math.max(bookTransactions.length, bankTransactions.length);
-            const matchPercent = totalItems > 0 ? Math.round((matchedCount / totalItems) * 100) : 0;
+            
+            // Count unique matched pairs
+            const matchedItems = reconData.filter(t => t.matched);
+            const matchedPairs = matchedItems.length / 2; 
+            const totalPossiblePairs = Math.min(bookTransactions.length, bankTransactions.length);
+            const matchPercent = totalPossiblePairs > 0 ? Math.round((matchedPairs / totalPossiblePairs) * 100) : 0;
 
             document.getElementById('sumBook').textContent = formatRupiah(bookTotal);
             document.getElementById('sumBank').textContent = formatRupiah(bankTotal);
-            document.getElementById('sumDiff').textContent = formatRupiah(bookTotal - bankTotal);
-            document.getElementById('sumStatus').textContent = `${matchPercent}%`;
             
-            // Color coding for difference
+            const diff = bookTotal - bankTotal;
             const diffEl = document.getElementById('sumDiff');
-            diffEl.className = `summary-value ${Math.abs(bookTotal - bankTotal) < 1000 ? 'text-success' : 'text-danger'}`;
+            diffEl.textContent = formatRupiah(diff);
+            diffEl.className = `summary-value ${Math.abs(diff) < 1000 ? 'text-success' : 'text-danger'}`;
+            
+            document.getElementById('sumStatus').textContent = `${matchPercent}%`;
+            document.getElementById('sumStatus').className = `summary-value ${matchPercent === 100 ? 'text-success' : (matchPercent > 50 ? 'text-warning' : 'text-danger')}`;
         }
 
         window.createJournal = async function(desc, amount) {
             const user = JSON.parse(localStorage.getItem('financeRajUser'));
-            if(!confirm(`Buat jurnal otomatis untuk: ${desc} sebesar ${formatRupiah(amount)}?`)) return;
+            if(!confirm(`Buat jurnal otomatis untuk:\n"${desc}"\nsebesar ${formatRupiah(amount)}?`)) return;
             
             // Determine debit/credit based on sign
-            const isDebit = amount > 0;
+            // Positive amount usually means money IN (Debit Bank), Negative means OUT (Credit Bank)
+            // But in reconciliation context, we usually just record the expense/income
+            const isMoneyIn = amount > 0; 
+            
             const payload = {
                 action: 'addJurnalFromWeb',
                 data: {
                     tanggal: new Date().toISOString().split('T')[0],
-                    noBukti: 'RECON-AUTO',
+                    noBukti: 'RECON-AUTO-' + Date.now().toString().slice(-4),
                     keterangan: `Rekonsiliasi: ${desc}`,
                     inputBy: user.email, inputByName: user.fullName,
                     items: [{
-                        code: isDebit ? '1-1200' : '5-1000', // Default to Bank or Expense
-                        name: isDebit ? 'Bank' : 'Beban Lain-lain',
-                        debit: isDebit ? amount : 0,
-                        credit: isDebit ? 0 : amount,
-                        type: isDebit ? 'debit' : 'kredit'
+                        // Default mapping: If money out -> Expense, If money in -> Other Income/Bank
+                        code: isMoneyIn ? '1-1200' : '5-1000', 
+                        name: isMoneyIn ? 'Bank (Rekening Utama)' : 'Beban Operasional Langsung',
+                        debit: isMoneyIn ? amount : 0,
+                        credit: isMoneyIn ? 0 : amount,
+                        type: isMoneyIn ? 'debit' : 'kredit'
                     }]
                 }
             };
 
             try {
-                await fetch(GAS_URL, { method:'POST', body:JSON.stringify(payload) });
-                alert("✅ Jurnal berhasil dibuat!");
-                loadBookTransactions(); // Refresh book data
+                const res = await fetch(GAS_URL, { method:'POST', body:JSON.stringify(payload) });
+                const result = await res.json();
+                
+                if(result.status === 'success') {
+                    alert("✅ Jurnal berhasil dibuat!");
+                    await loadBookTransactions(); // Refresh book data to update matching
+                } else { alert("Error: " + result.message); }
             } catch(e) { alert("Gagal: " + e.message); }
         }
 
         window.resetRecon = function() {
-            if(confirm("Reset semua data rekonsiliasi?")) {
+            if(confirm("Reset semua data rekonsiliasi? File upload akan dihapus.")) {
                 bankTransactions = [];
                 reconData = [];
-                renderTable();
-                updateSummary();
                 document.getElementById('fileInput').value = '';
+                renderRecon();
+                updateSummary();
             }
         }
 
         function parseNumber(val) { if(!val) return 0; let s=String(val).trim(); if(s.includes(',')) s=s.replace(/\./g,'').replace(/,/g,'.'); const n=parseFloat(s); return isNaN(n)?0:n; }
         function formatRupiah(num) { const n=Number(num); if(isNaN(n)) return '0'; const p=n.toFixed(2).split('.'); let int=p[0], dec=p[1], fmt='', cnt=0; for(let i=int.length-1;i>=0;i--){fmt=int[i]+fmt;cnt++;if(cnt%3===0&&i!==0)fmt='.'+fmt;} return fmt+','+dec; }
+        function escapeHtml(text) { return String(text).replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
     </script>
 </body>
 </html>
