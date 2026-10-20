@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinanceRAJ - Approval</title>
+    <title>FinanceRAJ - Approval System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -12,18 +12,26 @@
         body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
         
         .top-bar { background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-        .btn-back { background: var(--bg-body); border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-new { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+        .brand-area { display: flex; align-items: center; gap: 12px; }
+        .brand-logo { width: 32px; height: auto; }
+        .page-title h1 { font-size: 18px; font-weight: 700; margin: 0; }
+        .page-title p { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
+        .btn-back { background: var(--bg-body); border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-back:hover { background: var(--border); }
+        .btn-new { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        .btn-new:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
         
         .container { max-width: 1000px; margin: 24px auto; padding: 0 20px; }
-        .filters { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; }
-        .filter-btn { background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-sec); cursor: pointer; white-space: nowrap; }
+        .filters { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .filter-btn { background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-sec); cursor: pointer; white-space: nowrap; transition: 0.2s; }
         .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
         
         .table-card { background: var(--surface); border-radius: var(--radius); box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); border: 1px solid var(--border); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 16px; font-size: 12px; text-transform: uppercase; color: var(--text-sec); border-bottom: 1px solid var(--border); }
         td { padding: 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8fafc; }
         
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
         .badge-submitted { background: #eff6ff; color: var(--primary); }
@@ -36,29 +44,54 @@
         /* MODAL & SIGNATURE */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-overlay.open { display: flex; }
-        .modal-box { background: var(--surface); width: 100%; max-width: 500px; border-radius: var(--radius); padding: 24px; max-height: 90vh; overflow-y: auto; }
-        .form-control { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; margin-bottom: 16px; outline: none; }
-        .signature-pad { border: 2px dashed var(--border); border-radius: 10px; background: #f8fafc; height: 150px; width: 100%; cursor: crosshair; touch-action: none; margin-bottom: 16px; }
+        .modal-box { background: var(--surface); width: 100%; max-width: 500px; border-radius: var(--radius); padding: 24px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h2 { font-size: 18px; font-weight: 700; }
+        .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-sec); }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
+        .form-control { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; transition: 0.2s; background: var(--bg-body); }
+        .form-control:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
+        .form-control[readonly] { background: #f1f5f9; cursor: not-allowed; color: var(--text-sec); }
+        
+        .signature-pad { border: 2px dashed var(--border); border-radius: 10px; background: #f8fafc; height: 150px; width: 100%; cursor: crosshair; touch-action: none; margin-bottom: 8px; }
+        .sig-actions { display: flex; justify-content: flex-end; margin-bottom: 16px; }
+        .btn-clear-sig { background: none; border: none; color: var(--text-sec); font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .btn-clear-sig:hover { color: var(--danger); }
+
+        @media (max-width: 600px) {
+            .container { padding: 0 16px; margin-top: 16px; }
+            th, td { padding: 12px 16px; font-size: 13px; }
+            .hide-mobile { display: none; }
+        }
     </style>
 </head>
 <body>
     <div class="top-bar">
-        <a href="dashboard.html" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
-        <button class="btn-new" onclick="openModal('newFormModal')"><i class="fas fa-plus"></i> Ajukan Baru</button>
+        <div class="brand-area">
+            <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i></button>
+            <img src="assets/logo.png" alt="Logo" class="brand-logo" onerror="this.style.display='none'">
+            <div class="page-title">
+                <h1>Approval System</h1>
+                <p>Kasbon, Aset & Operasional</p>
+            </div>
+        </div>
+        <button class="btn-new" id="btnNewForm"><i class="fas fa-plus"></i> Ajukan Baru</button>
     </div>
 
     <div class="container">
         <div class="filters">
-            <button class="filter-btn active" onclick="filterStatus('')">Semua</button>
-            <button class="filter-btn" onclick="filterStatus('Submitted')">Menunggu</button>
-            <button class="filter-btn" onclick="filterStatus('Approved')">Disetujui</button>
-            <button class="filter-btn" onclick="filterStatus('Rejected')">Ditolak</button>
+            <button class="filter-btn active" data-status="">Semua</button>
+            <button class="filter-btn" data-status="Submitted">Menunggu</button>
+            <button class="filter-btn" data-status="Approved">Disetujui</button>
+            <button class="filter-btn" data-status="Rejected">Ditolak</button>
         </div>
 
         <div class="table-card">
             <table id="approvalTable">
-                <thead><tr><th>ID</th><th>Tanggal</th><th>Tipe</th><th>Pemohon</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead>
-                <tbody id="tableBody"><tr><td colspan="7" style="text-align:center; padding:30px;">Memuat...</td></tr></tbody>
+                <thead><tr><th>ID Form</th><th>Tanggal</th><th>Tipe</th><th>Pemohon</th><th class="hide-mobile">Jumlah</th><th>Status</th><th>Aksi</th></tr></thead>
+                <tbody id="tableBody"><tr><td colspan="7" style="text-align:center; padding:30px;">Memuat data...</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -66,33 +99,61 @@
     <!-- MODAL BUAT BARU -->
     <div id="newFormModal" class="modal-overlay">
         <div class="modal-box">
-            <h2 style="margin-bottom:20px;">Buat Pengajuan Baru</h2>
-            <select id="newType" class="form-control">
-                <option value="Kasbon">Kasbon / Uang Jalan</option>
-                <option value="Pembelian Aset">Pembelian Aset</option>
-                <option value="Operasional">Operasional Lainnya</option>
-            </select>
-            <input type="number" id="newAmount" class="form-control" placeholder="Jumlah (Rp)">
-            <textarea id="newPurpose" class="form-control" rows="3" placeholder="Keperluan..."></textarea>
-            <label style="font-size:13px; font-weight:600; display:block; margin-bottom:8px;">Tanda Tangan Pemohon</label>
-            <canvas id="sigCanvasNew" class="signature-pad"></canvas>
-            <button class="btn-new" style="width:100%; justify-content:center;" onclick="submitNewForm()">Submit</button>
-            <button class="btn-action" style="width:100%; margin-top:10px; justify-content:center;" onclick="closeModal('newFormModal')">Batal</button>
+            <div class="modal-header">
+                <h2>Buat Pengajuan Baru</h2>
+                <button class="close-modal" id="closeNew">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Tipe Pengajuan</label>
+                <select id="newType" class="form-control">
+                    <option value="Kasbon">Kasbon / Uang Jalan</option>
+                    <option value="Pembelian Aset">Pembelian Aset</option>
+                    <option value="Operasional">Operasional Lainnya</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nama Pemohon</label>
+                <input type="text" id="newName" class="form-control" readonly placeholder="Otomatis dari login">
+            </div>
+            <div class="form-group">
+                <label>Jumlah (Rp)</label>
+                <input type="number" id="newAmount" class="form-control" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>Keperluan / Keterangan</label>
+                <textarea id="newPurpose" class="form-control" rows="3" placeholder="Jelaskan detail keperluan..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Tanda Tangan Pemohon</label>
+                <canvas id="sigCanvasNew" class="signature-pad"></canvas>
+                <div class="sig-actions">
+                    <button class="btn-clear-sig" id="clearSigNew"><i class="fas fa-eraser"></i> Hapus TTD</button>
+                </div>
+            </div>
+            <button class="btn-new" id="btnSubmitNew" style="width:100%; justify-content:center;"><i class="fas fa-paper-plane"></i> Submit Pengajuan</button>
         </div>
     </div>
 
     <!-- MODAL APPROVE/REJECT -->
     <div id="approveModal" class="modal-overlay">
         <div class="modal-box">
-            <h2 style="margin-bottom:20px;">Review Pengajuan</h2>
-            <div id="reviewDetails" style="background:#f8fafc; padding:16px; border-radius:10px; margin-bottom:20px; font-size:14px;"></div>
-            <label style="font-size:13px; font-weight:600; display:block; margin-bottom:8px;">Tanda Tangan Approver</label>
-            <canvas id="sigCanvasApp" class="signature-pad"></canvas>
-            <div style="display:flex; gap:10px;">
-                <button class="btn-action" style="flex:1; background:#fef2f2; color:var(--danger); border-color:#fecaca;" onclick="processApproval('Rejected')">Tolak</button>
-                <button class="btn-action" style="flex:1; background:var(--success); color:white; border:none;" onclick="processApproval('Approved')">Setujui</button>
+            <div class="modal-header">
+                <h2>Review Pengajuan</h2>
+                <button class="close-modal" id="closeApprove">&times;</button>
             </div>
-            <button class="btn-action" style="width:100%; margin-top:10px; justify-content:center;" onclick="closeModal('approveModal')">Batal</button>
+            <div id="reviewDetails" style="background:#f8fafc; padding:16px; border-radius:10px; margin-bottom:20px; font-size:14px; line-height:1.6;"></div>
+            
+            <div class="form-group">
+                <label>Tanda Tangan Approver</label>
+                <canvas id="sigCanvasApp" class="signature-pad"></canvas>
+                <div class="sig-actions">
+                    <button class="btn-clear-sig" id="clearSigApp"><i class="fas fa-eraser"></i> Hapus TTD</button>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-action" id="btnReject" style="flex:1; padding:12px; background:#fef2f2; color:var(--danger); border-color:#fecaca; font-weight:600;">Tolak</button>
+                <button class="btn-action" id="btnApprove" style="flex:1; padding:12px; background:var(--success); color:white; border:none; font-weight:600;">Setujui</button>
+            </div>
         </div>
     </div>
 
@@ -107,32 +168,85 @@
 
         let currentFilter = '';
         let currentFormId = null;
+        let currentUser = null;
 
         // SIGNATURE PAD LOGIC
-        function initSignature(canvasId) {
+        function initSignature(canvasId, clearBtnId) {
             const canvas = document.getElementById(canvasId);
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             let isDrawing = false;
             
-            const resize = () => { canvas.width = canvas.parentElement.offsetWidth; canvas.height = 150; ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 2; };
+            const resize = () => { 
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width; 
+                canvas.height = 150; 
+                ctx.strokeStyle = "#0f172a"; 
+                ctx.lineWidth = 2; 
+                ctx.lineCap = "round";
+                ctx.lineJoin = "round";
+            };
             setTimeout(resize, 50);
             
-            function getPos(e) { const r = canvas.getBoundingClientRect(); const c = e.touches ? e.touches[0] : e; return { x: c.clientX - r.left, y: c.clientY - r.top }; }
+            function getPos(e) { 
+                const r = canvas.getBoundingClientRect(); 
+                const c = e.touches ? e.touches[0] : e; 
+                return { x: c.clientX - r.left, y: c.clientY - r.top }; 
+            }
             function start(e) { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }
             function draw(e) { if(!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }
             function stop() { isDrawing = false; }
             
             canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stop);
             canvas.addEventListener('touchstart', start, {passive:false}); canvas.addEventListener('touchmove', draw, {passive:false}); canvas.addEventListener('touchend', stop);
+
+            // Clear button logic
+            if(clearBtnId) {
+                document.getElementById(clearBtnId).addEventListener('click', () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                });
+            }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const user = JSON.parse(localStorage.getItem('financeRajUser'));
-            if (!user) window.location.href = 'index.html';
+            if (!user) { window.location.href = 'index.html'; return; }
+            currentUser = user;
+
+            // Isi nama pemohon otomatis di modal baru
+            document.getElementById('newName').value = user.fullName;
+
+            // Init signature pads
+            initSignature('sigCanvasNew', 'clearSigNew');
+            initSignature('sigCanvasApp', 'clearSigApp');
+
+            // Event Listeners untuk Modal (Menggantikan onclick di HTML)
+            document.getElementById('btnNewForm').addEventListener('click', () => openModal('newFormModal'));
+            document.getElementById('closeNew').addEventListener('click', () => closeModal('newFormModal'));
+            document.getElementById('closeApprove').addEventListener('click', () => closeModal('approveModal'));
             
-            initSignature('sigCanvasNew');
-            initSignature('sigCanvasApp');
+            // Tutup modal jika klik di luar box
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if(e.target === modal) modal.classList.remove('open');
+                });
+            });
+
+            // Tombol Submit & Action
+            document.getElementById('btnSubmitNew').addEventListener('click', submitNewForm);
+            document.getElementById('btnApprove').addEventListener('click', () => processApproval('Approved'));
+            document.getElementById('btnReject').addEventListener('click', () => processApproval('Rejected'));
+
+            // Filter Buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentFilter = e.target.dataset.status;
+                    loadForms();
+                });
+            });
+
             loadForms();
         });
 
@@ -141,53 +255,68 @@
 
         async function loadForms() {
             const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px;">Memuat...</td></tr>';
             try {
                 const url = currentFilter ? `${GAS_URL}?action=getApprovalForms&status=${currentFilter}` : `${GAS_URL}?action=getApprovalForms`;
                 const res = await fetch(url);
                 const data = await res.json();
                 
-                if(data.status === 'success' && data.forms.length > 0) {
+                if(data.status === 'success' && data.forms && data.forms.length > 0) {
                     tbody.innerHTML = data.forms.map(f => `
                         <tr>
                             <td style="font-weight:600; color:var(--primary);">${f.id}</td>
                             <td>${new Date(f.tanggal).toLocaleDateString('id-ID')}</td>
                             <td>${f.tipeForm}</td>
                             <td>${f.pemohon}</td>
-                            <td style="font-weight:700;">${formatRupiah(f.jumlah)}</td>
+                            <td class="hide-mobile" style="font-weight:700;">${formatRupiah(f.jumlah)}</td>
                             <td><span class="badge badge-${f.status.toLowerCase()}">${f.status}</span></td>
                             <td>
-                                ${f.status === 'Submitted' ? `<button class="btn-action" onclick="openApprove('${f.id}', '${escapeHtml(f.tipeForm)}', '${escapeHtml(f.pemohon)}', '${f.jumlah}', '${escapeHtml(f.keperluan)}')">Review</button>` : '-'}
+                                ${f.status === 'Submitted' ? `<button class="btn-action btn-review" data-id="${f.id}" data-type="${escapeHtml(f.tipeForm)}" data-pemohon="${escapeHtml(f.pemohon)}" data-jumlah="${f.jumlah}" data-keperluan="${escapeHtml(f.keperluan)}">Review</button>` : '-'}
                             </td>
                         </tr>
                     `).join('');
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-sec);">Tidak ada data</td></tr>';
-                }
-            } catch(e) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Error loading data</td></tr>'; }
-        }
 
-        window.filterStatus = (status) => {
-            currentFilter = status;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            loadForms();
+                    // Attach event listeners to dynamic review buttons
+                    document.querySelectorAll('.btn-review').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const t = e.currentTarget;
+                            openApprove(t.dataset.id, t.dataset.type, t.dataset.pemohon, t.dataset.jumlah, t.dataset.keperluan);
+                        });
+                    });
+
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-sec);">Tidak ada data form</td></tr>';
+                }
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Gagal memuat data</td></tr>'; }
         }
 
         async function submitNewForm() {
-            const user = JSON.parse(localStorage.getItem('financeRajUser'));
+            if (!currentUser) return alert("Sesi login tidak valid.");
+            
             const type = document.getElementById('newType').value;
             const amount = document.getElementById('newAmount').value;
             const purpose = document.getElementById('newPurpose').value;
             const canvas = document.getElementById('sigCanvasNew');
             
+            // Cek apakah canvas kosong (sederhana: cek pixel data)
+            const pixelBuffer = new Uint32Array(
+                canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data.buffer
+            );
+            const isEmpty = !pixelBuffer.some(color => color !== 0);
+            if(isEmpty) return alert("Mohon isi tanda tangan terlebih dahulu!");
+
             if(!amount || !purpose) return alert("Lengkapi semua data!");
             
+            const btn = document.getElementById('btnSubmitNew');
+            const originalText = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+
             const payload = {
                 action: 'addApprovalForm',
                 formData: {
                     tipeForm: type, tanggal: new Date().toISOString().split('T')[0],
-                    pemohon: user.fullName, jumlah: amount, keperluan: purpose,
-                    signaturePemohon: canvas.toDataURL(), namaPemohonTTD: user.fullName,
+                    pemohon: currentUser.fullName, jumlah: amount, keperluan: purpose,
+                    signaturePemohon: canvas.toDataURL(), namaPemohonTTD: currentUser.fullName,
                     tanggalTTDPemohon: new Date().toISOString()
                 }
             };
@@ -196,46 +325,70 @@
                 const res = await fetch(GAS_URL, { method:'POST', body:JSON.stringify(payload) });
                 const result = await res.json();
                 if(result.status === 'success') {
-                    alert("Pengajuan berhasil dikirim!");
+                    alert("✅ Pengajuan berhasil dikirim!");
                     closeModal('newFormModal');
+                    // Reset form
                     document.getElementById('newAmount').value = '';
                     document.getElementById('newPurpose').value = '';
+                    document.getElementById('clearSigNew').click();
                     loadForms();
                 } else { alert("Error: " + result.message); }
             } catch(e) { alert("Gagal mengirim: " + e.message); }
+            finally { btn.disabled = false; btn.innerHTML = originalText; }
         }
 
         window.openApprove = (id, type, pemohon, jumlah, keperluan) => {
             currentFormId = id;
             document.getElementById('reviewDetails').innerHTML = `
-                <strong>ID:</strong> ${id}<br><strong>Tipe:</strong> ${type}<br>
-                <strong>Pemohon:</strong> ${pemohon}<br><strong>Jumlah:</strong> ${formatRupiah(jumlah)}<br>
+                <strong>ID:</strong> ${id}<br>
+                <strong>Tipe:</strong> ${type}<br>
+                <strong>Pemohon:</strong> ${pemohon}<br>
+                <strong>Jumlah:</strong> ${formatRupiah(jumlah)}<br>
                 <strong>Keperluan:</strong> ${keperluan}
             `;
             openModal('approveModal');
         }
 
         async function processApproval(newStatus) {
-            const user = JSON.parse(localStorage.getItem('financeRajUser'));
+            if (!currentUser) return alert("Sesi login tidak valid.");
             const canvas = document.getElementById('sigCanvasApp');
             
+            // Cek tanda tangan approver
+            const pixelBuffer = new Uint32Array(
+                canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data.buffer
+            );
+            const isEmpty = !pixelBuffer.some(color => color !== 0);
+            if(isEmpty) return alert("Mohon isi tanda tangan approver terlebih dahulu!");
+
+            let reason = "";
+            if (newStatus === 'Rejected') {
+                reason = prompt("Masukkan alasan penolakan (Wajib):");
+                if (!reason) return; // Batalkan jika user cancel prompt
+            }
+
+            const btn = newStatus === 'Approved' ? document.getElementById('btnApprove') : document.getElementById('btnReject');
+            const originalText = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Proses...';
+
             const payload = {
                 action: newStatus === 'Approved' ? 'approveForm' : 'rejectForm',
                 formId: currentFormId,
-                approverName: user.fullName, 
+                approverName: currentUser.fullName, 
                 signature: canvas.toDataURL(),
-                reason: newStatus === 'Rejected' ? prompt("Masukkan alasan penolakan:") : ""
+                reason: reason
             };
 
             try {
                 const res = await fetch(GAS_URL, { method:'POST', body:JSON.stringify(payload) });
                 const result = await res.json();
                 if(result.status === 'success') {
-                    alert(`Form berhasil di-${newStatus === 'Approved' ? 'setujui' : 'tolak'}!`);
+                    alert(`✅ Form berhasil di-${newStatus === 'Approved' ? 'setujui' : 'tolak'}!`);
                     closeModal('approveModal');
+                    document.getElementById('clearSigApp').click();
                     loadForms();
                 } else { alert("Error: " + result.message); }
             } catch(e) { alert("Gagal memproses: " + e.message); }
+            finally { btn.disabled = false; btn.innerHTML = originalText; }
         }
 
         function formatRupiah(num) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num); }
