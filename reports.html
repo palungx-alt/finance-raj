@@ -135,7 +135,7 @@
         }
         .ledger-filter select:focus { border-color: var(--primary); background-color: white; }
 
-        /* ========== PRINT STYLE - DIPERBAIKI ========== */
+        /* ========== PRINT STYLE ========== */
         @media print {
             @page { margin: 8mm; size: A4; }
             body { background: white; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -148,36 +148,20 @@
                 border-radius: 0;
             }
             
-            /* KOP SURAT - TETAP SAMA SEPERTI GAMBAR */
+            /* KOP SURAT HANYA GAMBAR CENTER DI ATAS */
             .print-header { 
-                display: flex !important; 
-                align-items: center; 
-                gap: 16px; 
+                display: block !important; 
+                text-align: center; 
                 margin-bottom: 12px; 
                 padding-bottom: 10px; 
-                border-bottom: 3px double #000; 
+                border-bottom: 2px solid #000; 
             }
             .print-header img { 
-                max-width: 70px; 
+                max-width: 120px; 
                 height: auto; 
-                flex-shrink: 0; 
+                display: inline-block; 
             }
-            .print-header-text { 
-                flex: 1; 
-                text-align: left; 
-            }
-            .print-header-text h2 { 
-                font-size: 16px; 
-                font-weight: 800; 
-                margin: 0 0 4px 0; 
-                letter-spacing: 0.5px; 
-            }
-            .print-header-text p { 
-                font-size: 10px; 
-                margin: 2px 0; 
-                color: #333; 
-                line-height: 1.4; 
-            }
+            .print-header-text { display: none !important; } /* Sembunyikan teks kop surat */
             
             .screen-header { display: none; }
             .desktop-table { display: block !important; }
@@ -275,11 +259,6 @@
             <div class="report-card">
                 <div class="print-header">
                     <img src="assets/kop-surat.png" alt="Kop Surat" onerror="this.style.display='none'">
-                    <div class="print-header-text">
-                        <h2>CV REZEKI AMANAH JAYA GROUP</h2>
-                        <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
-                        <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
-                    </div>
                 </div>
                 <div class="print-title">NERACA (BALANCE SHEET)</div>
                 <div class="print-subtitle">CV Rezeki Amanah Jaya Group</div>
@@ -307,11 +286,6 @@
             <div class="report-card">
                 <div class="print-header">
                     <img src="assets/kop-surat.png" alt="Kop Surat" onerror="this.style.display='none'">
-                    <div class="print-header-text">
-                        <h2>CV REZEKI AMANAH JAYA GROUP</h2>
-                        <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
-                        <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
-                    </div>
                 </div>
                 <div class="print-title">LAPORAN LABA RUGI</div>
                 <div class="print-subtitle">CV Rezeki Amanah Jaya Group</div>
@@ -339,11 +313,6 @@
             <div class="report-card">
                 <div class="print-header">
                     <img src="assets/kop-surat.png" alt="Kop Surat" onerror="this.style.display='none'">
-                    <div class="print-header-text">
-                        <h2>CV REZEKI AMANAH JAYA GROUP</h2>
-                        <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
-                        <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
-                    </div>
                 </div>
                 <div class="print-title">LAPORAN ARUS KAS</div>
                 <div class="print-subtitle">CV Rezeki Amanah Jaya Group</div>
@@ -371,11 +340,6 @@
             <div class="report-card">
                 <div class="print-header">
                     <img src="assets/kop-surat.png" alt="Kop Surat" onerror="this.style.display='none'">
-                    <div class="print-header-text">
-                        <h2>CV REZEKI AMANAH JAYA GROUP</h2>
-                        <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
-                        <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
-                    </div>
                 </div>
                 <div class="print-title">BUKU BESAR (GENERAL LEDGER)</div>
                 <div class="print-subtitle" id="printAccNameBB">CV Rezeki Amanah Jaya Group</div>
