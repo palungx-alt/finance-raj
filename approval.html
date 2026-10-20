@@ -290,6 +290,7 @@
             } catch(e) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Gagal memuat data</td></tr>'; }
         }
 
+        // FUNGSI SUBMIT FORM BARU (FIXED CANVAS VALIDATION)
         async function submitNewForm() {
             if (!currentUser) return alert("Sesi login tidak valid.");
             
@@ -298,14 +299,29 @@
             const purpose = document.getElementById('newPurpose').value;
             const canvas = document.getElementById('sigCanvasNew');
             
-            // Cek apakah canvas kosong (sederhana: cek pixel data)
-            const pixelBuffer = new Uint32Array(
-                canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data.buffer
-            );
-            const isEmpty = !pixelBuffer.some(color => color !== 0);
-            if(isEmpty) return alert("Mohon isi tanda tangan terlebih dahulu!");
-
+            // Validasi input dasar
             if(!amount || !purpose) return alert("Lengkapi semua data!");
+
+            // Validasi Tanda Tangan yang AMAN (Mencegah Error Canvas Kosong/Rusak)
+            let signatureData = "";
+            try {
+                // Pastikan canvas punya dimensi valid sebelum ambil data
+                if (canvas.width > 0 && canvas.height > 0) {
+                    const ctx = canvas.getContext('2d');
+                    const pixelBuffer = new Uint32Array(
+                        ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer
+                    );
+                    const isEmpty = !pixelBuffer.some(color => color !== 0);
+                    
+                    if(isEmpty) return alert("Mohon isi tanda tangan terlebih dahulu!");
+                    signatureData = canvas.toDataURL(); // Ambil data gambar hanya jika valid
+                } else {
+                    return alert("Area tanda tangan belum siap. Coba tutup dan buka kembali form.");
+                }
+            } catch (e) {
+                console.error("Error validasi TTD:", e);
+                return alert("Terjadi kesalahan pada area tanda tangan. Silakan refresh halaman.");
+            }
             
             const btn = document.getElementById('btnSubmitNew');
             const originalText = btn.innerHTML;
@@ -316,7 +332,7 @@
                 formData: {
                     tipeForm: type, tanggal: new Date().toISOString().split('T')[0],
                     pemohon: currentUser.fullName, jumlah: amount, keperluan: purpose,
-                    signaturePemohon: canvas.toDataURL(), namaPemohonTTD: currentUser.fullName,
+                    signaturePemohon: signatureData, namaPemohonTTD: currentUser.fullName,
                     tanggalTTDPemohon: new Date().toISOString()
                 }
             };
@@ -327,7 +343,6 @@
                 if(result.status === 'success') {
                     alert("✅ Pengajuan berhasil dikirim!");
                     closeModal('newFormModal');
-                    // Reset form
                     document.getElementById('newAmount').value = '';
                     document.getElementById('newPurpose').value = '';
                     document.getElementById('clearSigNew').click();
@@ -349,21 +364,35 @@
             openModal('approveModal');
         }
 
+        // FUNGSI APPROVE/REJECT (FIXED CANVAS VALIDATION)
         async function processApproval(newStatus) {
             if (!currentUser) return alert("Sesi login tidak valid.");
             const canvas = document.getElementById('sigCanvasApp');
             
-            // Cek tanda tangan approver
-            const pixelBuffer = new Uint32Array(
-                canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data.buffer
-            );
-            const isEmpty = !pixelBuffer.some(color => color !== 0);
-            if(isEmpty) return alert("Mohon isi tanda tangan approver terlebih dahulu!");
-
             let reason = "";
             if (newStatus === 'Rejected') {
                 reason = prompt("Masukkan alasan penolakan (Wajib):");
-                if (!reason) return; // Batalkan jika user cancel prompt
+                if (!reason && reason !== "") return; // Batalkan jika user cancel prompt
+            }
+
+            // Validasi Tanda Tangan Approver yang AMAN
+            let signatureData = "";
+            try {
+                if (canvas.width > 0 && canvas.height > 0) {
+                    const ctx = canvas.getContext('2d');
+                    const pixelBuffer = new Uint32Array(
+                        ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer
+                    );
+                    const isEmpty = !pixelBuffer.some(color => color !== 0);
+                    
+                    if(isEmpty) return alert("Mohon isi tanda tangan approver terlebih dahulu!");
+                    signatureData = canvas.toDataURL();
+                } else {
+                    return alert("Area tanda tangan belum siap. Coba tutup dan buka kembali modal review.");
+                }
+            } catch (e) {
+                console.error("Error validasi TTD Approver:", e);
+                return alert("Terjadi kesalahan pada area tanda tangan.");
             }
 
             const btn = newStatus === 'Approved' ? document.getElementById('btnApprove') : document.getElementById('btnReject');
@@ -374,7 +403,7 @@
                 action: newStatus === 'Approved' ? 'approveForm' : 'rejectForm',
                 formId: currentFormId,
                 approverName: currentUser.fullName, 
-                signature: canvas.toDataURL(),
+                signature: signatureData,
                 reason: reason
             };
 
