@@ -22,6 +22,8 @@
         .btn-action:hover { opacity: 0.9; }
         .btn-outline { background: white; color: var(--text-main); border: 1px solid var(--border); }
         .btn-outline:hover { background: var(--bg-body); }
+        .btn-success { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 13px; }
+        .btn-success:hover { opacity: 0.9; }
         
         .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
         
@@ -50,7 +52,7 @@
         .btn-edit { color: var(--primary); }
         .btn-edit:hover { background: #eff6ff; }
         .btn-delete { color: var(--danger); }
-        .btn-delete:hover { background: #fee2e2; }
+        .btn-delete:hover { background: #fee2f2; }
 
         @media (max-width: 768px) {
             .container { padding: 0 16px; margin-top: 16px; }
@@ -67,6 +69,7 @@
         </div>
         <div class="action-buttons">
             <button class="btn-action btn-outline" onclick="exportAssets()"><i class="fas fa-file-excel"></i> Export Excel</button>
+            <button class="btn-success" id="btnRunDepreciation"><i class="fas fa-calculator"></i> Jalankan Penyusutan</button>
             <button class="btn-action" id="btnSaveAsset"><i class="fas fa-save"></i> Simpan Aset</button>
         </div>
     </div>
@@ -326,6 +329,32 @@
                     loadData();
                 } else { alert("Error: " + result.message); }
             } catch(e) { alert("Gagal menyimpan: " + e.message); }
+            finally { btn.disabled = false; btn.innerHTML = originalText; }
+        });
+
+        // EVENT LISTENER UNTUK TOMBOL PENYUSUTAN OTOMATIS
+        document.getElementById('btnRunDepreciation').addEventListener('click', async () => {
+            if(!confirm("Apakah Anda yakin ingin menjalankan penyusutan otomatis untuk bulan ini? Jurnal penyesuaian akan dibuat secara permanen.")) return;
+            
+            const btn = document.getElementById('btnRunDepreciation');
+            const originalText = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            
+            try {
+                const now = new Date();
+                const period = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+                
+                const res = await fetch(GAS_URL, { 
+                    method:'POST', 
+                    body:JSON.stringify({ action: 'runMonthlyDepreciation', period: period }) 
+                });
+                const result = await res.json();
+                
+                if(result.status === 'success') {
+                    alert(`✅ Berhasil! ${result.message}`);
+                    loadData(); // Refresh tabel untuk update nilai akumulasi
+                } else { alert("Error: " + result.message); }
+            } catch(e) { alert("Gagal memproses penyusutan: " + e.message); }
             finally { btn.disabled = false; btn.innerHTML = originalText; }
         });
 
