@@ -6,65 +6,95 @@
     <title>FinanceRAJ - Approval System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; --success: #10b981; --danger: #ef4444; }
+        :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
+        body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 80px; } /* Extra padding for mobile bottom nav if needed */
         
-        .top-bar { background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-        .brand-area { display: flex; align-items: center; gap: 12px; }
-        .btn-back { background: var(--bg-body); border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-new { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        .top-bar { background: var(--surface); padding: 16px 20px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .brand-area { display: flex; align-items: center; gap: 12px; flex: 1; }
+        .btn-back { background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; transition: 0.2s; }
+        .btn-back:hover { background: var(--border); }
+        .page-title h1 { font-size: 18px; font-weight: 700; margin: 0; line-height: 1.2; }
+        .page-title p { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
+        .btn-new { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 12px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); white-space: nowrap; font-size: 14px;}
+        .btn-new:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
         
-        .container { max-width: 1000px; margin: 24px auto; padding: 0 20px; }
-        .filters { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; }
-        .filter-btn { background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-sec); cursor: pointer; white-space: nowrap; }
+        .container { max-width: 800px; margin: 20px auto; padding: 0 16px; }
+        
+        /* FILTERS HORIZONTAL SCROLL */
+        .filters { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .filters::-webkit-scrollbar { display: none; }
+        .filter-btn { background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-sec); cursor: pointer; white-space: nowrap; transition: 0.2s; flex-shrink: 0; }
         .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
         
-        .table-card { background: var(--surface); border-radius: var(--radius); box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); border: 1px solid var(--border); overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 16px; font-size: 12px; text-transform: uppercase; color: var(--text-sec); border-bottom: 1px solid var(--border); }
-        td { padding: 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+        /* CARD LAYOUT FOR MOBILE */
+        .card-list { display: flex; flex-direction: column; gap: 12px; }
+        .approval-card { 
+            background: var(--surface); border-radius: var(--radius); padding: 16px; 
+            box-shadow: 0 2px 10px -2px rgba(0,0,0,0.05); border: 1px solid var(--border);
+            display: flex; flex-direction: column; gap: 12px; transition: transform 0.2s;
+        }
+        .approval-card:active { transform: scale(0.98); }
         
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .card-id { font-weight: 700; color: var(--primary); font-size: 14px; }
+        .card-date { font-size: 12px; color: var(--text-sec); margin-top: 4px; }
+        
+        .card-body { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .info-label { font-size: 11px; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .info-value { font-size: 14px; font-weight: 600; color: var(--text-main); word-break: break-word; }
+        .full-width { grid-column: span 2; }
+        
+        .card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px; }
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
         .badge-submitted { background: #eff6ff; color: var(--primary); }
         .badge-approved { background: #ecfdf5; color: var(--success); }
         .badge-rejected { background: #fef2f2; color: var(--danger); }
         
-        .btn-action { background: none; border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; transition: 0.2s; }
-        .btn-action:hover { background: var(--bg-body); border-color: var(--primary); color: var(--primary); }
-        
-        /* MODAL UTAMA */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .btn-review { background: var(--bg-body); border: 1px solid var(--border); padding: 8px 16px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-main); transition: 0.2s; }
+        .btn-review:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* MODAL & SIGNATURE */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); display: none; align-items: flex-end; justify-content: center; z-index: 1000; padding: 0; }
         .modal-overlay.open { display: flex; }
-        .modal-box { background: var(--surface); width: 100%; max-width: 500px; border-radius: var(--radius); padding: 24px; max-height: 90vh; overflow-y: auto; }
+        .modal-box { 
+            background: var(--surface); width: 100%; max-width: 500px; border-radius: 24px 24px 0 0; 
+            padding: 24px 20px 40px 20px; max-height: 90vh; overflow-y: auto; 
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.1); animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-sec); }
+        .modal-header h2 { font-size: 18px; font-weight: 700; }
+        .close-modal { background: var(--bg-body); border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-sec); font-size: 16px; }
         
         .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; }
-        .form-control { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; background: var(--bg-body); }
-        .form-control:focus { border-color: var(--primary); background: white; }
-        .form-control[readonly] { background: #f1f5f9; cursor: not-allowed; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
+        .form-control { width: 100%; padding: 14px 16px; background: var(--bg-body); border: 1px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; -webkit-appearance: none; }
+        .form-control:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
+        .form-control[readonly] { background: #f1f5f9; cursor: not-allowed; color: var(--text-sec); }
+        textarea.form-control { resize: vertical; min-height: 80px; }
         
-        /* TRIGGER TTD (Kotak kecil di form) */
+        /* TRIGGER TTD */
         .sig-trigger { 
-            border: 2px dashed var(--border); border-radius: 10px; background: #f8fafc; 
+            border: 2px dashed var(--border); border-radius: 12px; background: #f8fafc; 
             height: 60px; display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; color: var(--text-sec); font-size: 13px; font-weight: 600;
+            cursor: pointer; color: var(--text-sec); font-size: 14px; font-weight: 600;
             transition: 0.2s; margin-bottom: 8px;
         }
         .sig-trigger:hover { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
         .sig-trigger.signed { border-style: solid; border-color: var(--success); color: var(--success); background: #ecfdf5; }
         
-        /* FULLSCREEN SIGNATURE MODAL */
+        /* FULLSCREEN SIGNATURE PAD */
         .sig-fullscreen { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
             background: white; z-index: 2000; display: none; flex-direction: column;
         }
         .sig-fullscreen.open { display: flex; }
         .sig-header { 
-            padding: 16px 24px; border-bottom: 1px solid var(--border); 
+            padding: 16px 20px; border-bottom: 1px solid var(--border); 
             display: flex; justify-content: space-between; align-items: center; 
             background: var(--surface);
         }
@@ -74,21 +104,29 @@
         }
         #mainSigCanvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
         .sig-footer { 
-            padding: 16px 24px; border-top: 1px solid var(--border); 
-            display: flex; gap: 12px; background: var(--surface);
+            padding: 16px 20px; border-top: 1px solid var(--border); 
+            display: flex; gap: 12px; background: var(--surface); padding-bottom: calc(16px + env(safe-area-inset-bottom));
         }
         .btn-sig-action { 
-            flex: 1; padding: 14px; border-radius: 12px; font-weight: 600; 
-            cursor: pointer; border: none; font-size: 14px; display: flex; 
+            flex: 1; padding: 16px; border-radius: 14px; font-weight: 700; 
+            cursor: pointer; border: none; font-size: 15px; display: flex; 
             align-items: center; justify-content: center; gap: 8px;
         }
         .btn-clear { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border); }
         .btn-save { background: var(--primary); color: white; }
 
-        @media (max-width: 600px) {
-            .container { padding: 0 16px; margin-top: 16px; }
-            th, td { padding: 12px 16px; font-size: 13px; }
-            .hide-mobile { display: none; }
+        /* DESKTOP TABLE VIEW (Hidden on Mobile) */
+        .desktop-table { display: none; }
+        @media (min-width: 768px) {
+            .card-list { display: none; }
+            .desktop-table { display: block; }
+            .modal-overlay { align-items: center; padding: 20px; }
+            .modal-box { border-radius: 24px; max-height: 85vh; }
+            table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+            th { text-align: left; padding: 16px; font-size: 12px; text-transform: uppercase; color: var(--text-sec); border-bottom: 1px solid var(--border); font-weight: 700; }
+            td { padding: 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+            tr:last-child td { border-bottom: none; }
+            tr:hover td { background: #f8fafc; }
         }
     </style>
 </head>
@@ -97,7 +135,10 @@
         <div class="brand-area">
             <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i></button>
             <img src="assets/logo.png" alt="Logo" style="width:32px;" onerror="this.style.display='none'">
-            <div><h1 style="font-size:18px; font-weight:700;">Approval System</h1><p style="font-size:12px; color:var(--text-sec);">Kasbon, Aset & Operasional</p></div>
+            <div class="page-title">
+                <h1>Approval System</h1>
+                <p>Kasbon, Aset & Operasional</p>
+            </div>
         </div>
         <button class="btn-new" id="btnNewForm"><i class="fas fa-plus"></i> Ajukan Baru</button>
     </div>
@@ -109,48 +150,74 @@
             <button class="filter-btn" data-status="Approved">Disetujui</button>
             <button class="filter-btn" data-status="Rejected">Ditolak</button>
         </div>
-        <div class="table-card">
+
+        <!-- MOBILE CARD LIST -->
+        <div class="card-list" id="cardList">
+            <!-- Cards will be injected here via JS -->
+        </div>
+
+        <!-- DESKTOP TABLE -->
+        <div class="desktop-table">
             <table id="approvalTable">
-                <thead><tr><th>ID</th><th>Tanggal</th><th>Tipe</th><th>Pemohon</th><th class="hide-mobile">Jumlah</th><th>Status</th><th>Aksi</th></tr></thead>
-                <tbody id="tableBody"><tr><td colspan="7" style="text-align:center; padding:30px;">Memuat...</td></tr></tbody>
+                <thead><tr><th>ID Form</th><th>Tanggal</th><th>Tipe</th><th>Pemohon</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead>
+                <tbody id="tableBody"><tr><td colspan="7" style="text-align:center; padding:30px;">Memuat data...</td></tr></tbody>
             </table>
         </div>
     </div>
 
-    <!-- MODAL FORM BARU -->
+    <!-- MODAL BUAT BARU -->
     <div id="newFormModal" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-header"><h2>Buat Pengajuan Baru</h2><button class="close-modal" id="closeNew">&times;</button></div>
-            <div class="form-group"><label>Tipe Pengajuan</label><select id="newType" class="form-control"><option value="Kasbon">Kasbon / Uang Jalan</option><option value="Pembelian Aset">Pembelian Aset</option><option value="Operasional">Operasional Lainnya</option></select></div>
-            <div class="form-group"><label>Nama Pemohon</label><input type="text" id="newName" class="form-control" readonly></div>
-            <div class="form-group"><label>Jumlah (Rp)</label><input type="number" id="newAmount" class="form-control" placeholder="0"></div>
-            <div class="form-group"><label>Keperluan</label><textarea id="newPurpose" class="form-control" rows="3" placeholder="Jelaskan detail..."></textarea></div>
-            
+            <div class="modal-header">
+                <h2>Buat Pengajuan Baru</h2>
+                <button class="close-modal" id="closeNew">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Tipe Pengajuan</label>
+                <select id="newType" class="form-control">
+                    <option value="Kasbon">Kasbon / Uang Jalan</option>
+                    <option value="Pembelian Aset">Pembelian Aset</option>
+                    <option value="Operasional">Operasional Lainnya</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nama Pemohon</label>
+                <input type="text" id="newName" class="form-control" readonly placeholder="Otomatis dari login">
+            </div>
+            <div class="form-group">
+                <label>Jumlah (Rp)</label>
+                <input type="number" id="newAmount" class="form-control" placeholder="0" inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label>Keperluan / Keterangan</label>
+                <textarea id="newPurpose" class="form-control" rows="3" placeholder="Jelaskan detail keperluan..."></textarea>
+            </div>
             <div class="form-group">
                 <label>Tanda Tangan Pemohon <span style="color:var(--danger)">*</span></label>
                 <div class="sig-trigger" id="triggerSigNew"><i class="fas fa-pen-nib" style="margin-right:8px;"></i> Klik untuk Tanda Tangan</div>
                 <input type="hidden" id="sigDataNew">
             </div>
-            
-            <button class="btn-new" id="btnSubmitNew" style="width:100%; justify-content:center;"><i class="fas fa-paper-plane"></i> Submit Pengajuan</button>
+            <button class="btn-new" id="btnSubmitNew" style="width:100%; justify-content:center; padding: 16px;"><i class="fas fa-paper-plane"></i> Submit Pengajuan</button>
         </div>
     </div>
 
-    <!-- MODAL REVIEW APPROVAL -->
+    <!-- MODAL APPROVE/REJECT -->
     <div id="approveModal" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-header"><h2>Review Pengajuan</h2><button class="close-modal" id="closeApprove">&times;</button></div>
-            <div id="reviewDetails" style="background:#f8fafc; padding:16px; border-radius:10px; margin-bottom:20px; font-size:14px; line-height:1.6;"></div>
+            <div class="modal-header">
+                <h2>Review Pengajuan</h2>
+                <button class="close-modal" id="closeApprove">&times;</button>
+            </div>
+            <div id="reviewDetails" style="background:#f8fafc; padding:16px; border-radius:12px; margin-bottom:20px; font-size:14px; line-height:1.6;"></div>
             
             <div class="form-group">
                 <label>Tanda Tangan Approver <span style="color:var(--danger)">*</span></label>
                 <div class="sig-trigger" id="triggerSigApp"><i class="fas fa-pen-nib" style="margin-right:8px;"></i> Klik untuk Tanda Tangan</div>
                 <input type="hidden" id="sigDataApp">
             </div>
-            
-            <div style="display:flex; gap:10px;">
-                <button class="btn-action" id="btnReject" style="flex:1; padding:12px; background:#fef2f2; color:var(--danger); border-color:#fecaca; font-weight:600;">Tolak</button>
-                <button class="btn-action" id="btnApprove" style="flex:1; padding:12px; background:var(--success); color:white; border:none; font-weight:600;">Setujui</button>
+            <div style="display:flex; gap:12px;">
+                <button class="btn-sig-action" id="btnReject" style="flex:1; background:#fef2f2; color:var(--danger); border:1px solid #fecaca;"><i class="fas fa-times"></i> Tolak</button>
+                <button class="btn-sig-action" id="btnApprove" style="flex:1; background:var(--success); color:white; border:none;"><i class="fas fa-check"></i> Setujui</button>
             </div>
         </div>
     </div>
@@ -270,7 +337,9 @@
             document.getElementById('closeApprove').addEventListener('click', () => closeModal('approveModal'));
             
             document.querySelectorAll('.modal-overlay').forEach(modal => {
-                modal.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('open'); });
+                modal.addEventListener('click', (e) => {
+                    if(e.target === modal) modal.classList.remove('open');
+                });
             });
 
             document.getElementById('btnSubmitNew').addEventListener('click', submitNewForm);
@@ -293,39 +362,97 @@
         window.closeModal = (id) => document.getElementById(id).classList.remove('open');
 
         async function loadForms() {
+            const cardList = document.getElementById('cardList');
             const tbody = document.getElementById('tableBody');
+            
+            // Loading state
+            cardList.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-sec);">Memuat...</div>';
             tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px;">Memuat...</td></tr>';
+
             try {
                 const url = currentFilter ? `${GAS_URL}?action=getApprovalForms&status=${currentFilter}` : `${GAS_URL}?action=getApprovalForms`;
                 const res = await fetch(url);
                 const data = await res.json();
                 
                 if(data.status === 'success' && data.forms && data.forms.length > 0) {
-                    tbody.innerHTML = data.forms.map(f => `
-                        <tr>
-                            <td style="font-weight:600; color:var(--primary);">${f.id}</td>
-                            <td>${new Date(f.tanggal).toLocaleDateString('id-ID')}</td>
-                            <td>${f.tipeForm}</td>
-                            <td>${f.pemohon}</td>
-                            <td class="hide-mobile" style="font-weight:700;">${formatRupiah(f.jumlah)}</td>
-                            <td><span class="badge badge-${f.status.toLowerCase()}">${f.status}</span></td>
-                            <td>${f.status === 'Submitted' ? `<button class="btn-action btn-review" data-id="${f.id}" data-type="${escapeHtml(f.tipeForm)}" data-pemohon="${escapeHtml(f.pemohon)}" data-jumlah="${f.jumlah}" data-keperluan="${escapeHtml(f.keperluan)}">Review</button>` : '-'}</td>
-                        </tr>
+                    // Render Mobile Cards
+                    cardList.innerHTML = data.forms.map(f => `
+                        <div class="approval-card">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-id">${f.id}</div>
+                                    <div class="card-date">${new Date(f.tanggal).toLocaleDateString('id-ID')}</div>
+                                </div>
+                                <span class="badge badge-${f.status.toLowerCase()}">${f.status}</span>
+                            </div>
+                            <div class="card-body">
+                                <div>
+                                    <div class="info-label">Tipe</div>
+                                    <div class="info-value">${f.tipeForm}</div>
+                                </div>
+                                <div>
+                                    <div class="info-label">Pemohon</div>
+                                    <div class="info-value">${f.pemohon}</div>
+                                </div>
+                                <div class="full-width">
+                                    <div class="info-label">Jumlah</div>
+                                    <div class="info-value" style="color:var(--primary); font-size:16px;">${formatRupiah(f.jumlah)}</div>
+                                </div>
+                                <div class="full-width">
+                                    <div class="info-label">Keperluan</div>
+                                    <div class="info-value" style="font-weight:400; font-size:13px; color:var(--text-sec);">${f.keperluan}</div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                ${f.status === 'Submitted' ? `<button class="btn-review" data-id="${f.id}" data-type="${escapeHtml(f.tipeForm)}" data-pemohon="${escapeHtml(f.pemohon)}" data-jumlah="${f.jumlah}" data-keperluan="${escapeHtml(f.keperluan)}">Review & Action</button>` : '<span style="font-size:13px; color:var(--text-sec);">Selesai diproses</span>'}
+                            </div>
+                        </div>
                     `).join('');
+
+                    // Attach event listeners to dynamic review buttons
                     document.querySelectorAll('.btn-review').forEach(btn => {
                         btn.addEventListener('click', (e) => {
                             const t = e.currentTarget;
                             openApprove(t.dataset.id, t.dataset.type, t.dataset.pemohon, t.dataset.jumlah, t.dataset.keperluan);
                         });
                     });
+
+                    // Render Desktop Table
+                    tbody.innerHTML = data.forms.map(f => `
+                        <tr>
+                            <td style="font-weight:600; color:var(--primary);">${f.id}</td>
+                            <td>${new Date(f.tanggal).toLocaleDateString('id-ID')}</td>
+                            <td>${f.tipeForm}</td>
+                            <td>${f.pemohon}</td>
+                            <td style="font-weight:700;">${formatRupiah(f.jumlah)}</td>
+                            <td><span class="badge badge-${f.status.toLowerCase()}">${f.status}</span></td>
+                            <td>${f.status === 'Submitted' ? `<button class="btn-review" data-id="${f.id}" data-type="${escapeHtml(f.tipeForm)}" data-pemohon="${escapeHtml(f.pemohon)}" data-jumlah="${f.jumlah}" data-keperluan="${escapeHtml(f.keperluan)}">Review</button>` : '-'}</td>
+                        </tr>
+                    `).join('');
+                    
+                    // Re-attach for desktop table buttons
+                    document.querySelectorAll('.desktop-table .btn-review').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const t = e.currentTarget;
+                            openApprove(t.dataset.id, t.dataset.type, t.dataset.pemohon, t.dataset.jumlah, t.dataset.keperluan);
+                        });
+                    });
+
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-sec);">Tidak ada data</td></tr>';
+                    const emptyMsg = '<div style="text-align:center; padding:40px; color:var(--text-sec);">Tidak ada data form</div>';
+                    cardList.innerHTML = emptyMsg;
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-sec);">Tidak ada data</td></tr>`;
                 }
-            } catch(e) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Error loading</td></tr>'; }
+            } catch(e) { 
+                const errMsg = '<div style="text-align:center; padding:40px; color:var(--danger);">Gagal memuat data</div>';
+                cardList.innerHTML = errMsg;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Error loading</td></tr>`;
+            }
         }
 
         async function submitNewForm() {
             if (!currentUser) return alert("Sesi login tidak valid.");
+            
             const type = document.getElementById('newType').value;
             const amount = document.getElementById('newAmount').value;
             const purpose = document.getElementById('newPurpose').value;
@@ -364,7 +491,13 @@
 
         window.openApprove = (id, type, pemohon, jumlah, keperluan) => {
             currentFormId = id;
-            document.getElementById('reviewDetails').innerHTML = `<strong>ID:</strong> ${id}<br><strong>Tipe:</strong> ${type}<br><strong>Pemohon:</strong> ${pemohon}<br><strong>Jumlah:</strong> ${formatRupiah(jumlah)}<br><strong>Keperluan:</strong> ${keperluan}`;
+            document.getElementById('reviewDetails').innerHTML = `
+                <strong>ID:</strong> ${id}<br>
+                <strong>Tipe:</strong> ${type}<br>
+                <strong>Pemohon:</strong> ${pemohon}<br>
+                <strong>Jumlah:</strong> ${formatRupiah(jumlah)}<br>
+                <strong>Keperluan:</strong> ${keperluan}
+            `;
             // Reset TTD approver setiap buka review baru
             document.getElementById('sigDataApp').value = '';
             document.getElementById('triggerSigApp').classList.remove('signed');
@@ -399,7 +532,7 @@
                     loadForms();
                 } else { alert("Error: " + result.message); }
             } catch(e) { alert("Gagal memproses: " + e.message); }
-            finally { btn.disabled = false; btn.innerHTML = newStatus === 'Approved' ? 'Setujui' : 'Tolak'; }
+            finally { btn.disabled = false; btn.innerHTML = newStatus === 'Approved' ? '<i class="fas fa-check"></i> Setujui' : '<i class="fas fa-times"></i> Tolak'; }
         }
 
         function formatRupiah(num) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num); }
