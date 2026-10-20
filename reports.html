@@ -6,7 +6,6 @@
     <title>FinanceRAJ - Laporan Keuangan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- SheetJS untuk Export Excel -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     
     <style>
@@ -14,7 +13,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
         
-        /* UI SCREEN STYLE */
         .top-bar { background: var(--surface); padding: 16px 20px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
         .brand-area { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
         .btn-back { background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; transition: 0.2s; flex-shrink: 0; }
@@ -29,8 +27,24 @@
         
         .container { max-width: 1000px; margin: 20px auto; padding: 0 16px; }
         
+        /* PERIOD FILTER BAR */
+        .period-filter-bar { 
+            background: var(--surface); padding: 16px 20px; border-radius: var(--radius); 
+            border: 1px solid var(--border); margin-bottom: 20px; 
+            display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
+        }
+        .period-filter-bar .form-group { flex: 1; min-width: 150px; }
+        .period-filter-bar label { display: block; font-size: 11px; font-weight: 700; color: var(--text-sec); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+        .period-filter-bar input, .period-filter-bar select { 
+            width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; 
+            font-size: 14px; outline: none; background: var(--bg-body);
+        }
+        .period-filter-bar input:focus, .period-filter-bar select:focus { border-color: var(--primary); background: white; }
+        .btn-apply { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; height: 42px; }
+        .btn-apply:hover { opacity: 0.9; }
+
         /* STICKY TAB NAVIGATION */
-        .tab-nav-wrapper { position: sticky; top: 73px; z-index: 90; background: var(--bg-body); padding: 16px 0 8px 0; margin-bottom: 16px; }
+        .tab-nav-wrapper { position: sticky; top: 73px; z-index: 90; background: var(--bg-body); padding: 0 0 8px 0; margin-bottom: 16px; }
         .tab-nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .tab-nav::-webkit-scrollbar { display: none; }
         .tab-btn { 
@@ -43,24 +57,25 @@
         .report-section { display: none; }
         .report-section.active { display: block; }
 
-        /* REPORT CARD STYLE */
+        /* REPORT CARD - NO PAGE BREAK INSIDE */
         .report-card { 
             background: var(--surface); padding: 24px; border-radius: var(--radius); 
             box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); border: 1px solid var(--border);
-            margin-bottom: 24px; page-break-inside: avoid;
+            margin-bottom: 24px;
         }
         
-        /* HEADER LAPORAN DI LAYAR */
-        .screen-header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid var(--primary); padding-bottom: 16px; }
+        /* HEADER LAPORAN - MENYATU DENGAN TABEL */
+        .report-header-block { margin-bottom: 20px; }
+        .screen-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 16px; }
         .screen-header h1 { font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
         .screen-header p { font-size: 14px; color: var(--text-sec); font-weight: 500; }
         .report-period { margin-top: 8px; font-size: 13px; color: var(--primary); font-weight: 700; }
         
-        /* DESKTOP TABLE VIEW */
+        /* DESKTOP TABLE */
         .desktop-table { display: none; }
-        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-        th { text-align: left; padding: 12px 16px; font-size: 12px; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); font-weight: 700; }
-        td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+        table { width: 100%; border-collapse: collapse; margin-top: 0; }
+        th { text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); font-weight: 700; }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
         
         .text-right { text-align: right; }
         .font-bold { font-weight: 700; }
@@ -68,95 +83,94 @@
         
         .total-row td { 
             border-top: 2px solid var(--text-main); border-bottom: none; 
-            font-size: 16px; font-weight: 800; color: var(--primary); padding-top: 16px;
+            font-size: 15px; font-weight: 800; color: var(--primary); padding-top: 12px;
         }
         
         .section-title { 
-            font-size: 14px; font-weight: 700; color: var(--primary); 
-            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 20px; margin-bottom: 12px;
-            border-bottom: 1px dashed var(--border); padding-bottom: 6px;
+            font-size: 13px; font-weight: 700; color: var(--primary); 
+            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 16px; margin-bottom: 8px;
+            border-bottom: 1px dashed var(--border); padding-bottom: 4px;
         }
         
-        .indent-1 { padding-left: 24px !important; }
+        .indent-1 { padding-left: 20px !important; }
         
-        .footer-note { margin-top: 30px; text-align: center; font-size: 12px; color: var(--text-sec); line-height: 1.6; }
+        .footer-note { margin-top: 30px; text-align: center; font-size: 11px; color: var(--text-sec); line-height: 1.6; }
 
-        /* MOBILE CARD VIEW FOR REPORTS */
-        .mobile-cards { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+        /* MOBILE CARD VIEW */
+        .mobile-cards { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
         .report-item-card { 
-            background: var(--bg-body); border-radius: 12px; padding: 16px; 
-            border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;
+            background: var(--bg-body); border-radius: 10px; padding: 12px; 
+            border: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px;
         }
         .report-item-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .report-item-code { font-size: 12px; color: var(--text-sec); font-weight: 600; }
-        .report-item-name { font-size: 14px; font-weight: 600; color: var(--text-main); margin-top: 4px; word-break: break-word; }
-        .report-item-value { font-size: 16px; font-weight: 800; color: var(--text-main); text-align: right; }
-        .report-item-sub { font-size: 12px; color: var(--text-sec); text-align: right; }
+        .report-item-code { font-size: 11px; color: var(--text-sec); font-weight: 600; }
+        .report-item-name { font-size: 13px; font-weight: 600; color: var(--text-main); margin-top: 2px; word-break: break-word; }
+        .report-item-value { font-size: 14px; font-weight: 800; color: var(--text-main); text-align: right; }
+        .report-item-sub { font-size: 11px; color: var(--text-sec); text-align: right; }
         
         .report-section-title-mobile { 
-            font-size: 13px; font-weight: 700; color: var(--primary); 
-            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 24px; margin-bottom: 12px;
-            padding-bottom: 6px; border-bottom: 1px dashed var(--border);
+            font-size: 12px; font-weight: 700; color: var(--primary); 
+            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 20px; margin-bottom: 10px;
+            padding-bottom: 4px; border-bottom: 1px dashed var(--border);
         }
 
         /* FILTER BUKU BESAR */
-        .ledger-filter { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        .ledger-filter { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
         .ledger-filter select { 
-            padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; 
-            font-size: 14px; outline: none; flex: 1; min-width: 200px; 
+            padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; 
+            font-size: 13px; outline: none; flex: 1; min-width: 180px; 
             background: var(--bg-body); -webkit-appearance: none; appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: right 16px center;
+            background-repeat: no-repeat; background-position: right 12px center;
         }
         .ledger-filter select:focus { border-color: var(--primary); background-color: white; }
 
-        /* PRINT / PDF STYLE */
+        /* PRINT STYLE - DIPERBAIKI */
         @media print {
-            @page { margin: 0; size: A4; }
+            @page { margin: 15mm 10mm; size: A4; }
             body { background: white; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             
-            /* Sembunyikan semua elemen UI */
-            .top-bar, .tab-nav-wrapper, .action-buttons, .ledger-filter, .footer-note, .no-print, .mobile-cards { display: none !important; }
+            .top-bar, .tab-nav-wrapper, .action-buttons, .ledger-filter, .footer-note, .no-print, .mobile-cards, .period-filter-bar { display: none !important; }
             
             .container { margin: 0; padding: 0; max-width: 100%; width: 100%; }
             .report-card { 
                 box-shadow: none; border: none; padding: 0; margin: 0; 
-                page-break-after: always; border-radius: 0; 
+                border-radius: 0; page-break-inside: auto;
             }
-            .report-card:last-child { page-break-after: auto; }
             
-            /* Tampilkan Kop Surat Khusus Print */
-            .print-header { display: block !important; margin-bottom: 20px; text-align: center; }
-            .print-header img { max-width: 100%; height: auto; max-height: 120px; object-fit: contain; }
+            .print-header { display: block !important; margin-bottom: 12px; text-align: center; }
+            .print-header img { max-width: 80px; height: auto; max-height: 80px; object-fit: contain; display: inline-block; vertical-align: middle; margin-right: 16px; }
+            .print-header-text { display: inline-block; vertical-align: middle; text-align: left; }
+            .print-header-text h2 { font-size: 16px; font-weight: 800; margin: 0; }
+            .print-header-text p { font-size: 10px; margin: 2px 0; color: #333; }
             
-            /* Style Tabel Print */
             .screen-header { display: none; }
             .desktop-table { display: block !important; }
-            .print-title { display: block !important; text-align: center; margin-bottom: 5px; font-size: 18px; font-weight: 800; text-transform: uppercase; }
-            .print-subtitle { display: block !important; text-align: center; margin-bottom: 15px; font-size: 14px; color: #333; }
-            .print-period { display: block !important; text-align: center; margin-bottom: 20px; font-size: 13px; font-weight: 700; border-bottom: 2px solid #000; padding-bottom: 10px; }
+            .print-title { display: block !important; text-align: center; margin: 16px 0 4px 0; font-size: 16px; font-weight: 800; text-transform: uppercase; }
+            .print-subtitle { display: block !important; text-align: center; margin-bottom: 4px; font-size: 12px; color: #333; }
+            .print-period { display: block !important; text-align: center; margin-bottom: 16px; font-size: 12px; font-weight: 700; border-bottom: 2px solid #000; padding-bottom: 8px; }
             
-            table { margin-top: 10px; page-break-inside: avoid; }
-            th { color: #000; border-bottom: 2px solid #000; font-size: 11px; }
-            td { border-bottom: 1px solid #ccc; font-size: 12px; padding: 8px 12px; }
-            .section-title { color: #000; border-bottom: 1px solid #000; font-size: 12px; margin-top: 15px; }
-            .total-row td { color: #000; border-top: 2px solid #000; font-size: 14px; }
-            .indent-1 { padding-left: 24px !important; }
+            table { margin-top: 0; page-break-inside: auto; }
+            tr { page-break-inside: avoid; }
+            th { color: #000; border-bottom: 2px solid #000; font-size: 10px; padding: 6px 8px; }
+            td { border-bottom: 1px solid #ddd; font-size: 11px; padding: 6px 8px; }
+            .section-title { color: #000; border-bottom: 1px solid #000; font-size: 11px; margin-top: 12px; page-break-after: avoid; }
+            .total-row td { color: #000; border-top: 2px solid #000; font-size: 12px; page-break-before: avoid; }
+            .indent-1 { padding-left: 16px !important; }
         }
 
-        /* Elemen khusus print (default hidden) */
         .print-header, .print-title, .print-subtitle, .print-period { display: none; }
 
-        /* RESPONSIVE BREAKPOINTS */
         @media (max-width: 768px) {
             .desktop-table { display: none; }
             .mobile-cards { display: flex; }
             .top-bar { padding: 12px 16px; }
             .page-title h1 { font-size: 16px; }
-            .btn-action span { display: none; } /* Hide text on small screens, show only icon */
+            .btn-action span { display: none; }
             .btn-action { padding: 10px 12px; }
             .report-card { padding: 16px; }
             .screen-header h1 { font-size: 18px; }
+            .period-filter-bar { padding: 12px; }
         }
 
         @media (min-width: 769px) {
@@ -183,46 +197,63 @@
     </div>
 
     <div class="container">
-        <!-- TAB NAVIGASI STICKY -->
+        <!-- PERIOD FILTER BAR -->
+        <div class="period-filter-bar no-print">
+            <div class="form-group">
+                <label><i class="fas fa-calendar-alt"></i> Periode Laporan</label>
+                <input type="month" id="reportPeriod" value="">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-filter"></i> Jenis Laporan</label>
+                <select id="reportType" onchange="switchTab(this.value)">
+                    <option value="neraca">Neraca</option>
+                    <option value="labarugi">Laba Rugi</option>
+                    <option value="aruskas">Arus Kas</option>
+                    <option value="bukubesar">Buku Besar</option>
+                </select>
+            </div>
+            <button class="btn-apply" onclick="applyPeriodFilter()"><i class="fas fa-sync-alt"></i> Tampilkan</button>
+        </div>
+
+        <!-- TAB NAVIGASI -->
         <div class="tab-nav-wrapper no-print">
             <div class="tab-nav">
-                <button class="tab-btn active" onclick="switchTab('neraca')">Neraca</button>
-                <button class="tab-btn" onclick="switchTab('labarugi')">Laba Rugi</button>
-                <button class="tab-btn" onclick="switchTab('aruskas')">Arus Kas</button>
-                <button class="tab-btn" onclick="switchTab('bukubesar')">Buku Besar</button>
+                <button class="tab-btn active" data-tab="neraca" onclick="switchTab('neraca')">Neraca</button>
+                <button class="tab-btn" data-tab="labarugi" onclick="switchTab('labarugi')">Laba Rugi</button>
+                <button class="tab-btn" data-tab="aruskas" onclick="switchTab('aruskas')">Arus Kas</button>
+                <button class="tab-btn" data-tab="bukubesar" onclick="switchTab('bukubesar')">Buku Besar</button>
             </div>
         </div>
 
         <!-- 1. NERACA -->
         <div id="neraca" class="report-section active">
             <div class="report-card">
-                <!-- Header Khusus Print (Kop Surat) -->
                 <div class="print-header">
-                    <img src="assets/kop-surat.png" alt="Kop Surat CV Rezeki Amanah Jaya Group" onerror="this.style.display='none'">
+                    <img src="assets/kop-surat.png" alt="Kop Surat" onerror="this.style.display='none'">
+                    <div class="print-header-text">
+                        <h2>CV REZEKI AMANAH JAYA GROUP</h2>
+                        <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
+                        <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
+                    </div>
                 </div>
                 <div class="print-title">NERACA (BALANCE SHEET)</div>
                 <div class="print-subtitle">CV Rezeki Amanah Jaya Group</div>
-                <div class="print-period" id="printPeriodNeraca">Periode: Oktober 2026</div>
+                <div class="print-period" id="printPeriodNeraca">Periode: -</div>
 
-                <!-- Header Layar -->
                 <div class="screen-header">
                     <h1>Neraca (Balance Sheet)</h1>
                     <p>CV Rezeki Amanah Jaya Group</p>
-                    <div class="report-period" id="periodNeraca">Periode: Oktober 2026</div>
+                    <div class="report-period" id="periodNeraca">Periode: -</div>
                 </div>
 
-                <!-- Desktop Table -->
                 <div class="desktop-table">
                     <table id="tableNeraca">
                         <thead><tr><th style="width:15%">Kode</th><th>Nama Akun</th><th class="text-right" style="width:25%">Debit (Rp)</th><th class="text-right" style="width:25%">Kredit (Rp)</th></tr></thead>
                         <tbody id="bodyNeraca"><tr><td colspan="4" style="text-align:center; padding:40px;">Memuat...</td></tr></tbody>
                     </table>
                 </div>
-
-                <!-- Mobile Cards -->
                 <div class="mobile-cards" id="mobileNeraca"></div>
-
-                <div class="footer-note no-print">Dicetak otomatis oleh Sistem FinanceRAJ<br>Dokumen ini sah tanpa tanda tangan basah</div>
+                <div class="footer-note no-print">Dicetak otomatis oleh Sistem FinanceRAJ</div>
             </div>
         </div>
 
@@ -231,15 +262,20 @@
             <div class="report-card">
                 <div class="print-header">
                     <img src="assets/kop-surat.png" alt="Kop Surat" onerror="this.style.display='none'">
+                    <div class="print-header-text">
+                        <h2>CV REZEKI AMANAH JAYA GROUP</h2>
+                        <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
+                        <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
+                    </div>
                 </div>
                 <div class="print-title">LAPORAN LABA RUGI</div>
                 <div class="print-subtitle">CV Rezeki Amanah Jaya Group</div>
-                <div class="print-period" id="printPeriodLR">Periode: Oktober 2026</div>
+                <div class="print-period" id="printPeriodLR">Periode: -</div>
 
                 <div class="screen-header">
                     <h1>Laporan Laba Rugi</h1>
                     <p>CV Rezeki Amanah Jaya Group</p>
-                    <div class="report-period" id="periodLR">Periode: Oktober 2026</div>
+                    <div class="report-period" id="periodLR">Periode: -</div>
                 </div>
 
                 <div class="desktop-table">
@@ -248,10 +284,8 @@
                         <tbody id="bodyLR"><tr><td colspan="3" style="text-align:center; padding:40px;">Memuat...</td></tr></tbody>
                     </table>
                 </div>
-
                 <div class="mobile-cards" id="mobileLR"></div>
-
-                <div class="footer-note no-print">Dicetak otomatis oleh Sistem FinanceRAJ<br>Dokumen ini sah tanpa tanda tangan basah</div>
+                <div class="footer-note no-print">Dicetak otomatis oleh Sistem FinanceRAJ</div>
             </div>
         </div>
 
@@ -260,15 +294,20 @@
             <div class="report-card">
                 <div class="print-header">
                     <img src="assets/kop-surat.png" alt="Kop Surat" onerror="this.style.display='none'">
+                    <div class="print-header-text">
+                        <h2>CV REZEKI AMANAH JAYA GROUP</h2>
+                        <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
+                        <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
+                    </div>
                 </div>
                 <div class="print-title">LAPORAN ARUS KAS</div>
                 <div class="print-subtitle">CV Rezeki Amanah Jaya Group</div>
-                <div class="print-period" id="printPeriodAK">Periode: Oktober 2026</div>
+                <div class="print-period" id="printPeriodAK">Periode: -</div>
 
                 <div class="screen-header">
                     <h1>Laporan Arus Kas</h1>
                     <p>CV Rezeki Amanah Jaya Group</p>
-                    <div class="report-period" id="periodAK">Periode: Oktober 2026</div>
+                    <div class="report-period" id="periodAK">Periode: -</div>
                 </div>
 
                 <div class="desktop-table">
@@ -277,10 +316,8 @@
                         <tbody id="bodyAK"><tr><td colspan="3" style="text-align:center; padding:40px;">Memuat...</td></tr></tbody>
                     </table>
                 </div>
-
                 <div class="mobile-cards" id="mobileAK"></div>
-
-                <div class="footer-note no-print">Dicetak otomatis oleh Sistem FinanceRAJ<br>Dokumen ini sah tanpa tanda tangan basah</div>
+                <div class="footer-note no-print">Dicetak otomatis oleh Sistem FinanceRAJ</div>
             </div>
         </div>
 
@@ -289,15 +326,20 @@
             <div class="report-card">
                 <div class="print-header">
                     <img src="assets/kop-surat.png" alt="Kop Surat" onerror="this.style.display='none'">
+                    <div class="print-header-text">
+                        <h2>CV REZEKI AMANAH JAYA GROUP</h2>
+                        <p>SUPPLIER & WASTE SOLUTION PARTNER</p>
+                        <p>Cluster Puri Flamingo FLA 06/19 Sukamantri Pasarkemis Kab Tangerang HP. 081296580968</p>
+                    </div>
                 </div>
                 <div class="print-title">BUKU BESAR (GENERAL LEDGER)</div>
                 <div class="print-subtitle" id="printAccNameBB">CV Rezeki Amanah Jaya Group</div>
-                <div class="print-period" id="printPeriodBB">Periode: Oktober 2026</div>
+                <div class="print-period" id="printPeriodBB">Periode: -</div>
 
                 <div class="screen-header">
                     <h1>Buku Besar</h1>
                     <p>CV Rezeki Amanah Jaya Group</p>
-                    <div class="report-period" id="periodBB">Periode: Oktober 2026</div>
+                    <div class="report-period" id="periodBB">Periode: -</div>
                 </div>
                 
                 <div class="ledger-filter no-print">
@@ -321,10 +363,8 @@
                         <tbody id="bodyBB"><tr><td colspan="6" style="text-align:center; padding:40px;">Pilih akun untuk melihat buku besar</td></tr></tbody>
                     </table>
                 </div>
-
                 <div class="mobile-cards" id="mobileBB"></div>
-
-                <div class="footer-note no-print">Dicetak otomatis oleh Sistem FinanceRAJ<br>Dokumen ini sah tanpa tanda tangan basah</div>
+                <div class="footer-note no-print">Dicetak otomatis oleh Sistem FinanceRAJ</div>
             </div>
         </div>
     </div>
@@ -339,11 +379,20 @@
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
         let allTransactions = [];
+        let filteredTransactions = [];
         let coaList = [];
         let currentPeriodText = "";
+        let selectedPeriod = "";
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
+            
+            // Set default period to current month
+            const now = new Date();
+            const defaultPeriod = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            document.getElementById('reportPeriod').value = defaultPeriod;
+            selectedPeriod = defaultPeriod;
+            
             await loadReportData();
         });
 
@@ -362,6 +411,7 @@
                 
                 // Populate Dropdown Buku Besar
                 const select = document.getElementById('accountSelect');
+                select.innerHTML = '<option value="">-- Pilih Akun --</option>';
                 coaList.forEach(acc => {
                     const opt = document.createElement('option');
                     opt.value = acc.code;
@@ -369,27 +419,53 @@
                     select.appendChild(opt);
                 });
 
-                // Set Periode
-                const now = new Date();
-                const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-                currentPeriodText = `Periode: ${months[now.getMonth()]} ${now.getFullYear()}`;
-                
-                // Update semua elemen periode (Layar & Print)
-                ['Neraca', 'LR', 'AK', 'BB'].forEach(suffix => {
-                    document.getElementById(`period${suffix}`).textContent = currentPeriodText;
-                    document.getElementById(`printPeriod${suffix}`).textContent = currentPeriodText;
-                });
-
-                renderNeraca();
-                renderLabaRugi();
-                renderArusKas();
+                applyPeriodFilter();
             } catch(e) { console.error("Gagal memuat data:", e); }
+        }
+
+        // FUNGSI FILTER PERIODE
+        window.applyPeriodFilter = function() {
+            const periodInput = document.getElementById('reportPeriod').value;
+            if(!periodInput) {
+                alert("Pilih periode terlebih dahulu!");
+                return;
+            }
+            
+            selectedPeriod = periodInput;
+            const [year, month] = periodInput.split('-');
+            const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            currentPeriodText = `Periode: ${months[parseInt(month)-1]} ${year}`;
+            
+            // Update semua elemen periode
+            ['Neraca', 'LR', 'AK', 'BB'].forEach(suffix => {
+                document.getElementById(`period${suffix}`).textContent = currentPeriodText;
+                document.getElementById(`printPeriod${suffix}`).textContent = currentPeriodText;
+            });
+
+            // Filter transaksi berdasarkan periode
+            filteredTransactions = allTransactions.filter(tx => {
+                const txDate = String(tx[1]);
+                // Format tanggal bisa YYYY-MM-DD atau DD/MM/YYYY
+                if(txDate.includes('-')) {
+                    return txDate.startsWith(`${year}-${month}`);
+                } else if(txDate.includes('/')) {
+                    const parts = txDate.split('/');
+                    return parts[2] === year && parts[1] === month;
+                }
+                return false;
+            });
+
+            // Re-render semua laporan
+            renderNeraca();
+            renderLabaRugi();
+            renderArusKas();
+            renderBukuBesar();
         }
 
         // RENDER NERACA
         function renderNeraca() {
             const balances = {};
-            allTransactions.forEach(tx => {
+            filteredTransactions.forEach(tx => {
                 const code = String(tx[6]).trim();
                 const d = parseNumber(tx[8]); const c = parseNumber(tx[9]);
                 if(!balances[code]) balances[code] = 0;
@@ -419,10 +495,8 @@
                     
                     totalDebit += dVal; totalCredit += cVal;
                     
-                    // Desktop Table Row
                     htmlTable += `<tr><td>${code}</td><td class="indent-1">${getAccName(code)}</td><td class="text-right">${dVal?formatRupiah(dVal):'-'}</td><td class="text-right">${cVal?formatRupiah(cVal):'-'}</td></tr>`;
                     
-                    // Mobile Card Item
                     if(dVal > 0 || cVal > 0) {
                         const val = cat.type === 'asset' ? dVal : cVal;
                         const label = cat.type === 'asset' ? 'Debit' : 'Kredit';
@@ -463,7 +537,7 @@
             let rev = 0, exp = 0;
             const revItems = [], expItems = [];
             
-            allTransactions.forEach(tx => {
+            filteredTransactions.forEach(tx => {
                 const code = String(tx[6]).trim();
                 const d = parseNumber(tx[8]); const c = parseNumber(tx[9]);
                 if(code.startsWith('4-')) { rev += c; revItems.push({code, name:getAccName(code), val:c}); }
@@ -472,56 +546,27 @@
 
             let htmlTable = '', htmlMobile = '';
             
-            // Pendapatan Section
             htmlTable += `<tr><td colspan="3" class="section-title">PENDAPATAN</td></tr>`;
             htmlMobile += `<div class="report-section-title-mobile">Pendapatan</div>`;
             revItems.forEach(i => {
                 htmlTable += `<tr><td>${i.code}</td><td class="indent-1">${i.name}</td><td class="text-right font-bold">${formatRupiah(i.val)}</td></tr>`;
-                htmlMobile += `
-                    <div class="report-item-card">
-                        <div class="report-item-header">
-                            <div>
-                                <div class="report-item-code">${i.code}</div>
-                                <div class="report-item-name">${i.name}</div>
-                            </div>
-                            <div class="report-item-value" style="color:var(--success);">${formatRupiah(i.val)}</div>
-                        </div>
-                    </div>
-                `;
+                htmlMobile += `<div class="report-item-card"><div class="report-item-header"><div><div class="report-item-code">${i.code}</div><div class="report-item-name">${i.name}</div></div><div class="report-item-value" style="color:var(--success);">${formatRupiah(i.val)}</div></div></div>`;
             });
             htmlTable += `<tr class="bg-gray"><td colspan="2" class="text-right font-bold">Total Pendapatan</td><td class="text-right font-bold">${formatRupiah(rev)}</td></tr>`;
             htmlMobile += `<div class="report-item-card" style="border-left:4px solid var(--success);"><div class="report-item-header"><div class="report-item-name">Total Pendapatan</div><div class="report-item-value" style="color:var(--success);">${formatRupiah(rev)}</div></div></div>`;
             
-            // Beban Section
-            htmlTable += `<tr><td colspan="3" class="section-title" style="margin-top:30px;">BEBAN</td></tr>`;
-            htmlMobile += `<div class="report-section-title-mobile" style="margin-top:24px;">Beban</div>`;
+            htmlTable += `<tr><td colspan="3" class="section-title" style="margin-top:20px;">BEBAN</td></tr>`;
+            htmlMobile += `<div class="report-section-title-mobile" style="margin-top:20px;">Beban</div>`;
             expItems.forEach(i => {
                 htmlTable += `<tr><td>${i.code}</td><td class="indent-1">${i.name}</td><td class="text-right font-bold">${formatRupiah(i.val)}</td></tr>`;
-                htmlMobile += `
-                    <div class="report-item-card">
-                        <div class="report-item-header">
-                            <div>
-                                <div class="report-item-code">${i.code}</div>
-                                <div class="report-item-name">${i.name}</div>
-                            </div>
-                            <div class="report-item-value" style="color:var(--danger);">${formatRupiah(i.val)}</div>
-                        </div>
-                    </div>
-                `;
+                htmlMobile += `<div class="report-item-card"><div class="report-item-header"><div><div class="report-item-code">${i.code}</div><div class="report-item-name">${i.name}</div></div><div class="report-item-value" style="color:var(--danger);">${formatRupiah(i.val)}</div></div></div>`;
             });
             htmlTable += `<tr class="bg-gray"><td colspan="2" class="text-right font-bold">Total Beban</td><td class="text-right font-bold">${formatRupiah(exp)}</td></tr>`;
             htmlMobile += `<div class="report-item-card" style="border-left:4px solid var(--danger);"><div class="report-item-header"><div class="report-item-name">Total Beban</div><div class="report-item-value" style="color:var(--danger);">${formatRupiah(exp)}</div></div></div>`;
             
             const net = rev - exp;
             htmlTable += `<tr class="total-row"><td colspan="2">LABA / (RUGI) BERSIH</td><td class="text-right">${formatRupiah(net)}</td></tr>`;
-            htmlMobile += `
-                <div class="report-item-card" style="background:${net >= 0 ? 'var(--success)' : 'var(--danger)'}; color:white; border:none; margin-top:16px;">
-                    <div class="report-item-header">
-                        <div class="report-item-name" style="color:white; font-size:16px;">LABA / (RUGI) BERSIH</div>
-                        <div class="report-item-value" style="color:white; font-size:20px;">${formatRupiah(net)}</div>
-                    </div>
-                </div>
-            `;
+            htmlMobile += `<div class="report-item-card" style="background:${net >= 0 ? 'var(--success)' : 'var(--danger)'}; color:white; border:none; margin-top:16px;"><div class="report-item-header"><div class="report-item-name" style="color:white; font-size:16px;">LABA / (RUGI) BERSIH</div><div class="report-item-value" style="color:white; font-size:20px;">${formatRupiah(net)}</div></div></div>`;
 
             document.getElementById('bodyLR').innerHTML = htmlTable;
             document.getElementById('mobileLR').innerHTML = htmlMobile;
@@ -530,7 +575,7 @@
         // RENDER ARUS KAS
         function renderArusKas() {
             let opIn = 0, opOut = 0;
-            allTransactions.forEach(tx => {
+            filteredTransactions.forEach(tx => {
                 const code = String(tx[6]).trim();
                 const d = parseNumber(tx[8]); const c = parseNumber(tx[9]);
                 if((code==='1-1100' || code==='1-1200') && c > 0) opIn += c;
@@ -550,14 +595,7 @@
             
             const netCash = opIn - opOut;
             htmlTable += `<tr class="total-row"><td colspan="2">KENAIKAN / (PENURUNAN) KAS BERSIH</td><td class="text-right">${formatRupiah(netCash)}</td></tr>`;
-            htmlMobile += `
-                <div class="report-item-card" style="background:var(--primary); color:white; border:none; margin-top:16px;">
-                    <div class="report-item-header">
-                        <div class="report-item-name" style="color:white; font-size:16px;">KENAIKAN / (PENURUNAN) KAS BERSIH</div>
-                        <div class="report-item-value" style="color:white; font-size:20px;">${formatRupiah(netCash)}</div>
-                    </div>
-                </div>
-            `;
+            htmlMobile += `<div class="report-item-card" style="background:var(--primary); color:white; border:none; margin-top:16px;"><div class="report-item-header"><div class="report-item-name" style="color:white; font-size:16px;">KENAIKAN / (PENURUNAN) KAS BERSIH</div><div class="report-item-value" style="color:white; font-size:20px;">${formatRupiah(netCash)}</div></div></div>`;
 
             document.getElementById('bodyAK').innerHTML = htmlTable;
             document.getElementById('mobileAK').innerHTML = htmlMobile;
@@ -580,7 +618,7 @@
             const selectedAcc = coaList.find(a => a.code === selectedCode);
             accNameEl.textContent = `Akun: ${selectedAcc ? selectedAcc.name : selectedCode}`;
 
-            const txs = allTransactions.filter(tx => String(tx[6]).trim() === selectedCode)
+            const txs = filteredTransactions.filter(tx => String(tx[6]).trim() === selectedCode)
                                        .sort((a,b) => new Date(a[1]) - new Date(b[1]));
             
             let htmlTable = '', htmlMobile = '';
@@ -594,176 +632,74 @@
                 if(isAssetOrExpense) runningBalance += (d - c);
                 else runningBalance += (c - d);
 
-                // Desktop Table Row
-                htmlTable += `
-                    <tr>
-                        <td>${new Date(tx[1]).toLocaleDateString('id-ID')}</td>
-                        <td>${tx[2]}</td>
-                        <td>${tx[3]}</td>
-                        <td class="text-right">${d?formatRupiah(d):'-'}</td>
-                        <td class="text-right">${c?formatRupiah(c):'-'}</td>
-                        <td class="text-right font-bold">${formatRupiah(runningBalance)}</td>
-                    </tr>
-                `;
+                htmlTable += `<tr><td>${new Date(tx[1]).toLocaleDateString('id-ID')}</td><td>${tx[2]}</td><td>${tx[3]}</td><td class="text-right">${d?formatRupiah(d):'-'}</td><td class="text-right">${c?formatRupiah(c):'-'}</td><td class="text-right font-bold">${formatRupiah(runningBalance)}</td></tr>`;
 
-                // Mobile Card Item
-                htmlMobile += `
-                    <div class="report-item-card">
-                        <div class="report-item-header">
-                            <div>
-                                <div class="report-item-code">${new Date(tx[1]).toLocaleDateString('id-ID')}</div>
-                                <div class="report-item-name">${tx[3]}</div>
-                                <div style="font-size:11px; color:var(--text-sec); margin-top:4px;">${tx[2]}</div>
-                            </div>
-                            <div style="text-align:right;">
-                                ${d ? `<div style="font-size:13px; color:var(--success); font-weight:700;">+${formatRupiah(d)}</div>` : ''}
-                                ${c ? `<div style="font-size:13px; color:var(--danger); font-weight:700;">-${formatRupiah(c)}</div>` : ''}
-                                <div style="font-size:15px; font-weight:800; margin-top:8px; color:var(--primary);">Saldo: ${formatRupiah(runningBalance)}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                htmlMobile += `<div class="report-item-card"><div class="report-item-header"><div><div class="report-item-code">${new Date(tx[1]).toLocaleDateString('id-ID')}</div><div class="report-item-name">${tx[3]}</div><div style="font-size:11px; color:var(--text-sec); margin-top:4px;">${tx[2]}</div></div><div style="text-align:right;">${d ? `<div style="font-size:13px; color:var(--success); font-weight:700;">+${formatRupiah(d)}</div>` : ''}${c ? `<div style="font-size:13px; color:var(--danger); font-weight:700;">-${formatRupiah(c)}</div>` : ''}<div style="font-size:15px; font-weight:800; margin-top:8px; color:var(--primary);">Saldo: ${formatRupiah(runningBalance)}</div></div></div></div>`;
             });
 
             if(txs.length === 0) {
-                htmlTable = '<tr><td colspan="6" style="text-align:center; padding:40px;">Tidak ada transaksi untuk akun ini</td></tr>';
-                htmlMobile = '<div style="text-align:center; padding:40px; color:var(--text-sec);">Tidak ada transaksi untuk akun ini</div>';
+                htmlTable = '<tr><td colspan="6" style="text-align:center; padding:40px;">Tidak ada transaksi untuk akun ini pada periode terpilih</td></tr>';
+                htmlMobile = '<div style="text-align:center; padding:40px; color:var(--text-sec);">Tidak ada transaksi pada periode ini</div>';
             } else {
-                // Saldo Akhir Row
                 htmlTable += `<tr class="total-row bg-gray"><td colspan="5" class="text-right">SALDO AKHIR</td><td class="text-right">${formatRupiah(runningBalance)}</td></tr>`;
-                htmlMobile += `
-                    <div class="report-item-card" style="background:var(--primary); color:white; border:none; margin-top:16px;">
-                        <div class="report-item-header">
-                            <div class="report-item-name" style="color:white; font-size:16px;">SALDO AKHIR</div>
-                            <div class="report-item-value" style="color:white; font-size:20px;">${formatRupiah(runningBalance)}</div>
-                        </div>
-                    </div>
-                `;
+                htmlMobile += `<div class="report-item-card" style="background:var(--primary); color:white; border:none; margin-top:16px;"><div class="report-item-header"><div class="report-item-name" style="color:white; font-size:16px;">SALDO AKHIR</div><div class="report-item-value" style="color:white; font-size:20px;">${formatRupiah(runningBalance)}</div></div></div>`;
             }
 
             tbody.innerHTML = htmlTable;
             mobileContainer.innerHTML = htmlMobile;
         }
 
-        // FUNGSI EXPORT TO EXCEL (UPDATED: SUPPORT SEMUA AKUN DI BUKU BESAR)
+        // EXPORT TO EXCEL
         window.exportToExcel = function() {
-            if (typeof XLSX === 'undefined') {
-                alert("Library Excel sedang dimuat. Mohon tunggu sebentar atau refresh halaman.");
-                return;
-            }
+            if (typeof XLSX === 'undefined') return alert("Library Excel belum siap!");
 
             const activeTab = document.querySelector('.report-section.active').id;
             let wsData = [];
             let fileName = 'Laporan.xlsx';
             
-            // Helper untuk membersihkan angka agar jadi number murni di Excel
             const cleanNum = (str) => {
                 if(!str || str === '-') return '';
                 return parseFloat(String(str).replace(/[^0-9,-]/g, '').replace(',', '.')) || 0;
             };
 
-            // LOGIKA KHUSUS BUKU BESAR
-            if(activeTab === 'bukubesar') {
+            if(activeTab === 'neraca') {
+                fileName = `Neraca_${selectedPeriod}.xlsx`;
+                wsData = [['NERACA (BALANCE SHEET)'], [currentPeriodText], [], ['Kode Akun', 'Nama Akun', 'Debit (Rp)', 'Kredit (Rp)']];
+                document.querySelectorAll('#bodyNeraca tr').forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
+                    cells[2] = cleanNum(cells[2]); cells[3] = cleanNum(cells[3]);
+                    wsData.push(cells);
+                });
+            } else if(activeTab === 'labarugi') {
+                fileName = `Laba_Rugi_${selectedPeriod}.xlsx`;
+                wsData = [['LAPORAN LABA RUGI'], [currentPeriodText], [], ['Kode Akun', 'Keterangan', 'Jumlah (Rp)']];
+                document.querySelectorAll('#bodyLR tr').forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
+                    cells[2] = cleanNum(cells[2]);
+                    wsData.push(cells);
+                });
+            } else if(activeTab === 'aruskas') {
+                fileName = `Arus_Kas_${selectedPeriod}.xlsx`;
+                wsData = [['LAPORAN ARUS KAS'], [currentPeriodText], [], ['Kode', 'Keterangan', 'Jumlah (Rp)']];
+                document.querySelectorAll('#bodyAK tr').forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
+                    cells[2] = cleanNum(cells[2]);
+                    wsData.push(cells);
+                });
+            } else if(activeTab === 'bukubesar') {
                 const accSelect = document.getElementById('accountSelect');
                 const accCode = accSelect.value;
+                if(!accCode) return alert("Pilih akun terlebih dahulu!");
                 
-                // JIKA TIDAK ADA AKUN YANG DIPILIH -> EXPORT SEMUA AKUN
-                if(!accCode) {
-                    fileName = `Buku_Besar_Semua_Akun_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
-                    
-                    // Header Utama
-                    wsData = [
-                        ['BUKU BESAR (GENERAL LEDGER) - SEMUA AKUN'], 
-                        [`CV Rezeki Amanah Jaya Group`], 
-                        [currentPeriodText], 
-                        [] 
-                    ];
-
-                    // Loop setiap akun di COA
-                    coaList.forEach(acc => {
-                        // Filter transaksi untuk akun ini
-                        const txs = allTransactions.filter(tx => String(tx[6]).trim() === acc.code)
-                                                   .sort((a,b) => new Date(a[1]) - new Date(b[1]));
-                        
-                        // Hanya masukkan ke Excel jika ada transaksinya
-                        if(txs.length > 0) {
-                            // Tambahkan baris kosong sebagai pemisah & Header Akun
-                            wsData.push([]); 
-                            wsData.push([`${acc.code} - ${acc.name}`]);
-                            wsData.push(['Tanggal', 'No. Bukti', 'Keterangan', 'Debit', 'Kredit', 'Saldo']);
-                            
-                            let runningBalance = 0;
-                            const isAssetOrExpense = acc.code.startsWith('1-') || acc.code.startsWith('5-');
-
-                            txs.forEach(tx => {
-                                const d = parseNumber(tx[8]);
-                                const c = parseNumber(tx[9]);
-                                
-                                if(isAssetOrExpense) runningBalance += (d - c);
-                                else runningBalance += (c - d);
-
-                                wsData.push([
-                                    new Date(tx[1]).toLocaleDateString('id-ID'),
-                                    tx[2],
-                                    tx[3],
-                                    d, // Simpan sebagai angka murni
-                                    c, // Simpan sebagai angka murni
-                                    runningBalance // Simpan sebagai angka murni
-                                ]);
-                            });
-
-                            // Baris Saldo Akhir per Akun
-                            wsData.push(['', '', 'SALDO AKHIR', '', '', runningBalance]);
-                        }
-                    });
-
-                    // Jika tidak ada transaksi sama sekali
-                    if(wsData.length === 4) {
-                        wsData.push(['Tidak ada transaksi pada periode ini.']);
-                    }
-
-                } 
-                // JIKA ADA AKUN YANG DIPILIH -> EXPORT SATU AKUN SAJA (Logika Lama)
-                else {
-                    const accName = accSelect.options[accSelect.selectedIndex]?.text || accCode;
-                    fileName = `Buku_Besar_${accCode}_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
-                    
-                    wsData = [['BUKU BESAR'], [`Akun: ${accName}`], [currentPeriodText], [], ['Tanggal', 'No. Bukti', 'Keterangan', 'Debit', 'Kredit', 'Saldo']];
-                    document.querySelectorAll('#bodyBB tr').forEach(row => {
-                        const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
-                        cells[3] = cleanNum(cells[3]); cells[4] = cleanNum(cells[4]); cells[5] = cleanNum(cells[5]);
-                        wsData.push(cells);
-                    });
-                }
-            } 
-            
-            // LOGIKA UNTUK LAPORAN LAINNYA (NERACA, LR, ARUS KAS)
-            else {
-                if(activeTab === 'neraca') {
-                    fileName = `Neraca_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
-                    wsData = [['NERACA (BALANCE SHEET)'], [currentPeriodText], [], ['Kode Akun', 'Nama Akun', 'Debit (Rp)', 'Kredit (Rp)']];
-                    document.querySelectorAll('#bodyNeraca tr').forEach(row => {
-                        const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
-                        cells[2] = cleanNum(cells[2]); cells[3] = cleanNum(cells[3]);
-                        wsData.push(cells);
-                    });
-                } else if(activeTab === 'labarugi') {
-                    fileName = `Laba_Rugi_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
-                    wsData = [['LAPORAN LABA RUGI'], [currentPeriodText], [], ['Kode Akun', 'Keterangan', 'Jumlah (Rp)']];
-                    document.querySelectorAll('#bodyLR tr').forEach(row => {
-                        const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
-                        cells[2] = cleanNum(cells[2]);
-                        wsData.push(cells);
-                    });
-                } else if(activeTab === 'aruskas') {
-                    fileName = `Arus_Kas_${currentPeriodText.replace(/[: ]/g, '_')}.xlsx`;
-                    wsData = [['LAPORAN ARUS KAS'], [currentPeriodText], [], ['Kode', 'Keterangan', 'Jumlah (Rp)']];
-                    document.querySelectorAll('#bodyAK tr').forEach(row => {
-                        const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
-                        cells[2] = cleanNum(cells[2]);
-                        wsData.push(cells);
-                    });
-                }
+                const accName = accSelect.options[accSelect.selectedIndex]?.text || accCode;
+                fileName = `Buku_Besar_${accCode}_${selectedPeriod}.xlsx`;
+                
+                wsData = [['BUKU BESAR'], [`Akun: ${accName}`], [currentPeriodText], [], ['Tanggal', 'No. Bukti', 'Keterangan', 'Debit', 'Kredit', 'Saldo']];
+                document.querySelectorAll('#bodyBB tr').forEach(row => {
+                    const cells = Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim());
+                    cells[3] = cleanNum(cells[3]); cells[4] = cleanNum(cells[4]); cells[5] = cleanNum(cells[5]);
+                    wsData.push(cells);
+                });
             }
 
             try {
@@ -771,10 +707,7 @@
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "Laporan");
                 XLSX.writeFile(wb, fileName);
-            } catch(e) {
-                console.error(e);
-                alert("Gagal export Excel: " + e.message);
-            }
+            } catch(e) { alert("Gagal export: " + e.message); }
         }
 
         // HELPER FUNCTIONS
@@ -782,7 +715,14 @@
             document.querySelectorAll('.report-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
+            
+            // Update active state pada tab button
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if(btn.dataset.tab === tabId) btn.classList.add('active');
+            });
+            
+            // Sync dengan dropdown
+            document.getElementById('reportType').value = tabId;
         }
 
         function parseNumber(val) { if(!val) return 0; let s=String(val).trim(); if(s.includes(',')) s=s.replace(/\./g,'').replace(/,/g,'.'); const n=parseFloat(s); return isNaN(n)?0:n; }
