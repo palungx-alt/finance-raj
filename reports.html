@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FinanceRAJ - Laporan Keuangan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -11,35 +11,54 @@
     
     <style>
         :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
         
         /* UI SCREEN STYLE */
-        .top-bar { background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-        .brand-area { display: flex; align-items: center; gap: 12px; }
-        .btn-back { background: var(--bg-body); border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .top-bar { background: var(--surface); padding: 16px 20px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .brand-area { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+        .btn-back { background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; transition: 0.2s; flex-shrink: 0; }
         .btn-back:hover { background: var(--border); }
-        .action-buttons { display: flex; gap: 8px; }
-        .btn-action { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 13px; }
+        .page-title h1 { font-size: 18px; font-weight: 700; margin: 0; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .page-title p { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
+        .action-buttons { display: flex; gap: 8px; flex-shrink: 0; }
+        .btn-action { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 12px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 13px; white-space: nowrap; }
         .btn-action:hover { opacity: 0.9; }
         .btn-outline { background: white; color: var(--text-main); border: 1px solid var(--border); }
         .btn-outline:hover { background: var(--bg-body); }
         
-        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 16px; }
         
+        /* STICKY TAB NAVIGATION */
+        .tab-nav-wrapper { position: sticky; top: 73px; z-index: 90; background: var(--bg-body); padding: 16px 0 8px 0; margin-bottom: 16px; }
+        .tab-nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .tab-nav::-webkit-scrollbar { display: none; }
+        .tab-btn { 
+            background: white; border: 1px solid var(--border); padding: 10px 20px; 
+            border-radius: 20px; font-size: 14px; font-weight: 600; color: var(--text-sec); 
+            cursor: pointer; white-space: nowrap; transition: 0.2s; flex-shrink: 0;
+        }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .report-section { display: none; }
+        .report-section.active { display: block; }
+
+        /* REPORT CARD STYLE */
         .report-card { 
-            background: var(--surface); padding: 40px; border-radius: var(--radius); 
+            background: var(--surface); padding: 24px; border-radius: var(--radius); 
             box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); border: 1px solid var(--border);
-            margin-bottom: 30px; page-break-inside: avoid;
+            margin-bottom: 24px; page-break-inside: avoid;
         }
         
-        /* HEADER LAPORAN DI LAYAR (Tanpa Kop Surat) */
-        .screen-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--primary); padding-bottom: 20px; }
-        .screen-header h1 { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        /* HEADER LAPORAN DI LAYAR */
+        .screen-header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid var(--primary); padding-bottom: 16px; }
+        .screen-header h1 { font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
         .screen-header p { font-size: 14px; color: var(--text-sec); font-weight: 500; }
-        .report-period { margin-top: 10px; font-size: 13px; color: var(--primary); font-weight: 700; }
+        .report-period { margin-top: 8px; font-size: 13px; color: var(--primary); font-weight: 700; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        /* DESKTOP TABLE VIEW */
+        .desktop-table { display: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
         th { text-align: left; padding: 12px 16px; font-size: 12px; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); font-weight: 700; }
         td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
         
@@ -49,35 +68,47 @@
         
         .total-row td { 
             border-top: 2px solid var(--text-main); border-bottom: none; 
-            font-size: 16px; font-weight: 800; color: var(--primary); padding-top: 20px;
+            font-size: 16px; font-weight: 800; color: var(--primary); padding-top: 16px;
         }
         
         .section-title { 
             font-size: 14px; font-weight: 700; color: var(--primary); 
-            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 24px; margin-bottom: 12px;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 20px; margin-bottom: 12px;
             border-bottom: 1px dashed var(--border); padding-bottom: 6px;
         }
         
-        .indent-1 { padding-left: 32px !important; }
+        .indent-1 { padding-left: 24px !important; }
         
-        .footer-note { margin-top: 40px; text-align: center; font-size: 12px; color: var(--text-sec); line-height: 1.6; }
-        
-        /* TAB NAVIGATION */
-        .tab-nav { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { 
-            background: white; border: 1px solid var(--border); padding: 10px 20px; 
-            border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-sec); 
-            cursor: pointer; white-space: nowrap; transition: 0.2s;
+        .footer-note { margin-top: 30px; text-align: center; font-size: 12px; color: var(--text-sec); line-height: 1.6; }
+
+        /* MOBILE CARD VIEW FOR REPORTS */
+        .mobile-cards { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+        .report-item-card { 
+            background: var(--bg-body); border-radius: 12px; padding: 16px; 
+            border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;
         }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .report-item-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .report-item-code { font-size: 12px; color: var(--text-sec); font-weight: 600; }
+        .report-item-name { font-size: 14px; font-weight: 600; color: var(--text-main); margin-top: 4px; word-break: break-word; }
+        .report-item-value { font-size: 16px; font-weight: 800; color: var(--text-main); text-align: right; }
+        .report-item-sub { font-size: 12px; color: var(--text-sec); text-align: right; }
         
-        .report-section { display: none; }
-        .report-section.active { display: block; }
+        .report-section-title-mobile { 
+            font-size: 13px; font-weight: 700; color: var(--primary); 
+            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 24px; margin-bottom: 12px;
+            padding-bottom: 6px; border-bottom: 1px dashed var(--border);
+        }
 
         /* FILTER BUKU BESAR */
         .ledger-filter { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
-        .ledger-filter select { padding: 10px 16px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; flex: 1; min-width: 200px; }
-        .ledger-filter select:focus { border-color: var(--primary); }
+        .ledger-filter select { 
+            padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; 
+            font-size: 14px; outline: none; flex: 1; min-width: 200px; 
+            background: var(--bg-body); -webkit-appearance: none; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 16px center;
+        }
+        .ledger-filter select:focus { border-color: var(--primary); background-color: white; }
 
         /* PRINT / PDF STYLE */
         @media print {
@@ -85,7 +116,7 @@
             body { background: white; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             
             /* Sembunyikan semua elemen UI */
-            .top-bar, .tab-nav, .action-buttons, .ledger-filter, .footer-note, .no-print { display: none !important; }
+            .top-bar, .tab-nav-wrapper, .action-buttons, .ledger-filter, .footer-note, .no-print, .mobile-cards { display: none !important; }
             
             .container { margin: 0; padding: 0; max-width: 100%; width: 100%; }
             .report-card { 
@@ -98,8 +129,9 @@
             .print-header { display: block !important; margin-bottom: 20px; text-align: center; }
             .print-header img { max-width: 100%; height: auto; max-height: 120px; object-fit: contain; }
             
-            /* Styel Tabel Print */
-            .screen-header { display: none; } /* Sembunyikan header layar */
+            /* Style Tabel Print */
+            .screen-header { display: none; }
+            .desktop-table { display: block !important; }
             .print-title { display: block !important; text-align: center; margin-bottom: 5px; font-size: 18px; font-weight: 800; text-transform: uppercase; }
             .print-subtitle { display: block !important; text-align: center; margin-bottom: 15px; font-size: 14px; color: #333; }
             .print-period { display: block !important; text-align: center; margin-bottom: 20px; font-size: 13px; font-weight: 700; border-bottom: 2px solid #000; padding-bottom: 10px; }
@@ -114,28 +146,51 @@
 
         /* Elemen khusus print (default hidden) */
         .print-header, .print-title, .print-subtitle, .print-period { display: none; }
+
+        /* RESPONSIVE BREAKPOINTS */
+        @media (max-width: 768px) {
+            .desktop-table { display: none; }
+            .mobile-cards { display: flex; }
+            .top-bar { padding: 12px 16px; }
+            .page-title h1 { font-size: 16px; }
+            .btn-action span { display: none; } /* Hide text on small screens, show only icon */
+            .btn-action { padding: 10px 12px; }
+            .report-card { padding: 16px; }
+            .screen-header h1 { font-size: 18px; }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-cards { display: none; }
+            .desktop-table { display: block; }
+            .btn-action span { display: inline; }
+        }
     </style>
 </head>
 <body>
     <div class="top-bar no-print">
         <div class="brand-area">
-            <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</button>
+            <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i></button>
             <img src="assets/logo.png" alt="Logo" style="width:32px;" onerror="this.style.display='none'">
-            <div><h1 style="font-size:18px; font-weight:700;">Laporan Keuangan</h1><p style="font-size:12px; color:var(--text-sec);">CV Rezeki Amanah Jaya Group</p></div>
+            <div class="page-title">
+                <h1>Laporan Keuangan</h1>
+                <p>CV Rezeki Amanah Jaya Group</p>
+            </div>
         </div>
         <div class="action-buttons">
-            <button class="btn-action btn-outline" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
-            <button class="btn-action" onclick="window.print()"><i class="fas fa-print"></i> Cetak PDF</button>
+            <button class="btn-action btn-outline" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> <span>Export</span></button>
+            <button class="btn-action" onclick="window.print()"><i class="fas fa-print"></i> <span>Cetak PDF</span></button>
         </div>
     </div>
 
     <div class="container">
-        <!-- TAB NAVIGASI -->
-        <div class="tab-nav no-print">
-            <button class="tab-btn active" onclick="switchTab('neraca')">Neraca</button>
-            <button class="tab-btn" onclick="switchTab('labarugi')">Laba Rugi</button>
-            <button class="tab-btn" onclick="switchTab('aruskas')">Arus Kas</button>
-            <button class="tab-btn" onclick="switchTab('bukubesar')">Buku Besar</button>
+        <!-- TAB NAVIGASI STICKY -->
+        <div class="tab-nav-wrapper no-print">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('neraca')">Neraca</button>
+                <button class="tab-btn" onclick="switchTab('labarugi')">Laba Rugi</button>
+                <button class="tab-btn" onclick="switchTab('aruskas')">Arus Kas</button>
+                <button class="tab-btn" onclick="switchTab('bukubesar')">Buku Besar</button>
+            </div>
         </div>
 
         <!-- 1. NERACA -->
@@ -156,10 +211,18 @@
                     <div class="report-period" id="periodNeraca">Periode: Oktober 2026</div>
                 </div>
 
-                <table id="tableNeraca">
-                    <thead><tr><th style="width:15%">Kode</th><th>Nama Akun</th><th class="text-right" style="width:25%">Debit (Rp)</th><th class="text-right" style="width:25%">Kredit (Rp)</th></tr></thead>
-                    <tbody id="bodyNeraca"><tr><td colspan="4" style="text-align:center; padding:40px;">Memuat...</td></tr></tbody>
-                </table>
+                <!-- Desktop Table -->
+                <div class="desktop-table">
+                    <table id="tableNeraca">
+                        <thead><tr><th style="width:15%">Kode</th><th>Nama Akun</th><th class="text-right" style="width:25%">Debit (Rp)</th><th class="text-right" style="width:25%">Kredit (Rp)</th></tr></thead>
+                        <tbody id="bodyNeraca"><tr><td colspan="4" style="text-align:center; padding:40px;">Memuat...</td></tr></tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile Cards -->
+                <div class="mobile-cards" id="mobileNeraca"></div>
+
+                <div class="footer-note no-print">Dicetak otomatis oleh Sistem FinanceRAJ<br>Dokumen ini sah tanpa tanda tangan basah</div>
             </div>
         </div>
 
@@ -179,10 +242,16 @@
                     <div class="report-period" id="periodLR">Periode: Oktober 2026</div>
                 </div>
 
-                <table id="tableLR">
-                    <thead><tr><th style="width:15%">Kode</th><th>Keterangan</th><th class="text-right" style="width:30%">Jumlah (Rp)</th></tr></thead>
-                    <tbody id="bodyLR"><tr><td colspan="3" style="text-align:center; padding:40px;">Memuat...</td></tr></tbody>
-                </table>
+                <div class="desktop-table">
+                    <table id="tableLR">
+                        <thead><tr><th style="width:15%">Kode</th><th>Keterangan</th><th class="text-right" style="width:30%">Jumlah (Rp)</th></tr></thead>
+                        <tbody id="bodyLR"><tr><td colspan="3" style="text-align:center; padding:40px;">Memuat...</td></tr></tbody>
+                    </table>
+                </div>
+
+                <div class="mobile-cards" id="mobileLR"></div>
+
+                <div class="footer-note no-print">Dicetak otomatis oleh Sistem FinanceRAJ<br>Dokumen ini sah tanpa tanda tangan basah</div>
             </div>
         </div>
 
@@ -202,10 +271,16 @@
                     <div class="report-period" id="periodAK">Periode: Oktober 2026</div>
                 </div>
 
-                <table id="tableAK">
-                    <thead><tr><th style="width:15%">Kode</th><th>Keterangan</th><th class="text-right" style="width:30%">Jumlah (Rp)</th></tr></thead>
-                    <tbody id="bodyAK"><tr><td colspan="3" style="text-align:center; padding:40px;">Memuat...</td></tr></tbody>
-                </table>
+                <div class="desktop-table">
+                    <table id="tableAK">
+                        <thead><tr><th style="width:15%">Kode</th><th>Keterangan</th><th class="text-right" style="width:30%">Jumlah (Rp)</th></tr></thead>
+                        <tbody id="bodyAK"><tr><td colspan="3" style="text-align:center; padding:40px;">Memuat...</td></tr></tbody>
+                    </table>
+                </div>
+
+                <div class="mobile-cards" id="mobileAK"></div>
+
+                <div class="footer-note no-print">Dicetak otomatis oleh Sistem FinanceRAJ<br>Dokumen ini sah tanpa tanda tangan basah</div>
             </div>
         </div>
 
@@ -231,19 +306,25 @@
                     </select>
                 </div>
 
-                <table id="tableBB">
-                    <thead>
-                        <tr>
-                            <th style="width:15%">Tanggal</th>
-                            <th style="width:20%">No. Bukti</th>
-                            <th>Keterangan</th>
-                            <th class="text-right" style="width:15%">Debit</th>
-                            <th class="text-right" style="width:15%">Kredit</th>
-                            <th class="text-right" style="width:15%">Saldo</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bodyBB"><tr><td colspan="6" style="text-align:center; padding:40px;">Pilih akun untuk melihat buku besar</td></tr></tbody>
-                </table>
+                <div class="desktop-table">
+                    <table id="tableBB">
+                        <thead>
+                            <tr>
+                                <th style="width:15%">Tanggal</th>
+                                <th style="width:20%">No. Bukti</th>
+                                <th>Keterangan</th>
+                                <th class="text-right" style="width:15%">Debit</th>
+                                <th class="text-right" style="width:15%">Kredit</th>
+                                <th class="text-right" style="width:15%">Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyBB"><tr><td colspan="6" style="text-align:center; padding:40px;">Pilih akun untuk melihat buku besar</td></tr></tbody>
+                    </table>
+                </div>
+
+                <div class="mobile-cards" id="mobileBB"></div>
+
+                <div class="footer-note no-print">Dicetak otomatis oleh Sistem FinanceRAJ<br>Dokumen ini sah tanpa tanda tangan basah</div>
             </div>
         </div>
     </div>
@@ -316,7 +397,8 @@
                 else balances[code] += (c-d);
             });
 
-            let html = '';
+            let htmlTable = '';
+            let htmlMobile = '';
             let totalDebit = 0, totalCredit = 0;
             
             const accounts = [
@@ -326,7 +408,9 @@
             ];
 
             accounts.forEach(cat => {
-                html += `<tr><td colspan="4" class="section-title">${cat.group}</td></tr>`;
+                htmlTable += `<tr><td colspan="4" class="section-title">${cat.group}</td></tr>`;
+                htmlMobile += `<div class="report-section-title-mobile">${cat.group}</div>`;
+                
                 cat.codes.forEach(code => {
                     const bal = balances[code] || 0;
                     let dVal = 0, cVal = 0;
@@ -334,12 +418,44 @@
                     else { cVal = bal > 0 ? bal : 0; dVal = bal < 0 ? Math.abs(bal) : 0; }
                     
                     totalDebit += dVal; totalCredit += cVal;
-                    html += `<tr><td>${code}</td><td class="indent-1">${getAccName(code)}</td><td class="text-right">${dVal?formatRupiah(dVal):'-'}</td><td class="text-right">${cVal?formatRupiah(cVal):'-'}</td></tr>`;
+                    
+                    // Desktop Table Row
+                    htmlTable += `<tr><td>${code}</td><td class="indent-1">${getAccName(code)}</td><td class="text-right">${dVal?formatRupiah(dVal):'-'}</td><td class="text-right">${cVal?formatRupiah(cVal):'-'}</td></tr>`;
+                    
+                    // Mobile Card Item
+                    if(dVal > 0 || cVal > 0) {
+                        const val = cat.type === 'asset' ? dVal : cVal;
+                        const label = cat.type === 'asset' ? 'Debit' : 'Kredit';
+                        htmlMobile += `
+                            <div class="report-item-card">
+                                <div class="report-item-header">
+                                    <div>
+                                        <div class="report-item-code">${code}</div>
+                                        <div class="report-item-name">${getAccName(code)}</div>
+                                    </div>
+                                    <div>
+                                        <div class="report-item-value">${formatRupiah(val)}</div>
+                                        <div class="report-item-sub">${label}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
                 });
             });
 
-            html += `<tr class="total-row bg-gray"><td colspan="2">TOTAL</td><td class="text-right">${formatRupiah(totalDebit)}</td><td class="text-right">${formatRupiah(totalCredit)}</td></tr>`;
-            document.getElementById('bodyNeraca').innerHTML = html;
+            htmlTable += `<tr class="total-row bg-gray"><td colspan="2">TOTAL</td><td class="text-right">${formatRupiah(totalDebit)}</td><td class="text-right">${formatRupiah(totalCredit)}</td></tr>`;
+            htmlMobile += `
+                <div class="report-item-card" style="background:var(--primary); color:white; border:none; margin-top:16px;">
+                    <div class="report-item-header">
+                        <div class="report-item-name" style="color:white; font-size:16px;">TOTAL NERACA</div>
+                        <div class="report-item-value" style="color:white; font-size:20px;">${formatRupiah(totalDebit)}</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('bodyNeraca').innerHTML = htmlTable;
+            document.getElementById('mobileNeraca').innerHTML = htmlMobile;
         }
 
         // RENDER LABA RUGI
@@ -354,18 +470,61 @@
                 if(code.startsWith('5-')) { exp += d; expItems.push({code, name:getAccName(code), val:d}); }
             });
 
-            let html = '';
-            html += `<tr><td colspan="3" class="section-title">PENDAPATAN</td></tr>`;
-            revItems.forEach(i => html += `<tr><td>${i.code}</td><td class="indent-1">${i.name}</td><td class="text-right font-bold">${formatRupiah(i.val)}</td></tr>`);
-            html += `<tr class="bg-gray"><td colspan="2" class="text-right font-bold">Total Pendapatan</td><td class="text-right font-bold">${formatRupiah(rev)}</td></tr>`;
+            let htmlTable = '', htmlMobile = '';
             
-            html += `<tr><td colspan="3" class="section-title" style="margin-top:30px;">BEBAN</td></tr>`;
-            expItems.forEach(i => html += `<tr><td>${i.code}</td><td class="indent-1">${i.name}</td><td class="text-right font-bold">${formatRupiah(i.val)}</td></tr>`);
-            html += `<tr class="bg-gray"><td colspan="2" class="text-right font-bold">Total Beban</td><td class="text-right font-bold">${formatRupiah(exp)}</td></tr>`;
+            // Pendapatan Section
+            htmlTable += `<tr><td colspan="3" class="section-title">PENDAPATAN</td></tr>`;
+            htmlMobile += `<div class="report-section-title-mobile">Pendapatan</div>`;
+            revItems.forEach(i => {
+                htmlTable += `<tr><td>${i.code}</td><td class="indent-1">${i.name}</td><td class="text-right font-bold">${formatRupiah(i.val)}</td></tr>`;
+                htmlMobile += `
+                    <div class="report-item-card">
+                        <div class="report-item-header">
+                            <div>
+                                <div class="report-item-code">${i.code}</div>
+                                <div class="report-item-name">${i.name}</div>
+                            </div>
+                            <div class="report-item-value" style="color:var(--success);">${formatRupiah(i.val)}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            htmlTable += `<tr class="bg-gray"><td colspan="2" class="text-right font-bold">Total Pendapatan</td><td class="text-right font-bold">${formatRupiah(rev)}</td></tr>`;
+            htmlMobile += `<div class="report-item-card" style="border-left:4px solid var(--success);"><div class="report-item-header"><div class="report-item-name">Total Pendapatan</div><div class="report-item-value" style="color:var(--success);">${formatRupiah(rev)}</div></div></div>`;
+            
+            // Beban Section
+            htmlTable += `<tr><td colspan="3" class="section-title" style="margin-top:30px;">BEBAN</td></tr>`;
+            htmlMobile += `<div class="report-section-title-mobile" style="margin-top:24px;">Beban</div>`;
+            expItems.forEach(i => {
+                htmlTable += `<tr><td>${i.code}</td><td class="indent-1">${i.name}</td><td class="text-right font-bold">${formatRupiah(i.val)}</td></tr>`;
+                htmlMobile += `
+                    <div class="report-item-card">
+                        <div class="report-item-header">
+                            <div>
+                                <div class="report-item-code">${i.code}</div>
+                                <div class="report-item-name">${i.name}</div>
+                            </div>
+                            <div class="report-item-value" style="color:var(--danger);">${formatRupiah(i.val)}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            htmlTable += `<tr class="bg-gray"><td colspan="2" class="text-right font-bold">Total Beban</td><td class="text-right font-bold">${formatRupiah(exp)}</td></tr>`;
+            htmlMobile += `<div class="report-item-card" style="border-left:4px solid var(--danger);"><div class="report-item-header"><div class="report-item-name">Total Beban</div><div class="report-item-value" style="color:var(--danger);">${formatRupiah(exp)}</div></div></div>`;
             
             const net = rev - exp;
-            html += `<tr class="total-row"><td colspan="2">LABA / (RUGI) BERSIH</td><td class="text-right">${formatRupiah(net)}</td></tr>`;
-            document.getElementById('bodyLR').innerHTML = html;
+            htmlTable += `<tr class="total-row"><td colspan="2">LABA / (RUGI) BERSIH</td><td class="text-right">${formatRupiah(net)}</td></tr>`;
+            htmlMobile += `
+                <div class="report-item-card" style="background:${net >= 0 ? 'var(--success)' : 'var(--danger)'}; color:white; border:none; margin-top:16px;">
+                    <div class="report-item-header">
+                        <div class="report-item-name" style="color:white; font-size:16px;">LABA / (RUGI) BERSIH</div>
+                        <div class="report-item-value" style="color:white; font-size:20px;">${formatRupiah(net)}</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('bodyLR').innerHTML = htmlTable;
+            document.getElementById('mobileLR').innerHTML = htmlMobile;
         }
 
         // RENDER ARUS KAS
@@ -378,24 +537,42 @@
                 if((code==='1-1100' || code==='1-1200') && d > 0) opOut += d;
             });
 
-            let html = '';
-            html += `<tr><td colspan="3" class="section-title">ARUS KAS DARI AKTIVITAS OPERASI</td></tr>`;
-            html += `<tr><td></td><td class="indent-1">Penerimaan Kas</td><td class="text-right font-bold">${formatRupiah(opIn)}</td></tr>`;
-            html += `<tr><td></td><td class="indent-1">Pengeluaran Kas</td><td class="text-right font-bold">(${formatRupiah(opOut)})</td></tr>`;
+            let htmlTable = '', htmlMobile = '';
+            
+            htmlTable += `<tr><td colspan="3" class="section-title">ARUS KAS DARI AKTIVITAS OPERASI</td></tr>`;
+            htmlMobile += `<div class="report-section-title-mobile">Arus Kas dari Aktivitas Operasi</div>`;
+            
+            htmlTable += `<tr><td></td><td class="indent-1">Penerimaan Kas</td><td class="text-right font-bold">${formatRupiah(opIn)}</td></tr>`;
+            htmlMobile += `<div class="report-item-card"><div class="report-item-header"><div class="report-item-name">Penerimaan Kas</div><div class="report-item-value" style="color:var(--success);">${formatRupiah(opIn)}</div></div></div>`;
+            
+            htmlTable += `<tr><td></td><td class="indent-1">Pengeluaran Kas</td><td class="text-right font-bold">(${formatRupiah(opOut)})</td></tr>`;
+            htmlMobile += `<div class="report-item-card"><div class="report-item-header"><div class="report-item-name">Pengeluaran Kas</div><div class="report-item-value" style="color:var(--danger);">(${formatRupiah(opOut)})</div></div></div>`;
             
             const netCash = opIn - opOut;
-            html += `<tr class="total-row"><td colspan="2">KENAIKAN / (PENURUNAN) KAS BERSIH</td><td class="text-right">${formatRupiah(netCash)}</td></tr>`;
-            document.getElementById('bodyAK').innerHTML = html;
+            htmlTable += `<tr class="total-row"><td colspan="2">KENAIKAN / (PENURUNAN) KAS BERSIH</td><td class="text-right">${formatRupiah(netCash)}</td></tr>`;
+            htmlMobile += `
+                <div class="report-item-card" style="background:var(--primary); color:white; border:none; margin-top:16px;">
+                    <div class="report-item-header">
+                        <div class="report-item-name" style="color:white; font-size:16px;">KENAIKAN / (PENURUNAN) KAS BERSIH</div>
+                        <div class="report-item-value" style="color:white; font-size:20px;">${formatRupiah(netCash)}</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('bodyAK').innerHTML = htmlTable;
+            document.getElementById('mobileAK').innerHTML = htmlMobile;
         }
 
         // RENDER BUKU BESAR
         window.renderBukuBesar = function() {
             const selectedCode = document.getElementById('accountSelect').value;
             const tbody = document.getElementById('bodyBB');
+            const mobileContainer = document.getElementById('mobileBB');
             const accNameEl = document.getElementById('printAccNameBB');
             
             if(!selectedCode) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">Pilih akun untuk melihat buku besar</td></tr>';
+                mobileContainer.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-sec);">Pilih akun untuk melihat buku besar</div>';
                 accNameEl.textContent = "CV Rezeki Amanah Jaya Group";
                 return;
             }
@@ -406,7 +583,7 @@
             const txs = allTransactions.filter(tx => String(tx[6]).trim() === selectedCode)
                                        .sort((a,b) => new Date(a[1]) - new Date(b[1]));
             
-            let html = '';
+            let htmlTable = '', htmlMobile = '';
             let runningBalance = 0;
             const isAssetOrExpense = selectedCode.startsWith('1-') || selectedCode.startsWith('5-');
 
@@ -417,7 +594,8 @@
                 if(isAssetOrExpense) runningBalance += (d - c);
                 else runningBalance += (c - d);
 
-                html += `
+                // Desktop Table Row
+                htmlTable += `
                     <tr>
                         <td>${new Date(tx[1]).toLocaleDateString('id-ID')}</td>
                         <td>${tx[2]}</td>
@@ -427,14 +605,44 @@
                         <td class="text-right font-bold">${formatRupiah(runningBalance)}</td>
                     </tr>
                 `;
+
+                // Mobile Card Item
+                htmlMobile += `
+                    <div class="report-item-card">
+                        <div class="report-item-header">
+                            <div>
+                                <div class="report-item-code">${new Date(tx[1]).toLocaleDateString('id-ID')}</div>
+                                <div class="report-item-name">${tx[3]}</div>
+                                <div style="font-size:11px; color:var(--text-sec); margin-top:4px;">${tx[2]}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                ${d ? `<div style="font-size:13px; color:var(--success); font-weight:700;">+${formatRupiah(d)}</div>` : ''}
+                                ${c ? `<div style="font-size:13px; color:var(--danger); font-weight:700;">-${formatRupiah(c)}</div>` : ''}
+                                <div style="font-size:15px; font-weight:800; margin-top:8px; color:var(--primary);">Saldo: ${formatRupiah(runningBalance)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
 
             if(txs.length === 0) {
-                html = '<tr><td colspan="6" style="text-align:center; padding:40px;">Tidak ada transaksi untuk akun ini</td></tr>';
+                htmlTable = '<tr><td colspan="6" style="text-align:center; padding:40px;">Tidak ada transaksi untuk akun ini</td></tr>';
+                htmlMobile = '<div style="text-align:center; padding:40px; color:var(--text-sec);">Tidak ada transaksi untuk akun ini</div>';
+            } else {
+                // Saldo Akhir Row
+                htmlTable += `<tr class="total-row bg-gray"><td colspan="5" class="text-right">SALDO AKHIR</td><td class="text-right">${formatRupiah(runningBalance)}</td></tr>`;
+                htmlMobile += `
+                    <div class="report-item-card" style="background:var(--primary); color:white; border:none; margin-top:16px;">
+                        <div class="report-item-header">
+                            <div class="report-item-name" style="color:white; font-size:16px;">SALDO AKHIR</div>
+                            <div class="report-item-value" style="color:white; font-size:20px;">${formatRupiah(runningBalance)}</div>
+                        </div>
+                    </div>
+                `;
             }
 
-            html += `<tr class="total-row bg-gray"><td colspan="5" class="text-right">SALDO AKHIR</td><td class="text-right">${formatRupiah(runningBalance)}</td></tr>`;
-            tbody.innerHTML = html;
+            tbody.innerHTML = htmlTable;
+            mobileContainer.innerHTML = htmlMobile;
         }
 
         // FUNGSI EXPORT TO EXCEL (UPDATED: SUPPORT SEMUA AKUN DI BUKU BESAR)
