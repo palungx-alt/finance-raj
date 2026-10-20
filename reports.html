@@ -27,7 +27,6 @@
         
         .container { max-width: 1000px; margin: 20px auto; padding: 0 16px; }
         
-        /* PERIOD FILTER BAR */
         .period-filter-bar { 
             background: var(--surface); padding: 16px 20px; border-radius: var(--radius); 
             border: 1px solid var(--border); margin-bottom: 20px; 
@@ -41,7 +40,6 @@
         }
         .period-filter-bar input:focus, .period-filter-bar select:focus { border-color: var(--primary); background: white; }
         
-        /* PERIOD RANGE SELECTOR */
         .period-range { display: flex; gap: 8px; margin-bottom: 12px; }
         .range-btn { 
             flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 10px; 
@@ -54,7 +52,6 @@
         .btn-apply { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; height: 42px; }
         .btn-apply:hover { opacity: 0.9; }
 
-        /* STICKY TAB NAVIGATION */
         .tab-nav-wrapper { position: sticky; top: 73px; z-index: 90; background: var(--bg-body); padding: 0 0 8px 0; margin-bottom: 16px; }
         .tab-nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .tab-nav::-webkit-scrollbar { display: none; }
@@ -68,20 +65,17 @@
         .report-section { display: none; }
         .report-section.active { display: block; }
 
-        /* REPORT CARD */
         .report-card { 
             background: var(--surface); padding: 24px; border-radius: var(--radius); 
             box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); border: 1px solid var(--border);
             margin-bottom: 24px;
         }
         
-        /* HEADER LAPORAN */
         .screen-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 16px; }
         .screen-header h1 { font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
         .screen-header p { font-size: 14px; color: var(--text-sec); font-weight: 500; }
         .report-period { margin-top: 8px; font-size: 13px; color: var(--primary); font-weight: 700; }
         
-        /* DESKTOP TABLE */
         .desktop-table { display: none; }
         table { width: 100%; border-collapse: collapse; margin-top: 0; }
         th { text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); font-weight: 700; }
@@ -106,7 +100,6 @@
         
         .footer-note { margin-top: 30px; text-align: center; font-size: 11px; color: var(--text-sec); line-height: 1.6; }
 
-        /* MOBILE CARD VIEW */
         .mobile-cards { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
         .report-item-card { 
             background: var(--bg-body); border-radius: 10px; padding: 12px; 
@@ -124,7 +117,6 @@
             padding-bottom: 4px; border-bottom: 1px dashed var(--border);
         }
 
-        /* FILTER BUKU BESAR */
         .ledger-filter { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
         .ledger-filter select { 
             padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; 
@@ -135,7 +127,7 @@
         }
         .ledger-filter select:focus { border-color: var(--primary); background-color: white; }
 
-        /* ========== PRINT STYLE - DIPERBAIKI AGAR AESTHETIC ========== */
+        /* ========== PRINT STYLE - KOP SURAT FULL GAMBAR ========== */
         @media print {
             @page { margin: 10mm; size: A4; }
             body { background: white; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -148,55 +140,52 @@
                 border-radius: 0;
             }
             
-            /* KOP SURAT BESAR & CENTER - PROFESSIONAL LOOK */
+            /* KOP SURAT - HANYA GAMBAR, FULL WIDTH, CENTER */
             .print-header { 
                 display: block !important; 
                 text-align: center; 
                 margin-bottom: 20px; 
                 padding-bottom: 15px; 
-                border-bottom: 4px double #000; /* Garis double tebal agar tegas */
+                border-bottom: 3px solid #10b981; 
             }
             .print-header img { 
-                max-width: 200px; /* Diperbesar signifikan */
+                max-width: 100%; 
                 width: 100%; 
                 height: auto; 
-                display: inline-block; 
-                margin-bottom: 5px;
+                display: block; 
+                margin: 0 auto; 
             }
-            .print-header-text { display: none !important; } 
             
             .screen-header { display: none; }
             .desktop-table { display: block !important; }
             
-            /* Judul Laporan */
             .print-title { 
                 display: block !important; 
                 text-align: center; 
-                margin: 20px 0 5px 0; 
-                font-size: 18px; 
+                margin: 25px 0 5px 0; 
+                font-size: 22px; 
                 font-weight: 800; 
                 text-transform: uppercase; 
                 letter-spacing: 1px;
-                color: #000;
+                color: #0f172a;
             }
             .print-subtitle { 
                 display: block !important; 
                 text-align: center; 
                 margin-bottom: 5px; 
-                font-size: 13px; 
-                color: #444; 
+                font-size: 14px; 
+                color: #64748b; 
                 font-weight: 600;
             }
             .print-period { 
                 display: block !important; 
                 text-align: center; 
-                margin-bottom: 20px; 
-                font-size: 12px; 
+                margin-bottom: 25px; 
+                font-size: 13px; 
                 font-weight: 700; 
                 color: #333;
             }
             
-            /* Tabel Print Rapi */
             table { margin-top: 0; width: 100%; }
             tr { page-break-inside: avoid; }
             th { 
@@ -205,21 +194,21 @@
                 font-size: 10px; 
                 padding: 8px 10px; 
                 text-transform: uppercase;
-                font-weight: 800;
+                font-weight: 700;
             }
             td { 
-                border-bottom: 1px solid #eee; 
+                border-bottom: 1px solid #e2e8f0; 
                 font-size: 11px; 
                 padding: 8px 10px; 
-                color: #222;
+                color: #1e293b;
             }
             .section-title { 
                 color: #000; 
-                border-bottom: 1px solid #000; 
+                border-bottom: 2px solid #000; 
                 font-size: 11px; 
                 margin-top: 15px; 
                 padding-bottom: 5px;
-                font-weight: 800;
+                font-weight: 700;
             }
             .total-row td { 
                 color: #000; 
@@ -270,7 +259,6 @@
     </div>
 
     <div class="container">
-        <!-- PERIOD FILTER BAR -->
         <div class="period-filter-bar no-print">
             <div style="width: 100%;">
                 <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-sec); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
@@ -299,7 +287,6 @@
             <button class="btn-apply" onclick="applyPeriodFilter()"><i class="fas fa-sync-alt"></i> Tampilkan</button>
         </div>
 
-        <!-- TAB NAVIGASI -->
         <div class="tab-nav-wrapper no-print">
             <div class="tab-nav">
                 <button class="tab-btn active" data-tab="neraca" onclick="switchTab('neraca')">Neraca</button>
@@ -447,7 +434,7 @@
         let coaList = [];
         let currentPeriodText = "";
         let selectedPeriod = "";
-        let periodRange = "monthly"; // monthly, 6months, yearly
+        let periodRange = "monthly";
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
@@ -486,15 +473,13 @@
             } catch(e) { console.error("Gagal memuat data:", e); }
         }
 
-        // FUNGSI SET PERIOD RANGE
         window.setPeriodRange = function(range) {
             periodRange = range;
             document.querySelectorAll('.range-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`[data-range="${range}"]`).classList.add('active');
-            applyPeriodFilter(); // Auto apply saat ganti range
+            applyPeriodFilter();
         }
 
-        // FUNGSI FILTER PERIODE DENGAN RANGE
         window.applyPeriodFilter = function() {
             const periodInput = document.getElementById('reportPeriod').value;
             if(!periodInput) {
@@ -506,7 +491,6 @@
             const [year, month] = periodInput.split('-').map(Number);
             const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
             
-            // Hitung start date berdasarkan range
             let startYear = year;
             let startMonth = month;
             
@@ -520,7 +504,6 @@
                 startMonth = 1;
             }
             
-            // Format periode text
             if(periodRange === 'monthly') {
                 currentPeriodText = `Periode: ${months[month-1]} ${year}`;
             } else if(periodRange === '6months') {
@@ -534,7 +517,6 @@
                 document.getElementById(`printPeriod${suffix}`).textContent = currentPeriodText;
             });
 
-            // Filter transaksi berdasarkan range
             filteredTransactions = allTransactions.filter(tx => {
                 const txDate = String(tx[1]);
                 let txYear, txMonth;
@@ -551,9 +533,8 @@
                     return false;
                 }
                 
-                // Cek apakah tanggal dalam range
                 const startDate = new Date(startYear, startMonth - 1, 1);
-                const endDate = new Date(year, month, 0); // Last day of month
+                const endDate = new Date(year, month, 0);
                 const txDateObj = new Date(txYear, txMonth - 1, 1);
                 
                 return txDateObj >= startDate && txDateObj <= endDate;
