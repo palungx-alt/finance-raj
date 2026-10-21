@@ -19,14 +19,15 @@
         
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
-        .form-control { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; outline: none; background: var(--bg-body); transition: 0.2s; }
+        .form-control { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; outline: none; background: var(--bg-body); transition: 0.2s; box-sizing: border-box; }
         .form-control:focus { border-color: var(--primary); background: white; }
+        .form-control[readonly] { background: #f1f5f9; cursor: not-allowed; color: var(--text-sec); }
         
         /* Toggle Switch Custom */
-        .toggle-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 14px; background: var(--bg-body); border-radius: 12px; border: 1px solid var(--border); cursor: pointer; }
+        .toggle-wrapper { display: flex; align-items: center; justify-content: space-between; padding: 14px; background: var(--bg-body); border-radius: 12px; border: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
         .toggle-wrapper.active { background: #eff6ff; border-color: var(--primary); }
         .toggle-label { font-weight: 600; font-size: 15px; }
-        .toggle-icon { width: 24px; height: 24px; border-radius: 50%; background: #cbd5e1; display: flex; align-items: center; justify-content: center; color: white; transition: 0.3s; }
+        .toggle-icon { width: 24px; height: 24px; border-radius: 50%; background: #cbd5e1; display: flex; align-items: center; justify-content: center; color: white; transition: 0.3s; font-size: 12px; }
         .toggle-wrapper.active .toggle-icon { background: var(--primary); transform: rotate(180deg); }
         
         .btn-submit { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
@@ -98,28 +99,32 @@
         <a href="#" class="logout-link" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Keluar / Ganti Akun</a>
     </div>
 
-    <script type="module">
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
-        const firebaseConfig = { apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg", authDomain: "finance-raj.firebaseapp.com", projectId: "finance-raj", storageBucket: "finance-raj.firebasestorage.app", messagingSenderId: "138468278392", appId: "1:138468278392:web:215731466beb7f89566d8d", measurementId: "G-BMG4L7P2DP" };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+    <script>
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
         // Set tanggal hari ini default
         document.getElementById('attDate').valueAsDate = new Date();
 
-        // Cek Auth & Role saat load
-        onAuthStateChanged(auth, (user) => {
-            if (!user) { window.location.href = 'index.html'; return; }
+        // Cek LocalStorage saat load
+        document.addEventListener('DOMContentLoaded', () => {
             const storedUser = JSON.parse(localStorage.getItem('financeRajUser'));
-            if(storedUser) {
-                document.getElementById('welcomeName').textContent = `Halo, ${storedUser.fullName}`;
-                // Auto-fill nama jika user sudah login
-                document.getElementById('attName').value = storedUser.fullName;
-                document.getElementById('attName').readOnly = true; // Kunci nama agar tidak bisa diganti orang lain
+            
+            if (!storedUser) {
+                window.location.href = 'index.html';
+                return;
             }
+
+            // Proteksi Role: Hanya Driver/Karyawan yang boleh akses halaman ini
+            if (!['Driver', 'Karyawan'].includes(storedUser.role)) {
+                alert('Halaman ini khusus untuk karyawan lapangan.');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            document.getElementById('welcomeName').textContent = `Halo, ${storedUser.fullName}`;
+            // Auto-fill nama jika user sudah login via spreadsheet
+            document.getElementById('attName').value = storedUser.fullName;
+            document.getElementById('attName').readOnly = true; // Kunci nama agar tidak bisa diganti orang lain
         });
 
         // Toggle Logic
@@ -181,9 +186,8 @@
             }
         });
 
-        window.logout = async () => {
+        window.logout = () => {
             localStorage.removeItem('financeRajUser');
-            await signOut(auth);
             window.location.href = 'index.html';
         }
 
