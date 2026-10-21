@@ -2,167 +2,193 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FinanceRAJ - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - FinanceRAJ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-glow: rgba(79, 70, 229, 0.15);
-            --bg-body: #f8fafc;
-            --surface: #ffffff;
-            --text-main: #0f172a;
-            --text-sec: #64748b;
-            --border: #e2e8f0;
-            --radius: 16px;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-body); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
         
-        body.login-page { 
-            min-height: 100vh; display: flex; align-items: center; justify-content: center; 
-            background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%); padding: 20px; 
-        }
-
-        .login-box { 
-            background: var(--surface); border-radius: var(--radius); padding: 40px 30px; 
-            width: 100%; max-width: 420px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08); 
-            border: 1px solid var(--border); text-align: center;
-        }
-
-        /* LOGO STYLING */
-        .login-logo {
-            width: 90px; height: auto; margin-bottom: 20px;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
-            transition: transform 0.3s ease;
-        }
-        .login-logo:hover { transform: scale(1.05); }
-
-        .login-header h1 { color: var(--primary); font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 5px; }
-        .login-header p { color: var(--text-sec); font-size: 14px; font-weight: 500; }
-        .company-name { font-weight: 700; color: var(--text-main); margin-top: 12px; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; }
-
+        .login-card { background: var(--surface); padding: 40px; border-radius: var(--radius); box-shadow: 0 10px 40px rgba(0,0,0,0.08); width: 100%; max-width: 420px; text-align: center; }
+        .logo { width: 60px; height: auto; margin-bottom: 16px; }
+        h1 { color: var(--primary); font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+        .subtitle { color: var(--text-sec); font-size: 14px; margin-bottom: 30px; line-height: 1.5; }
+        
         .form-group { margin-bottom: 20px; text-align: left; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
+        
         .input-wrapper { position: relative; }
-        .input-wrapper i.icon-left { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-sec); font-size: 16px; }
+        .input-wrapper i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-sec); font-size: 16px; }
         
-        .form-control { 
-            width: 100%; padding: 14px 16px 14px 44px; background: var(--bg-body); 
-            border: 1px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; 
-        }
-        .form-control:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px var(--primary-glow); }
+        input { width: 100%; padding: 14px 16px 14px 44px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; background: var(--bg-body); }
+        input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
         
-        .toggle-password { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-sec); }
+        /* Animasi muncul password */
+        #passwordGroup { display: none; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .btn-login { 
-            width: 100%; padding: 16px; background: var(--primary); color: white; border: none; 
-            border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; 
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); transition: 0.3s;
-        }
-        .btn-login:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
-        .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
-
-        .error-message { background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; padding: 12px; border-radius: 10px; margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 13px; text-align: left; }
-        .login-footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text-sec); font-size: 12px; }
+        button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        
+        .error-msg { color: #ef4444; font-size: 13px; margin-top: 12px; display: none; font-weight: 500; }
+        .footer { margin-top: 30px; font-size: 12px; color: var(--text-sec); border-top: 1px solid var(--border); padding-top: 20px; }
     </style>
 </head>
-<body class="login-page">
-    <div class="login-box">
-        <!-- LOGO INTEGRATION -->
-        <img src="assets/logo.png" alt="FinanceRAJ Logo" class="login-logo" onerror="this.style.display='none'">
-        
-        <div class="login-header">
-            <h1>FinanceRAJ</h1>
-            <p>Sistem Akuntansi & Keuangan Profesional</p>
-            <p class="company-name">CV Rezeki Amanah Jaya Group</p>
-        </div>
+<body>
+    <div class="login-card">
+        <img src="assets/logo.png" alt="Logo RAJ" class="logo" onerror="this.style.display='none'">
+        <h1>FinanceRAJ</h1>
+        <p class="subtitle">Sistem Akuntansi & Keuangan Profesional<br>CV REZEKI AMANAH JAYA GROUP</p>
         
         <form id="loginForm">
             <div class="form-group">
                 <label>Email</label>
                 <div class="input-wrapper">
-                    <i class="fas fa-envelope icon-left"></i>
-                    <input type="email" id="email" class="form-control" required placeholder="nama@rezekiamanahjaya.com">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" required placeholder="Masukkan email Anda" autocomplete="off">
                 </div>
             </div>
-            <div class="form-group">
+
+            <!-- Kolom Password (Muncul Otomatis) -->
+            <div class="form-group" id="passwordGroup">
                 <label>Password</label>
                 <div class="input-wrapper">
-                    <i class="fas fa-lock icon-left"></i>
-                    <input type="password" id="password" class="form-control" required placeholder="Masukkan password">
-                    <button type="button" class="toggle-password" onclick="togglePass()"><i class="fas fa-eye"></i></button>
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Masukkan password">
                 </div>
             </div>
-            <div id="errorMessage" class="error-message"><i class="fas fa-exclamation-circle"></i> <span></span></div>
-            <button type="submit" class="btn-login" id="btnLogin"><i class="fas fa-sign-in-alt"></i> Masuk</button>
+            
+            <button type="submit" id="btnLogin">
+                <i class="fas fa-sign-in-alt"></i> Masuk
+            </button>
+            
+            <div class="error-msg" id="errorMsg"></div>
         </form>
-        <div class="login-footer">
-            <p>&copy; 2026 CV Rezeki Amanah Jaya Group | Tangerang</p>
+
+        <div class="footer">
+            © 2026 CV Rezeki Amanah Jaya Group | Tangerang
         </div>
     </div>
 
+    <!-- Firebase SDK (Hanya untuk Admin) -->
     <script type="module">
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg",
-            authDomain: "finance-raj.firebaseapp.com",
-            projectId: "finance-raj",
-            storageBucket: "finance-raj.firebasestorage.app",
-            messagingSenderId: "138468278392",
-            appId: "1:138468278392:web:215731466beb7f89566d8d",
-            measurementId: "G-BMG4L7P2DP"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg", authDomain: "finance-raj.firebaseapp.com", projectId: "finance-raj", storageBucket: "finance-raj.firebasestorage.app", messagingSenderId: "138468278392", appId: "1:138468278392:web:215731466beb7f89566d8d", measurementId: "G-BMG4L7P2DP" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
 
-        function togglePass() {
-            const inp = document.getElementById('password');
-            const icn = document.querySelector('.toggle-password i');
-            if(inp.type==='password'){ inp.type='text'; icn.classList.replace('fa-eye','fa-eye-slash'); }
-            else { inp.type='password'; icn.classList.replace('fa-eye-slash','fa-eye'); }
-        }
-        window.togglePass = togglePass;
+        const emailInput = document.getElementById('email');
+        const passwordGroup = document.getElementById('passwordGroup');
+        const passwordInput = document.getElementById('password');
+        const errorMsg = document.getElementById('errorMsg');
+        const btnLogin = document.getElementById('btnLogin');
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                let storedUser = localStorage.getItem('financeRajUser');
-                if (!storedUser) {
-                    storedUser = JSON.stringify({ uid: user.uid, email: user.email, fullName: user.email.split('@')[0], role: 'admin' });
-                    localStorage.setItem('financeRajUser', storedUser);
-                }
-                window.location.href = 'dashboard.html';
+        // DETEKSI EMAIL SAAT MENGETIK
+        let checkTimeout;
+        emailInput.addEventListener('input', (e) => {
+            clearTimeout(checkTimeout);
+            const email = e.target.value.trim();
+            errorMsg.style.display = 'none';
+            
+            // Jika email kosong, sembunyikan password
+            if(!email) {
+                passwordGroup.style.display = 'none';
+                passwordInput.required = false;
+                return;
             }
+
+            // Delay 500ms agar tidak spam request ke server
+            checkTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`${GAS_URL}?action=checkUserEmail&email=${encodeURIComponent(email)}`);
+                    const data = await res.json();
+                    
+                    if(data.isSpreadsheetUser) {
+                        // User ditemukan di Spreadsheet -> Tampilkan Password
+                        passwordGroup.style.display = 'block';
+                        passwordInput.required = true;
+                        passwordInput.focus();
+                    } else {
+                        // User tidak ada di Spreadsheet (Mungkin Firebase Admin) -> Sembunyikan Password
+                        passwordGroup.style.display = 'none';
+                        passwordInput.required = false;
+                    }
+                } catch(err) { console.error("Gagal cek user:", err); }
+            }, 500);
         });
 
+        // HANDLE SUBMIT LOGIN
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btnLogin');
-            const errDiv = document.getElementById('errorMessage');
-            const email = document.getElementById('email').value.trim();
-            const pass = document.getElementById('password').value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            const isSpreadsheetLogin = passwordGroup.style.display === 'block';
 
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-            errDiv.style.display = 'none';
+            btnLogin.disabled = true;
+            btnLogin.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            errorMsg.style.display = 'none';
 
             try {
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch (error) {
-                console.error(error);
-                let msg = "Login gagal.";
-                if(error.code === 'auth/user-not-found') msg = "Email tidak terdaftar.";
-                else if(error.code === 'auth/wrong-password') msg = "Password salah.";
-                
-                errDiv.querySelector('span').textContent = msg;
-                errDiv.style.display = 'flex';
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Masuk';
+                if (isSpreadsheetLogin) {
+                    // --- LOGIN VIA SPREADSHEET (Staff/Karyawan) ---
+                    const res = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'loginWithCredentials', email, password })
+                    });
+                    const result = await res.json();
+
+                    if (result.status === 'success') {
+                        localStorage.setItem('financeRajUser', JSON.stringify(result));
+                        window.location.href = 'absensi.html';
+                    } else {
+                        throw new Error(result.message);
+                    }
+
+                } else {
+                    // --- LOGIN VIA FIREBASE (Admin) ---
+                    // Kita perlu verifikasi role admin dulu sebelum login Firebase
+                    const checkRes = await fetch(`${GAS_URL}?action=loginWithEmail&email=${encodeURIComponent(email)}`);
+                    const checkData = await checkRes.json();
+
+                    if(checkData.status !== 'success') {
+                        throw new Error(checkData.message || 'Email Admin tidak terdaftar');
+                    }
+
+                    // Jika email valid, lanjut login Firebase
+                    // Note: Di sistem hybrid ini, password Firebase harus tetap dimasukkan user 
+                    // atau kita bisa bypass jika ingin fully automatic (tapi kurang aman).
+                    // Untuk saat ini, kita asumsikan Admin tahu password Firebase mereka.
+                    // Tapi karena form password disembunyikan, kita perlu prompt manual atau 
+                    // Admin harus ingat password Firebase-nya.
+                    
+                    // SOLUSI: Tampilkan prompt password khusus Firebase jika belum ada
+                    const fbPassword = prompt("Masukkan Password Firebase Admin Anda:");
+                    if(!fbPassword) throw new Error("Login dibatalkan");
+
+                    await signInWithEmailAndPassword(auth, email, fbPassword);
+                    
+                    localStorage.setItem('financeRajUser', JSON.stringify({
+                        email: email,
+                        fullName: checkData.fullName,
+                        role: checkData.role
+                    }));
+                    
+                    window.location.href = 'dashboard.html';
+                }
+
+            } catch (err) {
+                errorMsg.textContent = err.message;
+                errorMsg.style.display = 'block';
+                btnLogin.disabled = false;
+                btnLogin.innerHTML = '<i class="fas fa-sign-in-alt"></i> Masuk';
             }
         });
     </script>
