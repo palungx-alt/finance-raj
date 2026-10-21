@@ -8,16 +8,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; --success: #10b981; }
+        :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; --success: #10b981; --warning: #f59e0b; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         
-        .card { background: var(--surface); width: 100%; max-width: 400px; padding: 30px; border-radius: var(--radius); box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border); }
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+        .card { background: var(--surface); width: 100%; max-width: 420px; padding: 30px; border-radius: var(--radius); box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border); position: relative; }
+        .header { text-align: center; margin-bottom: 24px; }
+        .header h1 { font-size: 22px; font-weight: 800; color: var(--primary); margin-bottom: 6px; }
         .header p { font-size: 14px; color: var(--text-sec); }
         
-        .form-group { margin-bottom: 20px; }
+        /* Status Badge */
+        .status-badge { 
+            display: inline-flex; align-items: center; gap: 6px; 
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; 
+            margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .badge-checkin { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .badge-done { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+        
+        .form-group { margin-bottom: 18px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
         .form-control { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; outline: none; background: var(--bg-body); transition: 0.2s; box-sizing: border-box; }
         .form-control:focus { border-color: var(--primary); background: white; }
@@ -30,28 +39,53 @@
         .toggle-icon { width: 24px; height: 24px; border-radius: 50%; background: #cbd5e1; display: flex; align-items: center; justify-content: center; color: white; transition: 0.3s; font-size: 12px; }
         .toggle-wrapper.active .toggle-icon { background: var(--primary); transform: rotate(180deg); }
         
-        .btn-submit { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
+        .btn-submit { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
         .btn-submit:active { transform: scale(0.98); }
         .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
         
-        .info-box { margin-top: 20px; padding: 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; text-align: center; display: none; }
-        .info-box.show { display: block; animation: slideUp 0.3s ease; }
-        .info-total { font-size: 24px; font-weight: 800; color: var(--success); margin-top: 8px; }
+        /* Live Calculator Preview */
+        .calc-preview { 
+            margin-top: 16px; padding: 16px; background: #f0fdf4; 
+            border: 1px solid #bbf7d0; border-radius: 12px; text-align: center; 
+            display: none; animation: slideUp 0.3s ease;
+        }
+        .calc-preview.show { display: block; }
+        .calc-label { font-size: 12px; color: var(--text-sec); margin-bottom: 4px; }
+        .calc-total { font-size: 24px; font-weight: 800; color: var(--success); }
         
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .logout-link { display: block; text-align: center; margin-top: 20px; color: var(--text-sec); text-decoration: none; font-size: 13px; font-weight: 600; }
+        .history-link { 
+            display: flex; align-items: center; justify-content: center; gap: 8px; 
+            margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); 
+            color: var(--text-sec); text-decoration: none; font-size: 14px; font-weight: 600; 
+            transition: 0.2s;
+        }
+        .history-link:hover { color: var(--primary); }
+        
+        .logout-link { display: block; text-align: center; margin-top: 16px; color: var(--text-sec); text-decoration: none; font-size: 13px; font-weight: 600; }
     </style>
 </head>
 <body>
     <div class="card">
         <div class="header">
             <img src="assets/logo.png" alt="Logo" style="width: 50px; margin-bottom: 10px;" onerror="this.style.display='none'">
-            <h1>Absensi Harian</h1>
+            <h1 id="pageTitle">Absensi Harian</h1>
             <p id="welcomeName">Selamat Datang, Karyawan</p>
         </div>
 
+        <!-- Status Indicator -->
+        <div style="text-align: center;">
+            <div id="statusBadge" class="status-badge badge-checkin">
+                <i class="fas fa-clock"></i> Belum Check-in Hari Ini
+            </div>
+        </div>
+
         <form id="attendanceForm">
+            <input type="hidden" id="attMode" value="checkin">
+            
             <div class="form-group">
                 <label>Tanggal</label>
                 <input type="date" id="attDate" class="form-control" required>
@@ -62,39 +96,50 @@
                 <input type="text" id="attName" class="form-control" placeholder="Masukkan nama lengkap" required>
             </div>
 
-            <div class="form-group">
-                <label>Status Kehadiran</label>
-                <select id="attHadir" class="form-control">
-                    <option value="Ya">Datang / Hadir</option>
-                    <option value="Tidak">Tidak Hadir / Izin</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Jumlah Trip Hari Ini</label>
-                <input type="number" id="attTrip" class="form-control" placeholder="0" min="0" inputmode="numeric">
-            </div>
-
-            <!-- Toggle Uang Makan -->
-            <div class="form-group">
-                <label>Uang Makan Workshop?</label>
-                <div class="toggle-wrapper" id="toggleMakan" onclick="toggleMakan()">
-                    <span class="toggle-label">Dapat Uang Makan (Rp 15.000)</span>
-                    <div class="toggle-icon"><i class="fas fa-check"></i></div>
+            <!-- Form Check-in Only -->
+            <div id="checkinFields">
+                <div class="form-group">
+                    <label>Status Kehadiran</label>
+                    <select id="attHadir" class="form-control">
+                        <option value="Ya">Datang / Hadir</option>
+                        <option value="Tidak">Tidak Hadir / Izin</option>
+                    </select>
                 </div>
-                <input type="hidden" id="attMakan" value="Tidak">
+
+                <div class="form-group">
+                    <label>Uang Makan Workshop?</label>
+                    <div class="toggle-wrapper" id="toggleMakan" onclick="toggleMakan()">
+                        <span class="toggle-label">Dapat Uang Makan (Rp 15.000)</span>
+                        <div class="toggle-icon"><i class="fas fa-check"></i></div>
+                    </div>
+                    <input type="hidden" id="attMakan" value="Tidak">
+                </div>
             </div>
 
-            <button type="submit" class="btn-submit" id="btnSubmit">
-                <i class="fas fa-paper-plane"></i> Kirim Absensi
+            <!-- Form Checkout / Input Trip Only -->
+            <div id="checkoutFields" style="display: none;">
+                <div class="form-group">
+                    <label>Jumlah Trip Aktual Hari Ini</label>
+                    <input type="number" id="attTrip" class="form-control" placeholder="Contoh: 4" min="0" inputmode="numeric" oninput="calculatePreview()">
+                    <div style="font-size: 12px; color: var(--text-sec); margin-top: 6px;">*Trip dihitung setelah pekerjaan selesai</div>
+                </div>
+            </div>
+
+            <!-- Live Calculation Preview -->
+            <div class="calc-preview" id="calcPreview">
+                <div class="calc-label">Estimasi Gaji Hari Ini</div>
+                <div class="calc-total" id="calcTotal">Rp 0</div>
+            </div>
+
+            <button type="submit" class="btn-submit btn-primary" id="btnSubmit">
+                <i class="fas fa-sign-in-alt"></i> Check-in Sekarang
             </button>
         </form>
 
-        <div class="info-box" id="resultBox">
-            <div style="font-size: 13px; color: var(--text-sec);">Estimasi Gaji Hari Ini</div>
-            <div class="info-total" id="resultTotal">Rp 0</div>
-            <div style="font-size: 12px; margin-top: 8px; color: var(--success);"><i class="fas fa-check-circle"></i> Data berhasil disimpan!</div>
-        </div>
+        <!-- Link ke Histori -->
+        <a href="absensi-rekap.html" class="history-link">
+            <i class="fas fa-history"></i> Lihat Histori Absensi & Gaji
+        </a>
 
         <a href="#" class="logout-link" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Keluar / Ganti Akun</a>
     </div>
@@ -104,9 +149,10 @@
 
         // Set tanggal hari ini default
         document.getElementById('attDate').valueAsDate = new Date();
+        let currentUserData = null;
 
-        // Cek LocalStorage saat load
-        document.addEventListener('DOMContentLoaded', () => {
+        // Cek LocalStorage & Deteksi Status Absen Hari Ini saat load
+        document.addEventListener('DOMContentLoaded', async () => {
             const storedUser = JSON.parse(localStorage.getItem('financeRajUser'));
             
             if (!storedUser) {
@@ -114,18 +160,85 @@
                 return;
             }
 
-            // Proteksi Role: Hanya Driver/Karyawan yang boleh akses halaman ini
+            // Proteksi Role
             if (!['Driver', 'Karyawan'].includes(storedUser.role)) {
                 alert('Halaman ini khusus untuk karyawan lapangan.');
                 window.location.href = 'dashboard.html';
                 return;
             }
 
+            currentUserData = storedUser;
             document.getElementById('welcomeName').textContent = `Halo, ${storedUser.fullName}`;
-            // Auto-fill nama jika user sudah login via spreadsheet
             document.getElementById('attName').value = storedUser.fullName;
-            document.getElementById('attName').readOnly = true; // Kunci nama agar tidak bisa diganti orang lain
+            document.getElementById('attName').readOnly = true;
+
+            // CEK STATUS ABSEN HARI INI KE BACKEND
+            await checkTodayStatus();
         });
+
+        async function checkTodayStatus() {
+            const today = document.getElementById('attDate').value;
+            const name = document.getElementById('attName').value;
+            
+            try {
+                // Kita ambil histori limit 100 untuk cek status hari ini
+                const res = await fetch(`${GAS_URL}?action=getAttendanceHistory&limit=100`);
+                const result = await res.json();
+                
+                if(result.status === 'success') {
+                    const todayRecord = result.data.find(r => 
+                        r.nama === name && r.tanggal === today
+                    );
+
+                    const badge = document.getElementById('statusBadge');
+                    const btn = document.getElementById('btnSubmit');
+                    const title = document.getElementById('pageTitle');
+
+                    if (todayRecord && todayRecord.status === 'Pending') {
+                        // SUDAH CHECK-IN, BELUM CHECKOUT
+                        document.getElementById('attMode').value = 'checkout';
+                        document.getElementById('checkinFields').style.display = 'none';
+                        document.getElementById('checkoutFields').style.display = 'block';
+                        
+                        badge.className = 'status-badge badge-checkin';
+                        badge.innerHTML = '<i class="fas fa-hourglass-half"></i> Sudah Check-in (Belum Selesai)';
+                        
+                        title.textContent = 'Input Hasil Trip';
+                        btn.className = 'btn-submit btn-success';
+                        btn.innerHTML = '<i class="fas fa-check-circle"></i> Selesai & Hitung Gaji';
+                        
+                        // Restore data uang makan dari record pending
+                        if(todayRecord.makan === 'Ya') {
+                            document.getElementById('toggleMakan').classList.add('active');
+                            document.getElementById('attMakan').value = 'Ya';
+                        }
+                        
+                    } else if (todayRecord && todayRecord.status === 'Paid') {
+                        // SUDAH SELESAI HARI INI
+                        document.getElementById('attendanceForm').style.display = 'none';
+                        badge.className = 'status-badge badge-done';
+                        badge.innerHTML = '<i class="fas fa-check-double"></i> Absensi Hari Ini Selesai';
+                        title.textContent = 'Absensi Selesai';
+                        document.getElementById('welcomeName').textContent = `Terima kasih, ${storedUser.fullName}. Istirahat yang cukup!`;
+                        
+                        // Tampilkan ringkasan gaji hari ini
+                        const preview = document.getElementById('calcPreview');
+                        preview.classList.add('show');
+                        document.getElementById('calcTotal').textContent = formatRupiah(todayRecord.total);
+                        document.querySelector('.calc-label').textContent = 'Total Gaji Hari Ini';
+
+                    } else {
+                        // BELUM CHECK-IN SAMA SEKALI
+                        document.getElementById('attMode').value = 'checkin';
+                        badge.className = 'status-badge badge-checkin';
+                        badge.innerHTML = '<i class="fas fa-clock"></i> Belum Check-in Hari Ini';
+                        title.textContent = 'Absensi Harian';
+                        btn.className = 'btn-submit btn-primary';
+                        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Check-in Sekarang';
+                    }
+                }
+            } catch(err) { console.error("Gagal cek status:", err); }
+        }
 
         // Toggle Logic
         window.toggleMakan = function() {
@@ -133,6 +246,46 @@
             const input = document.getElementById('attMakan');
             wrapper.classList.toggle('active');
             input.value = wrapper.classList.contains('active') ? 'Ya' : 'Tidak';
+            calculatePreview(); // Recalculate if toggled during checkout
+        }
+
+        // Live Calculator Preview with Minimum Guarantee
+        window.calculatePreview = function() {
+            const mode = document.getElementById('attMode').value;
+            const previewBox = document.getElementById('calcPreview');
+            const totalEl = document.getElementById('calcTotal');
+            
+            if (mode !== 'checkout') return; // Hanya hitung saat mode checkout
+            
+            const tripInput = document.getElementById('attTrip');
+            const trips = parseInt(tripInput.value) || 0;
+            
+            // Terapkan Logika Minimum Guarantee
+            const earningFromTrip = trips * 30000;
+            const baseGuarantee = 76000;
+            
+            // Ambil yang terbesar antara jaminan harian dan hasil trip
+            let calculatedPay = Math.max(baseGuarantee, earningFromTrip);
+            
+            // Tambahkan uang makan jika dicentang
+            if(document.getElementById('attMakan').value === 'Ya') {
+                calculatedPay += 15000;
+            }
+            
+            // Tampilkan preview hanya jika user sudah mengetik angka trip atau toggle makan aktif
+            if(trips > 0 || document.getElementById('attMakan').value === 'Ya') {
+                previewBox.classList.add('show');
+                totalEl.textContent = formatRupiah(calculatedPay);
+                
+                // Beri info kecil jika masih dapat jaminan minimum
+                if(earningFromTrip < baseGuarantee && trips > 0) {
+                     document.querySelector('.calc-label').textContent = `Estimasi Gaji (Min. Jaminan Rp 76.000)`;
+                } else {
+                     document.querySelector('.calc-label').textContent = `Estimasi Gaji (${trips} Trip)`;
+                }
+            } else {
+                previewBox.classList.remove('show');
+            }
         }
 
         // Submit Logic
@@ -140,17 +293,19 @@
             e.preventDefault();
             const btn = document.getElementById('btnSubmit');
             const originalText = btn.innerHTML;
+            const mode = document.getElementById('attMode').value;
             
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
 
             const payload = {
                 action: 'submitAttendance',
                 formData: {
+                    mode: mode,
                     tanggal: document.getElementById('attDate').value,
                     nama: document.getElementById('attName').value,
-                    hadir: document.getElementById('attHadir').value,
-                    trip: document.getElementById('attTrip').value || 0,
+                    hadir: document.getElementById('attHadir')?.value || 'Ya', // Fallback for checkout
+                    trip: document.getElementById('attTrip')?.value || 0,
                     makan: document.getElementById('attMakan').value
                 }
             };
@@ -160,20 +315,25 @@
                 const result = await res.json();
                 
                 if(result.status === 'success') {
-                    document.getElementById('resultTotal').textContent = formatRupiah(result.total);
-                    document.getElementById('resultBox').classList.add('show');
-                    btn.innerHTML = '<i class="fas fa-check"></i> Tersimpan';
-                    
-                    // Reset form setelah 3 detik (kecuali nama & tanggal)
-                    setTimeout(() => {
-                        document.getElementById('attTrip').value = '';
-                        document.getElementById('resultBox').classList.remove('show');
-                        btn.disabled = false;
-                        btn.innerHTML = originalText;
-                        // Reset toggle makan
-                        document.getElementById('toggleMakan').classList.remove('active');
-                        document.getElementById('attMakan').value = 'Tidak';
-                    }, 3000);
+                    if(mode === 'checkin') {
+                        alert("✅ Check-in berhasil! Selamat bekerja.");
+                        // Refresh halaman untuk ubah mode ke checkout
+                        window.location.reload(); 
+                    } else {
+                        // Success Checkout
+                        document.getElementById('attendanceForm').style.display = 'none';
+                        const badge = document.getElementById('statusBadge');
+                        badge.className = 'status-badge badge-done';
+                        badge.innerHTML = '<i class="fas fa-check-double"></i> Absensi Selesai';
+                        document.getElementById('pageTitle').textContent = 'Selesai Bekerja';
+                        
+                        const preview = document.getElementById('calcPreview');
+                        preview.classList.add('show');
+                        document.getElementById('calcTotal').textContent = formatRupiah(result.total);
+                        document.querySelector('.calc-label').textContent = `Total Gaji (${result.trips} Trip)`;
+                        
+                        btn.style.display = 'none';
+                    }
                 } else {
                     alert(result.message);
                     btn.disabled = false;
