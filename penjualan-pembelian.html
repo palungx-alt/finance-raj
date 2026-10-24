@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FinanceRAJ - Input Transaksi Inventory v20.6</title>
+    <title>FinanceRAJ - Input Transaksi Inventory v22.1</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Library PDF.js untuk membaca PDF -->
@@ -94,7 +94,7 @@
         <div class="brand-area">
             <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i></button>
             <div class="page-title">
-                <h1>Transaksi Inventory v20.6</h1>
+                <h1>Transaksi Inventory v22.1</h1>
                 <p>CV Rezeki Amanah Jaya Group</p>
             </div>
         </div>
@@ -188,14 +188,14 @@
                     <input type="date" id="salDate" value="">
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-hashtag"></i> No. Invoice</label>
-                    <input type="text" id="salNoInvoice" placeholder="Contoh: INV-2026-001">
+                    <label><i class="fas fa-hashtag"></i> No. Invoice (Auto)</label>
+                    <input type="text" id="salNoInvoice" placeholder="Akan terisi otomatis..." readonly style="background:#f1f5f9; cursor:not-allowed;">
                 </div>
             </div>
             
             <div class="form-group">
                 <label><i class="fas fa-user-tie"></i> Nama Customer / Offtaker</label>
-                <input type="text" id="salCustomer" placeholder="Contoh: PT Daur Ulang Sejahtera">
+                <input type="text" id="salCustomer" placeholder="Contoh: HENDRA">
             </div>
 
             <div class="form-group">
@@ -323,7 +323,7 @@
         }
 
         // ==========================================
-        // LOGIKA OCR PDF OTOMATIS v20.6 (SUPPLIER LENGKAP + ANTI HEADER)
+        // LOGIKA OCR PDF OTOMATIS v22.1 (FIRST LINE ONLY)
         // ==========================================
         window.handleFileSelect = async function(input, type) {
             const file = input.files[0];
@@ -350,7 +350,7 @@
                 if (type === 'purchase') {
                     await parsePurchasePDF(fullText);
                 } else {
-                    parseSalesPDF(fullText);
+                    await parseSalesPDF(fullText);
                 }
                 
                 showNotification("PDF berhasil dibaca! Silakan verifikasi data.", "success");
@@ -365,12 +365,9 @@
         }
 
         async function parsePurchasePDF(text) {
-            // Bersihkan teks dari karakter aneh dan normalisasi spasi
             const cleanText = text.replace(/[\x00-\x1F\x7F-\x9F]/g, '').replace(/\s+/g, ' ').trim();
             
-            // 1. Auto-fill Header
-            
-            // Cari Tanggal 
+            // 1. Auto-fill Header Pembelian
             const dateMatch = cleanText.match(/(\d{1,2})\s*(Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember)\s*(\d{4})/i) || 
                               cleanText.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
             if (dateMatch) {
@@ -384,28 +381,18 @@
                 document.getElementById('purDate').value = `${y}-${m}-${d}`;
             }
 
-            // PERBAIKAN EKSTRAKSI SUPPLIER LENGKAP
+            // Ekstraksi Supplier
             let supplierName = '';
-            
-            // Pola 1: Mencari teks setelah YTH sampai ketemu TANGGAL (menangani jeda baris)
             const supMatch1 = cleanText.match(/KEPADA\s+YTH[:\s]*([A-Z\s&]{3,}?)(?=\s+TANGGAL|\s+NO\.|\s+DATE|$)/i);
-            // Pola 2: Fallback jika ada karakter aneh di tengah nama
             const supMatch2 = cleanText.match(/KEPADA\s+YTH[:\s]*([A-Z\s&]+?)(?=\s+(?:TANGGAL|NO\.|DATE|URAIAN|VOL)|$)/i);
             
-            if (supMatch1 && supMatch1[1].trim().length > 3) {
-                supplierName = supMatch1[1].trim();
-            } else if (supMatch2 && supMatch2[1].trim().length > 3) {
-                supplierName = supMatch2[1].trim();
-            }
+            if (supMatch1 && supMatch1[1].trim().length > 3) supplierName = supMatch1[1].trim();
+            else if (supMatch2 && supMatch2[1].trim().length > 3) supplierName = supMatch2[1].trim();
 
-            // Fallback Ekstra: Ambil semua teks kapital setelah YTH lalu potong manual
             if (!supplierName) {
                 const fallback = cleanText.match(/KEPADA\s+YTH[:\s]*(.+)/i);
                 if (fallback) {
-                    let raw = fallback[1].trim();
-                    // Potong saat ketemu kata kunci berikutnya
-                    raw = raw.split(/\s+(?:TANGGAL|NO\.|DATE|URAIAN|VOL|HARGA)/i)[0].trim();
-                    // Bersihkan sisa-sisa header tabel yang mungkin terbawa
+                    let raw = fallback[1].trim().split(/\s+(?:TANGGAL|NO\.|DATE|URAIAN|VOL|HARGA)/i)[0].trim();
                     raw = raw.replace(/^(URAIAN|VOL|HARGA|SATUAN|TOTAL)\s*/i, '').trim();
                     if (raw.length > 3) supplierName = raw;
                 }
@@ -413,33 +400,40 @@
 
             if (supplierName) {
                 document.getElementById('purSupplier').value = supplierName;
-                
-                // GENERATE NO NOTA OTOMATIS
+                // SELALU GENERATE NO NOTA BARU DARI BACKEND (FORMAT MM/YYYY)
                 try {
                     const res = await fetch(`${GAS_URL}?action=getNextPurchaseNumber&supplier=${encodeURIComponent(supplierName)}`);
                     const data = await res.json();
                     if (data.status === 'success') {
-                        document.getElementById('purNoNota').value = data.nextNumber;
+                        // Konversi format NPB/YYYY/MM/XXX -> NPB/MM/YYYY/XXX
+                        let generatedNum = data.nextNumber;
+                        const parts = generatedNum.split('/');
+                        if (parts.length === 4) {
+                            generatedNum = `${parts[0]}/${parts[2]}/${parts[1]}/${parts[3]}`;
+                        }
+                        document.getElementById('purNoNota').value = generatedNum;
                     } else {
-                        document.getElementById('purNoNota').value = `CUST-NEW-${supplierName.replace(/\s+/g, '-')}`;
+                        const now = new Date();
+                        const y = now.getFullYear();
+                        const m = String(now.getMonth() + 1).padStart(2, '0');
+                        document.getElementById('purNoNota').value = `NPB/${m}/${y}/NEW`;
                     }
                 } catch(e) {
-                    document.getElementById('purNoNota').value = `CUST-NEW-${supplierName.replace(/\s+/g, '-')}`;
+                    const now = new Date();
+                    const y = now.getFullYear();
+                    const m = String(now.getMonth() + 1).padStart(2, '0');
+                    document.getElementById('purNoNota').value = `NPB/${m}/${y}/NEW`;
                 }
             }
 
-            // 2. Parse Item Tabel (Anti-Header Logic)
+            // Parse Item Pembelian
             const itemRegex = /([A-Z\s\/]+?)\s+(\d+[.,]?\d*)\s*(Kg|Pcs|Liter|Ton|Box|Mix)\s+(\d+[.,]?\d*)\s+Rp\s?([\d.,]+)/gi;
             let match;
             let itemsFound = false;
             document.getElementById('purItemBody').innerHTML = ''; 
             
             while ((match = itemRegex.exec(cleanText)) !== null) {
-                let name = match[1].trim();
-                
-                // Pembersihan Nama Barang Agresif
-                name = name.replace(/^(URAIAN|VOL|HARGA|SATUAN|TOTAL|DESKRIPSI|ITEM|DESCRIPTION)\s*/i, '').trim();
-                // Abaikan jika hanya angka atau terlalu pendek
+                let name = match[1].trim().replace(/^(URAIAN|VOL|HARGA|SATUAN|TOTAL|DESKRIPSI|ITEM|DESCRIPTION)\s*/i, '').trim();
                 if (/^\d+$/.test(name) || name.length < 3) continue;
 
                 let qty = match[2].replace(',', '.');
@@ -451,39 +445,107 @@
                     itemsFound = true;
                 }
             }
-
-            if (!itemsFound) showNotification("Item tabel tidak terdeteksi otomatis. Mohon input manual.", "error");
+            if (!itemsFound) showNotification("Item pembelian tidak terdeteksi. Mohon input manual.", "error");
             calcPurchaseTotal();
         }
 
-        function parseSalesPDF(text) {
-            const cleanText = text.replace(/\s+/g, ' ');
+        async function parseSalesPDF(text) {
+            // Membersihkan karakter aneh tapi PERTAHANKAN STRUKTUR BARIS UNTUK EKSTRAKSI NAMA
+            const cleanText = text.replace(/[\x00-\x1F\x7F-\x9F]/g, '').replace(/\s+/g, ' ').trim();
+            
+            // 1. Auto-fill Header Penjualan
+            
+            // Cari Tanggal
             const dateMatch = cleanText.match(/(\d{1,2})\s*(Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember)\s*(\d{4})/i);
             if (dateMatch) {
                  const months = {'januari':'01','februari':'02','maret':'03','april':'04','mei':'05','juni':'06','juli':'07','agustus':'08','september':'09','oktober':'10','november':'11','desember':'12'};
-                 const d = dateMatch[1].padStart(2, '0'); const m = months[dateMatch[2].toLowerCase()]; const y = dateMatch[3];
+                 const d = dateMatch[1].padStart(2, '0');
+                 const m = months[dateMatch[2].toLowerCase()];
+                 const y = dateMatch[3];
                  document.getElementById('salDate').value = `${y}-${m}-${d}`;
             }
 
-            const invMatch = cleanText.match(/Invoice[:\s]*#?([A-Z0-9\-]+)/i) || cleanText.match(/No[:\s]*([A-Z0-9\-]+)/i);
-            if (invMatch) document.getElementById('salNoInvoice').value = invMatch[1];
+            // PERBAIKAN EKSTRAKSI CUSTOMER (FIRST LINE ONLY - STOP AT COMMA OR DOUBLE SPACE)
+            let customerName = '';
+            
+            // Pola 1: Regex toleran untuk teks terpotong-potong
+            const custMatch1 = cleanText.match(/D\s*I\s*T\s*A\s*G\s*I\s*H\s*K\s*A\s*N\s+K\s*E\s+P\s*A\s*D\s*A\s*[:\s]*([A-Z\s&]{3,}?)(?=\s{2,}|,|NPWP|TELP|INVOICE|NO\.|$)/i);
+            
+            // Pola 2: Fallback BILL TO
+            const custMatch2 = cleanText.match(/BILL\s+TO[:\s]*([A-Z\s&]{3,}?)(?=\s{2,}|,|NPWP|TELP|INVOICE|NO\.|$)/i);
+            
+            if (custMatch1 && custMatch1[1].trim().length > 2) {
+                customerName = custMatch1[1].trim();
+            } else if (custMatch2 && custMatch2[1].trim().length > 2) {
+                customerName = custMatch2[1].trim();
+            }
 
-            const custMatch = cleanText.match(/BILL\s+TO[:\s]*([A-Z\s&]+?)(?=\s+INVOICE|\s+NO\.|\s+DATE|$)/i) || 
-                              cleanText.match(/KEPADA[:\s]*([A-Z\s&]+?)(?=\s+TANGGAL|\s+NO\.|$)/i);
-            if (custMatch) document.getElementById('salCustomer').value = custMatch[1].trim();
+            // Fallback Ekstra: Ambil teks pertama setelah frasa "KE PADA" lalu potong manual
+            if (!customerName) {
+                const fallback = cleanText.match(/K\s*E\s+P\s*A\s*D\s*A\s*[:\s]*(.+)/i);
+                if (fallback) {
+                    let raw = fallback[1].trim();
+                    // Potong saat ketemu koma pertama (batas umum nama & alamat) atau spasi ganda
+                    raw = raw.split(/,|\s{2,}|(?:NPWP|TELP|INVOICE|NO\.)/i)[0].trim();
+                    // Bersihkan sisa-sisa header tabel yang mungkin terbawa
+                    raw = raw.replace(/^(DESKRIPSI|ITEM|DESCRIPTION|URAIAN|QTY|VOL|HARGA|SATUAN|JUMLAH|TOTAL)\s*/i, '').trim();
+                    if (raw.length > 2) customerName = raw;
+                }
+            }
 
+            // DEBUG: Cek apakah nama ditemukan
+            console.log("Extracted Customer Name:", customerName);
+
+            if (customerName) {
+                document.getElementById('salCustomer').value = customerName;
+            }
+
+            // SELALU GENERATE NO INVOICE BARU DARI BACKEND (FORMAT MM/YYYY)
+            try {
+                const res = await fetch(`${GAS_URL}?action=getNextSalesNumber`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    // Konversi format NPJ/YYYY/MM/XXX -> NPJ/MM/YYYY/XXX
+                    let generatedNum = data.nextNumber;
+                    const parts = generatedNum.split('/');
+                    if (parts.length === 4) {
+                        generatedNum = `${parts[0]}/${parts[2]}/${parts[1]}/${parts[3]}`;
+                    }
+                    document.getElementById('salNoInvoice').value = generatedNum;
+                } else {
+                    const now = new Date();
+                    const y = now.getFullYear();
+                    const m = String(now.getMonth() + 1).padStart(2, '0');
+                    document.getElementById('salNoInvoice').value = `NPJ/${m}/${y}/NEW`;
+                }
+            } catch(e) {
+                const now = new Date();
+                const y = now.getFullYear();
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                document.getElementById('salNoInvoice').value = `NPJ/${m}/${y}/NEW`;
+            }
+
+            // 2. Parse Item Penjualan (Anti-Header Logic)
             const itemRegex = /([A-Z\s\/]+?)\s+(\d+[.,]?\d*)\s*(Kg|Pcs|Liter|Ton|Box)\s+(\d+[.,]?\d*)\s+Rp\s?([\d.,]+)/gi;
             let match;
             let itemsFound = false;
             document.getElementById('salItemBody').innerHTML = '';
             
             while ((match = itemRegex.exec(cleanText)) !== null) {
-                let name = match[1].trim().replace(/^(URAIAN|ITEM|DESCRIPTION)\s*/i, '');
-                let qty = match[2].replace(',', '.');
-                let unit = match[3];
-                let price = match[4].replace('.', '').replace(',', '.');
+                let name = match[1].trim();
                 
-                if (name.length > 2 && parseFloat(qty) > 0 && parseFloat(price) > 0) {
+                // Pembersihan Nama Barang Agresif (Membuang "Deskripsi Item", "Qty", dll)
+                name = name.replace(/^(DESKRIPSI|ITEM|DESCRIPTION|URAIAN|QTY|VOL|HARGA|SATUAN|JUMLAH|TOTAL)\s*/i, '').trim();
+                
+                // Abaikan jika nama terlalu pendek atau hanya angka
+                if (/^\d+$/.test(name) || name.length < 3) continue;
+
+                // PERBAIKAN FORMAT ANGKA INDONESIA
+                let qty = match[2].replace(/\./g, '').replace(',', '.');
+                let unit = match[3];
+                let price = match[4].replace(/\./g, '').replace(',', '.');
+                
+                if (parseFloat(qty) > 0 && parseFloat(price) > 0) {
                     addSalesRow(name, unit, qty, price);
                     itemsFound = true;
                 }
