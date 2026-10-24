@@ -436,6 +436,19 @@
         let selectedPeriod = "";
         let periodRange = "monthly";
 
+        // FUNGSI NORMALISASI TANGGAL KE YYYY-MM-DD
+        function normalizeDate(val) {
+            if (!val) return '';
+            try {
+                const d = new Date(val);
+                if (!isNaN(d.getTime())) {
+                    const wibTime = new Date(d.getTime() + (7 * 60 * 60 * 1000)); 
+                    return wibTime.toISOString().split('T')[0];
+                }
+            } catch(e) {}
+            return String(val).trim().substring(0, 10);
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
             
@@ -457,12 +470,23 @@
                 const dataJurnal = await resJurnal.json();
                 const dataCOA = await resCOA.json();
                 
-                allTransactions = (dataJurnal.journals || []).filter(tx => /^\d+-\d+$/.test(String(tx[6]||'').trim()));
+                // SIMPAN SEMUA TRANSAKSI TANPA FILTER KODE AWAL
+                allTransactions = (dataJurnal.journals || []).map(tx => {
+                    let code = String(tx[6]||'').trim();
+                    // Normalisasi nama akun ke kode jika perlu
+                    if (!/^\d/.test(code)) {
+                        const found = (dataCOA.accounts || []).find(a => a.name.toLowerCase() === code.toLowerCase());
+                        if (found) code = found.code;
+                    }
+                    return { ...tx, normalizedCode: code };
+                }).filter(tx => /^\d+-\d+$/.test(tx.normalizedCode));
+
                 coaList = dataCOA.accounts || [];
                 
+                // Populate Dropdown Buku Besar
                 const select = document.getElementById('accountSelect');
                 select.innerHTML = '<option value="">-- Pilih Akun --</option>';
-                coaList.forEach(acc => {
+                coaList.sort((a,b) => a.code.localeCompare(b.code)).forEach(acc => {
                     const opt = document.createElement('option');
                     opt.value = acc.code;
                     opt.text = `${acc.code} - ${acc.name}`;
@@ -517,25 +541,14 @@
                 document.getElementById(`printPeriod${suffix}`).textContent = currentPeriodText;
             });
 
+            // FILTER DENGAN NORMALISASI TANGGAL
             filteredTransactions = allTransactions.filter(tx => {
-                const txDate = String(tx[1]);
-                let txYear, txMonth;
+                const txDateStr = normalizeDate(tx[1]);
+                if(!txDateStr) return false;
                 
-                if(txDate.includes('-')) {
-                    const parts = txDate.split('-');
-                    txYear = parseInt(parts[0]);
-                    txMonth = parseInt(parts[1]);
-                } else if(txDate.includes('/')) {
-                    const parts = txDate.split('/');
-                    txYear = parseInt(parts[2]);
-                    txMonth = parseInt(parts[1]);
-                } else {
-                    return false;
-                }
-                
+                const txDateObj = new Date(txDateStr);
                 const startDate = new Date(startYear, startMonth - 1, 1);
                 const endDate = new Date(year, month, 0);
-                const txDateObj = new Date(txYear, txMonth - 1, 1);
                 
                 return txDateObj >= startDate && txDateObj <= endDate;
             });
@@ -546,12 +559,20 @@
             renderBukuBesar();
         }
 
+        // FUNGSI GET NAMA AKUN DINAMIS DARI COA
+        function getAccName(code) { 
+            const acc = coaList.find(a => a.code === code);
+            return acc ? acc.name : code; 
+        }
+
         function renderNeraca() {
             const balances = {};
             filteredTransactions.forEach(tx => {
-                const code = String(tx[6]).trim();
+                const code = tx.normalizedCode;
                 const d = parseNumber(tx[8]); const c = parseNumber(tx[9]);
                 if(!balances[code]) balances[code] = 0;
+                
+                // Logika Saldo Normal Akuntansi
                 if(code.startsWith('1-') || code.startsWith('5-')) balances[code] += (d-c);
                 else balances[code] += (c-d);
             });
@@ -560,45 +581,52 @@
             let htmlMobile = '';
             let totalDebit = 0, totalCredit = 0;
             
-            const accounts = [
-                {group:'ASET (HARTA)', type:'asset', codes:['1-1100','1-1200','1-1300','1-1400','1-1500','1-1600','1-2100','1-2200','1-2250','1-2300','1-2350','1-2400','1-2450','1-2500','1-2550']},
-                {group:'KEWAJIBAN (UTANG)', type:'liab', codes:['2-1100','2-1200','2-1300','2-1400','2-2100','2-2200']},
-                {group:'MODAL (EKUITAS)', type:'eq', codes:['3-1000','3-2000','3-3000','3-4000']}
+            // Kelompokkan Akun Berdasarkan Prefix & Tipe
+            const categories = [
+                {group:'ASET (HARTA)', prefix:'1-', type:'asset'},
+                {group:'KEWAJIBAN (UTANG)', prefix:'2-', type:'liab'},
+                {group:'MODAL (EKUITAS)', prefix:'3-', type:'eq'}
             ];
 
-            accounts.forEach(cat => {
-                htmlTable += `<tr><td colspan="4" class="section-title">${cat.group}</td></tr>`;
-                htmlMobile += `<div class="report-section-title-mobile">${cat.group}</div>`;
+            categories.forEach(cat => {
+                // Filter akun dari COA yang sesuai prefix
+                const catAccounts = coaList.filter(a => a.code.startsWith(cat.prefix)).sort((a,b) => a.code.localeCompare(b.code));
                 
-                cat.codes.forEach(code => {
-                    const bal = balances[code] || 0;
-                    let dVal = 0, cVal = 0;
-                    if(cat.type === 'asset') { dVal = bal > 0 ? bal : 0; cVal = bal < 0 ? Math.abs(bal) : 0; }
-                    else { cVal = bal > 0 ? bal : 0; dVal = bal < 0 ? Math.abs(bal) : 0; }
+                if(catAccounts.length > 0) {
+                    htmlTable += `<tr><td colspan="4" class="section-title">${cat.group}</td></tr>`;
+                    htmlMobile += `<div class="report-section-title-mobile">${cat.group}</div>`;
                     
-                    totalDebit += dVal; totalCredit += cVal;
-                    
-                    htmlTable += `<tr><td>${code}</td><td class="indent-1">${getAccName(code)}</td><td class="text-right">${dVal?formatRupiah(dVal):'-'}</td><td class="text-right">${cVal?formatRupiah(cVal):'-'}</td></tr>`;
-                    
-                    if(dVal > 0 || cVal > 0) {
-                        const val = cat.type === 'asset' ? dVal : cVal;
-                        const label = cat.type === 'asset' ? 'Debit' : 'Kredit';
-                        htmlMobile += `
-                            <div class="report-item-card">
-                                <div class="report-item-header">
-                                    <div>
-                                        <div class="report-item-code">${code}</div>
-                                        <div class="report-item-name">${getAccName(code)}</div>
-                                    </div>
-                                    <div>
-                                        <div class="report-item-value">${formatRupiah(val)}</div>
-                                        <div class="report-item-sub">${label}</div>
+                    catAccounts.forEach(acc => {
+                        const bal = balances[acc.code] || 0;
+                        let dVal = 0, cVal = 0;
+                        
+                        if(cat.type === 'asset') { dVal = bal > 0 ? bal : 0; cVal = bal < 0 ? Math.abs(bal) : 0; }
+                        else { cVal = bal > 0 ? bal : 0; dVal = bal < 0 ? Math.abs(bal) : 0; }
+                        
+                        totalDebit += dVal; totalCredit += cVal;
+                        
+                        htmlTable += `<tr><td>${acc.code}</td><td class="indent-1">${acc.name}</td><td class="text-right">${dVal?formatRupiah(dVal):'-'}</td><td class="text-right">${cVal?formatRupiah(cVal):'-'}</td></tr>`;
+                        
+                        if(dVal > 0 || cVal > 0) {
+                            const val = cat.type === 'asset' ? dVal : cVal;
+                            const label = cat.type === 'asset' ? 'Debit' : 'Kredit';
+                            htmlMobile += `
+                                <div class="report-item-card">
+                                    <div class="report-item-header">
+                                        <div>
+                                            <div class="report-item-code">${acc.code}</div>
+                                            <div class="report-item-name">${acc.name}</div>
+                                        </div>
+                                        <div>
+                                            <div class="report-item-value">${formatRupiah(val)}</div>
+                                            <div class="report-item-sub">${label}</div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        `;
-                    }
-                });
+                            `;
+                        }
+                    });
+                }
             });
 
             htmlTable += `<tr class="total-row bg-gray"><td colspan="2">TOTAL</td><td class="text-right">${formatRupiah(totalDebit)}</td><td class="text-right">${formatRupiah(totalCredit)}</td></tr>`;
@@ -619,30 +647,49 @@
             let rev = 0, exp = 0;
             const revItems = [], expItems = [];
             
+            // Ambil akun Revenue & Expense dari COA
+            const revAccounts = coaList.filter(a => a.code.startsWith('4-')).sort((a,b) => a.code.localeCompare(b.code));
+            const expAccounts = coaList.filter(a => a.code.startsWith('5-')).sort((a,b) => a.code.localeCompare(b.code));
+
+            // Hitung saldo per akun
+            const balances = {};
             filteredTransactions.forEach(tx => {
-                const code = String(tx[6]).trim();
+                const code = tx.normalizedCode;
                 const d = parseNumber(tx[8]); const c = parseNumber(tx[9]);
-                if(code.startsWith('4-')) { rev += c; revItems.push({code, name:getAccName(code), val:c}); }
-                if(code.startsWith('5-')) { exp += d; expItems.push({code, name:getAccName(code), val:d}); }
+                if(!balances[code]) balances[code] = 0;
+                if(code.startsWith('1-') || code.startsWith('5-')) balances[code] += (d-c);
+                else balances[code] += (c-d);
             });
 
             let htmlTable = '', htmlMobile = '';
             
             htmlTable += `<tr><td colspan="3" class="section-title">PENDAPATAN</td></tr>`;
             htmlMobile += `<div class="report-section-title-mobile">Pendapatan</div>`;
-            revItems.forEach(i => {
-                htmlTable += `<tr><td>${i.code}</td><td class="indent-1">${i.name}</td><td class="text-right font-bold">${formatRupiah(i.val)}</td></tr>`;
-                htmlMobile += `<div class="report-item-card"><div class="report-item-header"><div><div class="report-item-code">${i.code}</div><div class="report-item-name">${i.name}</div></div><div class="report-item-value" style="color:var(--success);">${formatRupiah(i.val)}</div></div></div>`;
+            
+            revAccounts.forEach(acc => {
+                const val = balances[acc.code] || 0;
+                if(val > 0) {
+                    rev += val;
+                    htmlTable += `<tr><td>${acc.code}</td><td class="indent-1">${acc.name}</td><td class="text-right font-bold">${formatRupiah(val)}</td></tr>`;
+                    htmlMobile += `<div class="report-item-card"><div class="report-item-header"><div><div class="report-item-code">${acc.code}</div><div class="report-item-name">${acc.name}</div></div><div class="report-item-value" style="color:var(--success);">${formatRupiah(val)}</div></div></div>`;
+                }
             });
+            
             htmlTable += `<tr class="bg-gray"><td colspan="2" class="text-right font-bold">Total Pendapatan</td><td class="text-right font-bold">${formatRupiah(rev)}</td></tr>`;
             htmlMobile += `<div class="report-item-card" style="border-left:4px solid var(--success);"><div class="report-item-header"><div class="report-item-name">Total Pendapatan</div><div class="report-item-value" style="color:var(--success);">${formatRupiah(rev)}</div></div></div>`;
             
             htmlTable += `<tr><td colspan="3" class="section-title" style="margin-top:20px;">BEBAN</td></tr>`;
             htmlMobile += `<div class="report-section-title-mobile" style="margin-top:20px;">Beban</div>`;
-            expItems.forEach(i => {
-                htmlTable += `<tr><td>${i.code}</td><td class="indent-1">${i.name}</td><td class="text-right font-bold">${formatRupiah(i.val)}</td></tr>`;
-                htmlMobile += `<div class="report-item-card"><div class="report-item-header"><div><div class="report-item-code">${i.code}</div><div class="report-item-name">${i.name}</div></div><div class="report-item-value" style="color:var(--danger);">${formatRupiah(i.val)}</div></div></div>`;
+            
+            expAccounts.forEach(acc => {
+                const val = balances[acc.code] || 0;
+                if(val > 0) {
+                    exp += val;
+                    htmlTable += `<tr><td>${acc.code}</td><td class="indent-1">${acc.name}</td><td class="text-right font-bold">${formatRupiah(val)}</td></tr>`;
+                    htmlMobile += `<div class="report-item-card"><div class="report-item-header"><div><div class="report-item-code">${acc.code}</div><div class="report-item-name">${acc.name}</div></div><div class="report-item-value" style="color:var(--danger);">${formatRupiah(val)}</div></div></div>`;
+                }
             });
+            
             htmlTable += `<tr class="bg-gray"><td colspan="2" class="text-right font-bold">Total Beban</td><td class="text-right font-bold">${formatRupiah(exp)}</td></tr>`;
             htmlMobile += `<div class="report-item-card" style="border-left:4px solid var(--danger);"><div class="report-item-header"><div class="report-item-name">Total Beban</div><div class="report-item-value" style="color:var(--danger);">${formatRupiah(exp)}</div></div></div>`;
             
@@ -657,7 +704,7 @@
         function renderArusKas() {
             let opIn = 0, opOut = 0;
             filteredTransactions.forEach(tx => {
-                const code = String(tx[6]).trim();
+                const code = tx.normalizedCode;
                 const d = parseNumber(tx[8]); const c = parseNumber(tx[9]);
                 if((code==='1-1100' || code==='1-1200') && c > 0) opIn += c;
                 if((code==='1-1100' || code==='1-1200') && d > 0) opOut += d;
@@ -698,7 +745,7 @@
             const selectedAcc = coaList.find(a => a.code === selectedCode);
             accNameEl.textContent = `Akun: ${selectedAcc ? selectedAcc.name : selectedCode}`;
 
-            const txs = filteredTransactions.filter(tx => String(tx[6]).trim() === selectedCode)
+            const txs = filteredTransactions.filter(tx => tx.normalizedCode === selectedCode)
                                        .sort((a,b) => new Date(a[1]) - new Date(b[1]));
             
             let htmlTable = '', htmlMobile = '';
@@ -803,10 +850,7 @@
 
         function parseNumber(val) { if(!val) return 0; let s=String(val).trim(); if(s.includes(',')) s=s.replace(/\./g,'').replace(/,/g,'.'); const n=parseFloat(s); return isNaN(n)?0:n; }
         function formatRupiah(num) { const n=Number(num); if(isNaN(n)) return '0'; const p=n.toFixed(2).split('.'); let int=p[0], dec=p[1], fmt='', cnt=0; for(let i=int.length-1;i>=0;i--){fmt=int[i]+fmt;cnt++;if(cnt%3===0&&i!==0)fmt='.'+fmt;} return fmt+','+dec; }
-        function getAccName(code) { 
-            const map = {'1-1100':'Kas','1-1200':'Bank','1-1300':'Piutang Usaha','1-1400':'Perlengkapan','1-1500':'Persediaan','1-1600':'Sewa Dibayar','1-2100':'Tanah','1-2200':'Bangunan','1-2250':'Akum. Penyusutan Bangunan','1-2300':'Kendaraan','1-2350':'Akum. Penyusutan Kendaraan','1-2400':'Peralatan IT','1-2450':'Akum. Penyusutan Peralatan IT','1-2500':'Peralatan Kantor','1-2550':'Akum. Penyusutan Peralatan Kantor','2-1100':'Utang Usaha','2-1200':'Utang Gaji','2-1300':'Utang Pajak','2-1400':'Pendapatan Diterima','2-2100':'Utang Bank','2-2200':'Utang Sewa','3-1000':'Modal','3-2000':'Prive','3-3000':'Laba Ditahan','3-4000':'Ikhtisar LR','4-1000':'Pendapatan Operasional','4-1100':'Jasa Konsultasi','4-1200':'Jasa Development','4-1300':'Jasa Maintenance','4-1400':'Penjualan Lisensi','4-1500':'Jasa Training','4-2000':'Pendapatan Lain','5-1000':'Beban Operasional','5-1100':'Gaji Dev','5-1200':'Gaji Support','5-1300':'Server & Hosting','5-1400':'Lisensi Software','5-1500':'Internet','5-1600':'Perjalanan Dinas','5-1700':'Entertainment','5-1800':'Sewa Kantor','5-1900':'Listrik & Air','5-2000':'Penyusutan'};
-            return map[code] || code; 
-        }
+        
     </script>
 </body>
 </html>
