@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FinanceRAJ - Input Transaksi Inventory v20.6</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Library PDF.js untuk membaca PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <style>
+        :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; --success: #10b981; --danger: #ef4444; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
+        
+        .top-bar { background: var(--surface); padding: 16px 20px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .brand-area { display: flex; align-items: center; gap: 12px; }
+        .btn-back { background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; cursor: pointer; color: var(--text-main); display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; transition: 0.2s; }
+        .btn-back:hover { background: var(--border); }
+        .page-title h1 { font-size: 18px; font-weight: 700; margin: 0; }
+        .page-title p { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
+        
+        .container { max-width: 900px; margin: 24px auto; padding: 0 16px; }
+        
+        /* TAB NAVIGATION */
+        .tab-nav { display: flex; gap: 8px; margin-bottom: 20px; background: var(--surface); padding: 6px; border-radius: 14px; border: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-sec); cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2); }
+        
+        /* FORM STYLES */
+        .form-card { background: var(--surface); padding: 24px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); display: none; }
+        .form-card.active { display: block; animation: fadeIn 0.3s ease; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        input, select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; background: var(--bg-body); transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        
+        /* UPLOAD AREA */
+        .upload-area { 
+            border: 2px dashed var(--border); border-radius: 12px; padding: 24px; text-align: center; 
+            cursor: pointer; transition: 0.2s; margin-bottom: 20px; background: #fafafa;
+        }
+        .upload-area:hover, .upload-area.dragover { border-color: var(--primary); background: #eff6ff; }
+        .upload-area i { font-size: 32px; color: var(--primary); margin-bottom: 8px; }
+        .upload-area p { font-size: 14px; color: var(--text-sec); margin-bottom: 4px; }
+        .upload-area span { font-size: 12px; color: var(--text-sec); opacity: 0.7; }
+        #fileInput { display: none; }
+        
+        /* ITEM TABLE */
+        .item-table-wrap { overflow-x: auto; margin: 20px 0; border: 1px solid var(--border); border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { background: #f8fafc; padding: 12px 14px; font-size: 11px; text-transform: uppercase; color: var(--text-sec); text-align: left; border-bottom: 1px solid var(--border); }
+        td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        td input { padding: 8px 10px; font-size: 13px; border-radius: 8px; }
+        
+        .btn-add-item { background: var(--bg-body); border: 1px dashed var(--border); color: var(--primary); padding: 10px; width: 100%; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s; margin-top: 8px; }
+        .btn-add-item:hover { background: #eff6ff; border-color: var(--primary); }
+        .btn-remove { background: #fef2f2; border: none; color: var(--danger); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-remove:hover { background: #fee2e2; }
+        
+        /* TOTAL & ACTION */
+        .total-section { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-top: 2px solid var(--border); margin-top: 16px; }
+        .total-label { font-size: 14px; color: var(--text-sec); font-weight: 600; }
+        .total-value { font-size: 24px; font-weight: 800; color: var(--primary); }
+        
+        .btn-submit { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; }
+        .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        
+        /* NOTIFICATION & LOADING */
+        .notification { position: fixed; bottom: 24px; right: 24px; padding: 16px 20px; border-radius: 12px; color: white; font-weight: 600; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); transform: translateY(100px); opacity: 0; transition: 0.3s ease; z-index: 1000; display: flex; align-items: center; gap: 10px; max-width: 400px; }
+        .notification.show { transform: translateY(0); opacity: 1; }
+        .notification.success { background: var(--success); }
+        .notification.error { background: var(--danger); }
+        
+        .loading-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.8); display: none; align-items: center; justify-content: center; border-radius: var(--radius); z-index: 10; backdrop-filter: blur(2px); }
+        .loading-overlay.active { display: flex; }
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+            .total-value { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="brand-area">
+            <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i></button>
+            <div class="page-title">
+                <h1>Transaksi Inventory v20.6</h1>
+                <p>CV Rezeki Amanah Jaya Group</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- TAB NAVIGATION -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('purchase')"><i class="fas fa-shopping-cart"></i> Input Pembelian</button>
+            <button class="tab-btn" onclick="switchTab('sales')"><i class="fas fa-file-invoice-dollar"></i> Input Penjualan</button>
+        </div>
+
+        <!-- FORM PEMBELIAN -->
+        <div id="purchaseForm" class="form-card active" style="position: relative;">
+            <div class="loading-overlay" id="purLoading"><div class="spinner"></div></div>
+            
+            <!-- UPLOAD NOTA SECTION -->
+            <div class="upload-area" id="purUploadArea" onclick="document.getElementById('purFileInput').click()">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Klik atau Drag & Drop File Nota Pembelian (PDF)</p>
+                <span>Sistem akan otomatis membaca Data & Generate No. Nota Baru</span>
+                <input type="file" id="purFileInput" accept=".pdf" onchange="handleFileSelect(this, 'purchase')">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-calendar"></i> Tanggal Transaksi</label>
+                    <input type="date" id="purDate" value="">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-hashtag"></i> No. Nota / Bukti (Auto)</label>
+                    <input type="text" id="purNoNota" placeholder="Akan terisi otomatis..." readonly style="background:#f1f5f9; cursor:not-allowed;">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-building"></i> Nama Supplier</label>
+                <input type="text" id="purSupplier" placeholder="Contoh: TPST 3R Mutiara Bangsa">
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-wallet"></i> Metode Pembayaran</label>
+                <select id="purPaymentMethod">
+                    <option value="cash">Tunai / Transfer (Bank)</option>
+                    <option value="credit">Tempo / Utang Usaha</option>
+                </select>
+            </div>
+
+            <label style="margin-top: 12px;"><i class="fas fa-boxes-stacked"></i> Detail Item Pembelian</label>
+            <div class="item-table-wrap">
+                <table id="purItemTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">Nama Barang</th>
+                            <th style="width: 15%">Satuan</th>
+                            <th style="width: 15%">Qty</th>
+                            <th style="width: 20%">Harga Satuan</th>
+                            <th style="width: 10%"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="purItemBody"></tbody>
+                </table>
+            </div>
+            <button type="button" class="btn-add-item" onclick="addPurchaseRow()"><i class="fas fa-plus"></i> Tambah Item Manual</button>
+
+            <div class="total-section">
+                <span class="total-label">Total Nilai Pembelian</span>
+                <span class="total-value" id="purTotalDisplay">Rp 0</span>
+            </div>
+
+            <button type="button" class="btn-submit" onclick="submitPurchase()">
+                <i class="fas fa-save"></i> Simpan Pembelian & Update Stok
+            </button>
+        </div>
+
+        <!-- FORM PENJUALAN -->
+        <div id="salesForm" class="form-card" style="position: relative;">
+            <div class="loading-overlay" id="salLoading"><div class="spinner"></div></div>
+            
+            <!-- UPLOAD INVOICE SECTION -->
+            <div class="upload-area" id="salUploadArea" onclick="document.getElementById('salFileInput').click()">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Klik atau Drag & Drop File Invoice Penjualan (PDF)</p>
+                <span>Sistem akan otomatis membaca Data Penjualan</span>
+                <input type="file" id="salFileInput" accept=".pdf" onchange="handleFileSelect(this, 'sales')">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-calendar"></i> Tanggal Transaksi</label>
+                    <input type="date" id="salDate" value="">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-hashtag"></i> No. Invoice</label>
+                    <input type="text" id="salNoInvoice" placeholder="Contoh: INV-2026-001">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-user-tie"></i> Nama Customer / Offtaker</label>
+                <input type="text" id="salCustomer" placeholder="Contoh: PT Daur Ulang Sejahtera">
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-wallet"></i> Metode Pembayaran</label>
+                <select id="salPaymentMethod">
+                    <option value="cash">Tunai / Transfer (Bank)</option>
+                    <option value="credit">Tempo / Piutang</option>
+                </select>
+            </div>
+
+            <label style="margin-top: 12px;"><i class="fas fa-boxes-stacked"></i> Detail Item Penjualan</label>
+            <div class="item-table-wrap">
+                <table id="salItemTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">Nama Barang</th>
+                            <th style="width: 15%">Satuan</th>
+                            <th style="width: 15%">Qty Jual</th>
+                            <th style="width: 20%">Harga Jual</th>
+                            <th style="width: 10%"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="salItemBody"></tbody>
+                </table>
+            </div>
+            <button type="button" class="btn-add-item" onclick="addSalesRow()"><i class="fas fa-plus"></i> Tambah Item Manual</button>
+
+            <div class="total-section">
+                <span class="total-label">Total Nilai Penjualan</span>
+                <span class="total-value" id="salTotalDisplay">Rp 0</span>
+            </div>
+
+            <button type="button" class="btn-submit" onclick="submitSales()">
+                <i class="fas fa-paper-plane"></i> Proses Penjualan & Hitung HPP
+            </button>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="notification" class="notification"></div>
+
+    <script type="module">
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg", authDomain: "finance-raj.firebaseapp.com", projectId: "finance-raj", storageBucket: "finance-raj.firebasestorage.app", messagingSenderId: "138468278392", appId: "1:138468278392:web:215731466beb7f89566d8d", measurementId: "G-BMG4L7P2DP" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
+
+        // Setup PDF.js Worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        let currentUserEmail = '';
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'index.html'; return; }
+            currentUserEmail = user.email;
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('purDate').value = today;
+            document.getElementById('salDate').value = today;
+            addPurchaseRow();
+            addSalesRow();
+        });
+
+        // GLOBAL FUNCTIONS
+        window.switchTab = function(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.form-card').forEach(f => f.classList.remove('active'));
+            if(tab === 'purchase') {
+                document.querySelector('[onclick="switchTab(\'purchase\')"]').classList.add('active');
+                document.getElementById('purchaseForm').classList.add('active');
+            } else {
+                document.querySelector('[onclick="switchTab(\'sales\')"]').classList.add('active');
+                document.getElementById('salesForm').classList.add('active');
+            }
+        }
+
+        window.addPurchaseRow = function(name='', unit='Kg', qty='', cost='') {
+            const tbody = document.getElementById('purItemBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" class="item-name" value="${name}" placeholder="Nama Barang" required></td>
+                <td><input type="text" class="item-unit" value="${unit}" placeholder="Kg/Pcs"></td>
+                <td><input type="number" class="item-qty" value="${qty}" placeholder="0" min="0" step="0.1" oninput="calcPurchaseTotal()"></td>
+                <td><input type="number" class="item-cost" value="${cost}" placeholder="0" min="0" oninput="calcPurchaseTotal()"></td>
+                <td><button type="button" class="btn-remove" onclick="this.closest('tr').remove(); calcPurchaseTotal()"><i class="fas fa-trash"></i></button></td>
+            `;
+            tbody.appendChild(row);
+            calcPurchaseTotal();
+        }
+
+        window.addSalesRow = function(name='', unit='Kg', qty='', price='') {
+            const tbody = document.getElementById('salItemBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" class="item-name" value="${name}" placeholder="Nama Barang" required></td>
+                <td><input type="text" class="item-unit" value="${unit}" placeholder="Kg/Pcs"></td>
+                <td><input type="number" class="item-qty" value="${qty}" placeholder="0" min="0" step="0.1" oninput="calcSalesTotal()"></td>
+                <td><input type="number" class="item-price" value="${price}" placeholder="0" min="0" oninput="calcSalesTotal()"></td>
+                <td><button type="button" class="btn-remove" onclick="this.closest('tr').remove(); calcSalesTotal()"><i class="fas fa-trash"></i></button></td>
+            `;
+            tbody.appendChild(row);
+            calcSalesTotal();
+        }
+
+        window.calcPurchaseTotal = function() {
+            let total = 0;
+            document.querySelectorAll('#purItemBody tr').forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const cost = parseFloat(row.querySelector('.item-cost').value) || 0;
+                total += (qty * cost);
+            });
+            document.getElementById('purTotalDisplay').textContent = formatRupiah(total);
+        }
+
+        window.calcSalesTotal = function() {
+            let total = 0;
+            document.querySelectorAll('#salItemBody tr').forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                total += (qty * price);
+            });
+            document.getElementById('salTotalDisplay').textContent = formatRupiah(total);
+        }
+
+        // ==========================================
+        // LOGIKA OCR PDF OTOMATIS v20.6 (SUPPLIER LENGKAP + ANTI HEADER)
+        // ==========================================
+        window.handleFileSelect = async function(input, type) {
+            const file = input.files[0];
+            if (!file || file.type !== 'application/pdf') {
+                showNotification("Harap unggah file PDF yang valid!", "error");
+                return;
+            }
+
+            const loadingId = type === 'purchase' ? 'purLoading' : 'salLoading';
+            document.getElementById(loadingId).classList.add('active');
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+                
+                let fullText = "";
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(" ");
+                    fullText += pageText + "\n";
+                }
+
+                if (type === 'purchase') {
+                    await parsePurchasePDF(fullText);
+                } else {
+                    parseSalesPDF(fullText);
+                }
+                
+                showNotification("PDF berhasil dibaca! Silakan verifikasi data.", "success");
+
+            } catch (err) {
+                console.error(err);
+                showNotification("Gagal membaca PDF: " + err.message, "error");
+            } finally {
+                document.getElementById(loadingId).classList.remove('active');
+                input.value = ''; 
+            }
+        }
+
+        async function parsePurchasePDF(text) {
+            // Bersihkan teks dari karakter aneh dan normalisasi spasi
+            const cleanText = text.replace(/[\x00-\x1F\x7F-\x9F]/g, '').replace(/\s+/g, ' ').trim();
+            
+            // 1. Auto-fill Header
+            
+            // Cari Tanggal 
+            const dateMatch = cleanText.match(/(\d{1,2})\s*(Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember)\s*(\d{4})/i) || 
+                              cleanText.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+            if (dateMatch) {
+                let d, m, y;
+                if (dateMatch[2].length > 2) {
+                    const months = {'januari':'01','februari':'02','maret':'03','april':'04','mei':'05','juni':'06','juli':'07','agustus':'08','september':'09','oktober':'10','november':'11','desember':'12'};
+                    d = dateMatch[1].padStart(2, '0'); m = months[dateMatch[2].toLowerCase()]; y = dateMatch[3];
+                } else {
+                    d = dateMatch[1].padStart(2, '0'); m = dateMatch[2].padStart(2, '0'); y = dateMatch[3];
+                }
+                document.getElementById('purDate').value = `${y}-${m}-${d}`;
+            }
+
+            // PERBAIKAN EKSTRAKSI SUPPLIER LENGKAP
+            let supplierName = '';
+            
+            // Pola 1: Mencari teks setelah YTH sampai ketemu TANGGAL (menangani jeda baris)
+            const supMatch1 = cleanText.match(/KEPADA\s+YTH[:\s]*([A-Z\s&]{3,}?)(?=\s+TANGGAL|\s+NO\.|\s+DATE|$)/i);
+            // Pola 2: Fallback jika ada karakter aneh di tengah nama
+            const supMatch2 = cleanText.match(/KEPADA\s+YTH[:\s]*([A-Z\s&]+?)(?=\s+(?:TANGGAL|NO\.|DATE|URAIAN|VOL)|$)/i);
+            
+            if (supMatch1 && supMatch1[1].trim().length > 3) {
+                supplierName = supMatch1[1].trim();
+            } else if (supMatch2 && supMatch2[1].trim().length > 3) {
+                supplierName = supMatch2[1].trim();
+            }
+
+            // Fallback Ekstra: Ambil semua teks kapital setelah YTH lalu potong manual
+            if (!supplierName) {
+                const fallback = cleanText.match(/KEPADA\s+YTH[:\s]*(.+)/i);
+                if (fallback) {
+                    let raw = fallback[1].trim();
+                    // Potong saat ketemu kata kunci berikutnya
+                    raw = raw.split(/\s+(?:TANGGAL|NO\.|DATE|URAIAN|VOL|HARGA)/i)[0].trim();
+                    // Bersihkan sisa-sisa header tabel yang mungkin terbawa
+                    raw = raw.replace(/^(URAIAN|VOL|HARGA|SATUAN|TOTAL)\s*/i, '').trim();
+                    if (raw.length > 3) supplierName = raw;
+                }
+            }
+
+            if (supplierName) {
+                document.getElementById('purSupplier').value = supplierName;
+                
+                // GENERATE NO NOTA OTOMATIS
+                try {
+                    const res = await fetch(`${GAS_URL}?action=getNextPurchaseNumber&supplier=${encodeURIComponent(supplierName)}`);
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        document.getElementById('purNoNota').value = data.nextNumber;
+                    } else {
+                        document.getElementById('purNoNota').value = `CUST-NEW-${supplierName.replace(/\s+/g, '-')}`;
+                    }
+                } catch(e) {
+                    document.getElementById('purNoNota').value = `CUST-NEW-${supplierName.replace(/\s+/g, '-')}`;
+                }
+            }
+
+            // 2. Parse Item Tabel (Anti-Header Logic)
+            const itemRegex = /([A-Z\s\/]+?)\s+(\d+[.,]?\d*)\s*(Kg|Pcs|Liter|Ton|Box|Mix)\s+(\d+[.,]?\d*)\s+Rp\s?([\d.,]+)/gi;
+            let match;
+            let itemsFound = false;
+            document.getElementById('purItemBody').innerHTML = ''; 
+            
+            while ((match = itemRegex.exec(cleanText)) !== null) {
+                let name = match[1].trim();
+                
+                // Pembersihan Nama Barang Agresif
+                name = name.replace(/^(URAIAN|VOL|HARGA|SATUAN|TOTAL|DESKRIPSI|ITEM|DESCRIPTION)\s*/i, '').trim();
+                // Abaikan jika hanya angka atau terlalu pendek
+                if (/^\d+$/.test(name) || name.length < 3) continue;
+
+                let qty = match[2].replace(',', '.');
+                let unit = match[3];
+                let cost = match[4].replace('.', '').replace(',', '.'); 
+                
+                if (parseFloat(qty) > 0 && parseFloat(cost) > 0) {
+                    addPurchaseRow(name, unit, qty, cost);
+                    itemsFound = true;
+                }
+            }
+
+            if (!itemsFound) showNotification("Item tabel tidak terdeteksi otomatis. Mohon input manual.", "error");
+            calcPurchaseTotal();
+        }
+
+        function parseSalesPDF(text) {
+            const cleanText = text.replace(/\s+/g, ' ');
+            const dateMatch = cleanText.match(/(\d{1,2})\s*(Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember)\s*(\d{4})/i);
+            if (dateMatch) {
+                 const months = {'januari':'01','februari':'02','maret':'03','april':'04','mei':'05','juni':'06','juli':'07','agustus':'08','september':'09','oktober':'10','november':'11','desember':'12'};
+                 const d = dateMatch[1].padStart(2, '0'); const m = months[dateMatch[2].toLowerCase()]; const y = dateMatch[3];
+                 document.getElementById('salDate').value = `${y}-${m}-${d}`;
+            }
+
+            const invMatch = cleanText.match(/Invoice[:\s]*#?([A-Z0-9\-]+)/i) || cleanText.match(/No[:\s]*([A-Z0-9\-]+)/i);
+            if (invMatch) document.getElementById('salNoInvoice').value = invMatch[1];
+
+            const custMatch = cleanText.match(/BILL\s+TO[:\s]*([A-Z\s&]+?)(?=\s+INVOICE|\s+NO\.|\s+DATE|$)/i) || 
+                              cleanText.match(/KEPADA[:\s]*([A-Z\s&]+?)(?=\s+TANGGAL|\s+NO\.|$)/i);
+            if (custMatch) document.getElementById('salCustomer').value = custMatch[1].trim();
+
+            const itemRegex = /([A-Z\s\/]+?)\s+(\d+[.,]?\d*)\s*(Kg|Pcs|Liter|Ton|Box)\s+(\d+[.,]?\d*)\s+Rp\s?([\d.,]+)/gi;
+            let match;
+            let itemsFound = false;
+            document.getElementById('salItemBody').innerHTML = '';
+            
+            while ((match = itemRegex.exec(cleanText)) !== null) {
+                let name = match[1].trim().replace(/^(URAIAN|ITEM|DESCRIPTION)\s*/i, '');
+                let qty = match[2].replace(',', '.');
+                let unit = match[3];
+                let price = match[4].replace('.', '').replace(',', '.');
+                
+                if (name.length > 2 && parseFloat(qty) > 0 && parseFloat(price) > 0) {
+                    addSalesRow(name, unit, qty, price);
+                    itemsFound = true;
+                }
+            }
+
+            if (!itemsFound) showNotification("Data item penjualan tidak terdeteksi. Silakan input manual.", "error");
+            calcSalesTotal();
+        }
+
+        // SUBMIT FUNCTIONS
+        window.submitPurchase = async function() {
+            const btn = event.target.closest('.btn-submit');
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            try {
+                const items = [];
+                document.querySelectorAll('#purItemBody tr').forEach(row => {
+                    const name = row.querySelector('.item-name').value.trim();
+                    const unit = row.querySelector('.item-unit').value.trim();
+                    const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                    const cost = parseFloat(row.querySelector('.item-cost').value) || 0;
+                    if(name && qty > 0 && cost > 0) items.push({name, unit, qty, unitCost: cost});
+                });
+                if(items.length === 0) throw new Error("Masukkan minimal 1 item yang valid!");
+
+                const payload = { action: 'uploadPurchase', purchaseData: {
+                    date: document.getElementById('purDate').value,
+                    supplier: document.getElementById('purSupplier').value.trim(),
+                    noNota: document.getElementById('purNoNota').value.trim(),
+                    paymentMethod: document.getElementById('purPaymentMethod').value,
+                    userEmail: currentUserEmail, items: items
+                }};
+
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await res.json();
+                if(result.status === 'success') {
+                    showNotification(result.message, 'success');
+                    document.getElementById('purNoNota').value = '';
+                    document.getElementById('purItemBody').innerHTML = '';
+                    addPurchaseRow(); calcPurchaseTotal();
+                } else { throw new Error(result.message); }
+            } catch(err) { showNotification(err.message, 'error'); } 
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Simpan Pembelian & Update Stok'; }
+        }
+
+        window.submitSales = async function() {
+            const btn = event.target.closest('.btn-submit');
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            try {
+                const items = [];
+                document.querySelectorAll('#salItemBody tr').forEach(row => {
+                    const name = row.querySelector('.item-name').value.trim();
+                    const unit = row.querySelector('.item-unit').value.trim();
+                    const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                    const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                    if(name && qty > 0 && price > 0) items.push({name, unit, qty, sellingPrice: price});
+                });
+                if(items.length === 0) throw new Error("Masukkan minimal 1 item yang valid!");
+
+                const payload = { action: 'uploadSales', salesData: {
+                    date: document.getElementById('salDate').value,
+                    customer: document.getElementById('salCustomer').value.trim(),
+                    noInvoice: document.getElementById('salNoInvoice').value.trim(),
+                    paymentMethod: document.getElementById('salPaymentMethod').value,
+                    userEmail: currentUserEmail, items: items
+                }};
+
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await res.json();
+                if(result.status === 'success') {
+                    let msg = result.message;
+                    const shortages = result.hppDetails.filter(d => d.status !== 'OK');
+                    if(shortages.length > 0) msg += `\n⚠️ Perhatian: ${shortages.length} item kekurangan stok!`;
+                    showNotification(msg, 'success');
+                    document.getElementById('salNoInvoice').value = '';
+                    document.getElementById('salItemBody').innerHTML = '';
+                    addSalesRow(); calcSalesTotal();
+                } else { throw new Error(result.message); }
+            } catch(err) { showNotification(err.message, 'error'); } 
+            finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Proses Penjualan & Hitung HPP'; }
+        }
+
+        function showNotification(message, type) {
+            const notif = document.getElementById('notification');
+            notif.className = `notification ${type}`;
+            notif.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+            notif.classList.add('show');
+            setTimeout(() => notif.classList.remove('show'), 6000);
+        }
+
+        function formatRupiah(num) {
+            const n = Number(num);
+            if(isNaN(n)) return 'Rp 0';
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
+        }
+
+        // DRAG AND DROP SUPPORT
+        ['purUploadArea', 'salUploadArea'].forEach(id => {
+            const area = document.getElementById(id);
+            area.addEventListener('dragover', (e) => { e.preventDefault(); area.classList.add('dragover'); });
+            area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+            area.addEventListener('drop', (e) => {
+                e.preventDefault(); area.classList.remove('dragover');
+                const type = id.includes('pur') ? 'purchase' : 'sales';
+                const input = document.getElementById(type === 'purchase' ? 'purFileInput' : 'salFileInput');
+                input.files = e.dataTransfer.files;
+                handleFileSelect(input, type);
+            });
+        });
+    </script>
+</body>
+</html>
