@@ -3,228 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FinanceRAJ - Input Jurnal & Import Excel v3.5</title>
+    <title>FinanceRAJ - Input Jurnal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Library SheetJS versi stabil via jsDelivr -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <style>
-        :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; --success: #10b981; --danger: #ef4444; }
+        :root { --primary: #4f46e5; --primary-glow: rgba(79, 70, 229, 0.15); --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --radius: 16px; --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
-        
-        .top-bar { background: var(--surface); padding: 16px 20px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .top-bar { background: var(--surface); padding: 16px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; }
         .brand-area { display: flex; align-items: center; gap: 12px; }
-        .btn-back { background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; cursor: pointer; color: var(--text-main); display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; transition: 0.2s; }
-        .btn-back:hover { background: var(--border); }
-        .page-title h1 { font-size: 18px; font-weight: 700; margin: 0; }
+        .brand-logo { width: 32px; height: auto; }
+        .page-title h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; margin: 0; }
         .page-title p { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
+        .btn-back { background: var(--bg-body); border: none; padding: 10px; border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-back:hover { background: var(--border); }
+        .container { max-width: 900px; margin: 24px auto; padding: 0 20px; }
+        .form-card { background: var(--surface); padding: 24px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 24px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
+        .form-control { width: 100%; padding: 14px 16px; background: var(--bg-body); border: 1px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; color: var(--text-main); }
+        .form-control:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px var(--primary-glow); }
+        .section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .entries-container { background: var(--bg-body); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 16px; }
         
-        .container { max-width: 900px; margin: 24px auto; padding: 0 16px; }
+        /* Header & Row Layout */
+        .entry-header { display: grid; grid-template-columns: 1fr 100px 100px 120px; gap: 8px; padding: 12px 16px; background: #f1f5f9; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; }
+        .entry-row { display: grid; grid-template-columns: 1fr 100px 100px 120px; gap: 8px; padding: 12px 16px; background: white; border-bottom: 1px solid var(--border); align-items: center; }
+        .entry-row:last-child { border-bottom: none; }
+        .entry-row select, .entry-row input[type="text"], .entry-row input[type="number"] { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: white; }
+        .entry-row select:focus, .entry-row input:focus { border-color: var(--primary); outline: none; }
         
-        /* FORM STYLES */
-        .form-card { background: var(--surface); padding: 24px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); margin-bottom: 24px; }
-        
-        .form-group { margin-bottom: 16px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-        input, select, textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; background: var(--bg-body); transition: 0.2s; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-        
-        /* UPLOAD AREA FOR EXCEL */
-        .upload-area { 
-            border: 2px dashed var(--border); border-radius: 12px; padding: 24px; text-align: center; 
-            cursor: pointer; transition: 0.2s; margin-bottom: 20px; background: #fafafa;
+        /* Style Khusus Kolom PPN & Aksi */
+        .ppn-action-col { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+        .btn-toggle-ppn { 
+            background: none; border: 1px solid var(--border); width: 100%; height: 36px; 
+            border-radius: 8px; cursor: pointer; font-size: 12px; color: var(--text-sec); 
+            display: flex; align-items: center; justify-content: center; gap: 4px; transition: 0.2s;
         }
-        .upload-area:hover, .upload-area.dragover { border-color: var(--primary); background: #eff6ff; }
-        .upload-area i { font-size: 32px; color: var(--primary); margin-bottom: 8px; }
-        .upload-area p { font-size: 14px; color: var(--text-sec); margin-bottom: 4px; }
-        .upload-area span { font-size: 12px; color: var(--text-sec); opacity: 0.7; }
-        #excelInput { display: none; }
+        .btn-toggle-ppn.active { background: var(--primary-glow); color: var(--primary); border-color: var(--primary); }
         
-        /* ITEM TABLE */
-        .item-table-wrap { overflow-x: auto; margin: 20px 0; border: 1px solid var(--border); border-radius: 12px; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th { background: #f8fafc; padding: 12px 14px; font-size: 11px; text-transform: uppercase; color: var(--text-sec); text-align: left; border-bottom: 1px solid var(--border); }
-        td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        tr:last-child td { border-bottom: none; }
-        td input, td select { padding: 8px 10px; font-size: 13px; border-radius: 8px; margin: 0; }
+        .ppn-input-wrapper { display: none; width: 100%; }
+        .ppn-input-wrapper.show { display: flex; align-items: center; gap: 4px; }
+        .ppn-input { width: 100% !important; padding: 6px !important; text-align: center; font-size: 13px !important; }
+        .ppn-label { font-size: 11px; color: var(--text-sec); white-space: nowrap; }
+
+        .action-buttons { display: flex; gap: 6px; justify-content: center; width: 100%; }
+        .btn-action { width: 32px; height: 32px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 12px; }
+        .btn-edit { background: #fef3c7; color: var(--warning); }
+        .btn-edit:hover { background: var(--warning); color: white; }
+        .btn-delete { background: #fee2e2; color: var(--danger); }
+        .btn-delete:hover { background: var(--danger); color: white; }
         
-        .btn-add-item { background: var(--bg-body); border: 1px dashed var(--border); color: var(--primary); padding: 10px; width: 100%; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s; margin-top: 8px; }
-        .btn-add-item:hover { background: #eff6ff; border-color: var(--primary); }
-        .btn-remove { background: #fef2f2; border: none; color: var(--danger); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .btn-remove:hover { background: #fee2e2; }
+        .free-text-container { display: none; margin-top: 8px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px dashed var(--border); }
+        .free-text-row { display: grid; grid-template-columns: 100px 1fr; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .free-label { font-size: 11px; font-weight: 600; color: var(--text-sec); }
+        .checkbox-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+        .checkbox-wrapper input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+        .checkbox-wrapper label { font-size: 12px; color: var(--text-sec); cursor: pointer; user-select: none; }
+        .btn-add-row { background: white; border: 2px dashed var(--border); color: var(--primary); width: 100%; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-add-row:hover { border-color: var(--primary); background: var(--primary-glow); }
+        .balance-card { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border-radius: var(--radius); margin-bottom: 24px; border: 1px solid #dbeafe; }
+        .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-balanced { background: #d1fae5; color: #065f46; }
+        .status-unbalanced { background: #fee2e2; color: #991b1b; }
+        .btn-submit { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; background: var(--text-sec); }
         
-        /* TOTAL & ACTION */
-        .total-section { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-top: 2px solid var(--border); margin-top: 16px; }
-        .total-label { font-size: 14px; color: var(--text-sec); font-weight: 600; }
-        .total-value { font-size: 24px; font-weight: 800; color: var(--primary); }
-        .balance-status { font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 6px; }
-        .balance-ok { background: #d1fae5; color: #065f46; }
-        .balance-error { background: #fee2e2; color: #991b1b; }
-        
-        .btn-submit { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; }
-        .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        
-        /* MODAL ADD NEW ACCOUNT */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
-        .modal-overlay.active { display: flex; }
-        .modal-content { background: white; padding: 24px; border-radius: 16px; width: 90%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .modal-header h3 { font-size: 16px; font-weight: 700; }
-        .btn-close-modal { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sec); }
-        .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
-        .btn-modal { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-modal-primary { background: var(--primary); color: white; }
-        .btn-modal-secondary { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border); }
-        
-        /* NOTIFICATION */
-        .notification { position: fixed; bottom: 24px; right: 24px; padding: 16px 20px; border-radius: 12px; color: white; font-weight: 600; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); transform: translateY(100px); opacity: 0; transition: 0.3s ease; z-index: 1000; display: flex; align-items: center; gap: 10px; max-width: 400px; }
-        .notification.show { transform: translateY(0); opacity: 1; }
-        .notification.success { background: var(--success); }
-        .notification.error { background: var(--danger); }
-        
-        @media (max-width: 600px) {
-            .form-row { grid-template-columns: 1fr; }
-            .total-value { font-size: 20px; }
+        /* Tombol Generate Manual */
+        .btn-generate { 
+            background: var(--bg-body); border: 1px solid var(--border); color: var(--text-sec); 
+            width: 48px; height: 48px; border-radius: 12px; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0;
+        }
+        .btn-generate:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-generate:active { transform: scale(0.95); }
+        .btn-generate i { font-size: 18px; }
+
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .form-group { margin-bottom: 16px; }
+            .entry-header { display: none; }
+            .entry-row { grid-template-columns: 1fr; gap: 10px; padding: 16px; border-bottom: 2px solid var(--bg-body); }
+            .entry-row > div { width: 100%; }
+            .mobile-label { font-size: 11px; color: var(--text-sec); margin-bottom: 4px; display: block; font-weight: 600; }
+            .action-buttons { justify-content: flex-start; margin-top: 8px; }
+            .btn-action { width: 100%; height: 40px; }
+            .container { padding: 0 16px; margin-top: 16px; }
+            .form-card { padding: 20px 16px; border-radius: 12px; }
         }
     </style>
 </head>
 <body>
     <div class="top-bar">
         <div class="brand-area">
-            <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i></button>
+            <img src="assets/logo.png" alt="Logo" class="brand-logo" onerror="this.style.display='none'">
             <div class="page-title">
-                <h1>Input Jurnal & Import Excel v3.5</h1>
-                <p>CV Rezeki Amanah Jaya Group</p>
+                <h1>Input Jurnal</h1>
+                <p>Catat transaksi operasional harian</p>
             </div>
         </div>
+        <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i></button>
     </div>
 
     <div class="container">
-        <!-- SECTION IMPORT EXCEL -->
-        <div class="form-card">
-            <div class="upload-area" id="excelUploadArea" onclick="document.getElementById('excelInput').click()">
-                <i class="fas fa-file-excel"></i>
-                <p>Klik atau Drag & Drop File Excel (.xlsx)</p>
-                <span>Mendukung format JURNAL RAJ UPDATE 20.10.xlsx (Tanggal Serial & Angka Koma)</span>
-                <input type="file" id="excelInput" accept=".xlsx, .xls" onchange="handleExcelImport(this)">
-            </div>
-        </div>
-
-        <!-- SECTION INPUT MANUAL -->
         <div class="form-card">
             <div class="form-row">
                 <div class="form-group">
-                    <label><i class="fas fa-calendar"></i> Tanggal Transaksi</label>
-                    <input type="text" id="purDate" placeholder="Contoh: 24/10/2026 atau 2026-10-24" onblur="validateAndFixDate(this)">
+                    <label>Tanggal Transaksi</label>
+                    <!-- Menggunakan type="text" agar bisa menerima berbagai format input -->
+                    <input type="text" id="transDate" class="form-control" placeholder="Contoh: 24/10/2026 atau 2026-10-24" onblur="validateAndFixDate(this)">
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-hashtag"></i> No. Bukti</label>
-                    <input type="text" id="noBukti" placeholder="Contoh: BKK/10/2026/055">
+                    <label>Jenis & No. Bukti</label>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <select id="proofType" class="form-control" style="width:110px;">
+                            <option value="BKK">BKK (Keluar)</option>
+                            <option value="BKM">BKM (Masuk)</option>
+                        </select>
+                        <input type="text" id="refNumber" class="form-control" placeholder="Klik tombol generate" readonly style="background:#f1f5f9; cursor:not-allowed; flex:1;">
+                        <button class="btn-generate" id="btnGenProof" title="Generate Nomor Baru">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             
             <div class="form-group">
-                <label><i class="fas fa-sticky-note"></i> Keterangan</label>
-                <textarea id="keterangan" rows="2" placeholder="Deskripsi transaksi..."></textarea>
-            </div>
-
-            <label style="margin-top: 12px;"><i class="fas fa-list-ol"></i> Detail Akun & Nominal</label>
-            <div class="item-table-wrap">
-                <table id="jurnalTable">
-                    <thead>
-                        <tr>
-                            <th style="width: 35%">Kode / Nama Akun</th>
-                            <th style="width: 20%">Debit (Rp)</th>
-                            <th style="width: 20%">Kredit (Rp)</th>
-                            <th style="width: 15%">Tipe</th>
-                            <th style="width: 10%"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="jurnalBody"></tbody>
-                </table>
-            </div>
-            <div style="display: flex; gap: 8px; margin-top: 8px;">
-                <button type="button" class="btn-add-item" onclick="addJournalRow()" style="flex: 2;"><i class="fas fa-plus"></i> Tambah Baris Akun</button>
-                <button type="button" class="btn-add-item" onclick="openAddAccountModal()" style="flex: 1; background: #eff6ff; border-color: var(--primary);"><i class="fas fa-user-plus"></i> Akun Baru</button>
-            </div>
-
-            <div class="total-section">
-                <div>
-                    <span class="total-label">Selisih Balance:</span>
-                    <span id="balanceStatus" class="balance-status balance-error">Belum Seimbang</span>
-                </div>
-                <span class="total-value" id="diffDisplay">Rp 0</span>
-            </div>
-
-            <button type="button" class="btn-submit" id="btnSubmit" onclick="submitJournal()" disabled>
-                <i class="fas fa-save"></i> Simpan Jurnal
-            </button>
-        </div>
-    </div>
-
-    <!-- MODAL ADD NEW ACCOUNT -->
-    <div class="modal-overlay" id="addAccountModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Tambah Akun Baru ke COA</h3>
-                <button class="btn-close-modal" onclick="closeAddAccountModal()">&times;</button>
-            </div>
-            <div class="form-group">
-                <label>Kode Akun</label>
-                <input type="text" id="newAccCode" placeholder="Contoh: 5-2900">
-            </div>
-            <div class="form-group">
-                <label>Nama Akun</label>
-                <input type="text" id="newAccName" placeholder="Contoh: Beban Lain-lain">
-            </div>
-            <div class="modal-actions">
-                <button class="btn-modal btn-modal-secondary" onclick="closeAddAccountModal()">Batal</button>
-                <button class="btn-modal btn-modal-primary" onclick="saveNewAccount()">Simpan Akun</button>
+                <label>Keterangan Transaksi</label>
+                <input type="text" id="description" class="form-control" placeholder="Cth: Pembelian solar truk B 1234 CD">
             </div>
         </div>
+
+        <div class="section-title"><i class="fas fa-list-ul" style="color:var(--primary)"></i> Detail Akun (Debit & Kredit)</div>
+        
+        <div class="entries-container">
+            <div class="entry-header">
+                <div>Akun (COA)</div>
+                <div style="text-align:center;">Debit (Rp)</div>
+                <div style="text-align:center;">Kredit (Rp)</div>
+                <div style="text-align:center;">PPN / Aksi</div>
+            </div>
+            
+            <div id="journalEntries">
+                <!-- Baris jurnal akan ditambahkan via JS -->
+            </div>
+        </div>
+        
+        <button class="btn-add-row" onclick="window.addEntryRow()"><i class="fas fa-plus-circle"></i> Tambah Baris Akun</button>
+
+        <div class="balance-card">
+            <div>
+                <div style="font-weight:700; color:var(--primary); font-size:15px;">Status Balance</div>
+                <div style="font-size:12px; color:var(--text-sec); margin-top:4px;">Total Debit harus = Total Kredit</div>
+            </div>
+            <div style="text-align:right;">
+                <div id="balanceStatus" class="status-badge status-unbalanced">TIDAK SEIMBANG</div>
+                <div style="margin-top:8px; font-size:13px; color:var(--text-sec);">Selisih: <span id="diffAmount" style="font-weight:700; color:var(--text-main);">Rp 0</span></div>
+            </div>
+        </div>
+
+        <button id="btnSave" class="btn-submit" disabled onclick="window.saveJournal()">
+            <i class="fas fa-paper-plane"></i> Simpan Jurnal
+        </button>
     </div>
 
-    <!-- NOTIFICATION TOAST -->
-    <div id="notification" class="notification"></div>
+    <script type="module">
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-    <script>
+        const firebaseConfig = { apiKey: "AIzaSyAc12QQPnjqlaNmIzPl2OqfTrC0HP2YCWg", authDomain: "finance-raj.firebaseapp.com", projectId: "finance-raj", storageBucket: "finance-raj.firebasestorage.app", messagingSenderId: "138468278392", appId: "1:138468278392:web:215731466beb7f89566d8d", measurementId: "G-BMG4L7P2DP" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSf-y1s_ewWXblCpu4N0NHFdSM7Y0usDaJiEdSJE-5Jv35oVGAkgAsSAifJL6VTJimXQ/exec';
+
         let coaData = [];
 
         // ==========================================
-        // INITIALIZATION
-        // ==========================================
-        window.onload = async function() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('purDate').value = today;
-            
-            try {
-                const res = await fetch(`${GAS_URL}?action=getCOA`);
-                const data = await res.json();
-                if(data.status === 'success') {
-                    coaData = data.accounts;
-                    addJournalRow(); 
-                } else {
-                    showNotification("Gagal memuat Chart of Accounts", "error");
-                }
-            } catch(e) {
-                console.error(e);
-                showNotification("Error koneksi ke server COA", "error");
-            }
-        };
-
-        // ==========================================
-        // SMART DATE PARSER (KHUSUS EXCEL SERIAL NUMBER)
+        // SMART DATE PARSER (ULTIMATE FIX)
+        // Menangani DD/MM/YYYY, YYYY-MM-DD, Angka Serial Excel, dll.
         // ==========================================
         function normalizeDate(val) {
             if (!val) return '';
             let strVal = String(val).trim();
             
-            // 1. Handle Angka Serial Excel (misal: 46294)
+            // 1. Jika sudah format YYYY-MM-DD, kembalikan langsung
+            if (/^\d{4}-\d{2}-\d{2}$/.test(strVal)) return strVal;
+            
+            // 2. Bersihkan karakter aneh
+            strVal = strVal.replace(/['"]/g, '').replace(/\s+/g, ' ').trim();
+            
+            // 3. Handle Angka Serial Excel (misal: 46294)
             if (/^\d{5}$/.test(strVal) && Number(strVal) > 40000 && Number(strVal) < 60000) {
                 try {
                     const excelEpoch = new Date(Date.UTC(1899, 11, 30)); 
@@ -236,12 +207,6 @@
                 } catch(e) {}
             }
 
-            // 2. Jika sudah format YYYY-MM-DD
-            if (/^\d{4}-\d{2}-\d{2}$/.test(strVal)) return strVal;
-            
-            // 3. Bersihkan karakter aneh
-            strVal = strVal.replace(/['"]/g, '').replace(/\s+/g, ' ').trim();
-            
             // 4. Format DD/MM/YYYY atau DD-MM-YYYY
             let matchDMY = strVal.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
             if (matchDMY) return `${matchDMY[3]}-${matchDMY[2].padStart(2,'0')}-${matchDMY[1].padStart(2,'0')}`;
@@ -273,334 +238,358 @@
             }
         }
 
-        // ==========================================
-        // EXCEL IMPORT LOGIC (FIXED FOR NO HEADER & COMMA NUMBERS)
-        // ==========================================
-        function handleExcelImport(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            // Cek apakah library SheetJS sudah dimuat
-            if (typeof XLSX === 'undefined') {
-                showNotification("Library Excel belum siap. Mohon refresh halaman.", "error");
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    // cellDates: false agar serial number terbaca sebagai angka mentah
-                    const workbook = XLSX.read(data, {type: 'array', cellDates: false}); 
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    
-                    // Konversi sheet ke JSON array of arrays
-                    // defval: '' memastikan sel kosong tetap terbaca
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ''});
-                    
-                    if(jsonData.length < 2) {
-                        showNotification("File Excel kosong atau tidak memiliki data", "error");
-                        return;
-                    }
-
-                    // Mapping Kolom Excel JURNAL RAJ UPDATE 20.10.xlsx (Tanpa Header):
-                    // [0] Tanggal Serial, [1] No_Bukti, [2] Keterangan, [3] Email, [4] Nama, 
-                    // [5] Kode_Akun, [6] Nama_Akun, [7] Debit, [8] Kredit
-                    let importedCount = 0;
-                    
-                    // Loop mulai dari index 0 karena tidak ada header
-                    for(let i = 0; i < jsonData.length; i++) {
-                        const row = jsonData[i];
-                        if(!row || row.length === 0) continue;
-
-                        // Normalisasi Tanggal Serial Excel
-                        const rawDate = row[0]; 
-                        const fixedDate = normalizeDate(rawDate);
-                        
-                        const noBukti = String(row[1] || '').trim();
-                        const keterangan = String(row[2] || '').trim();
-                        const kodeAkun = String(row[5] || '').trim();
-                        const namaAkun = String(row[6] || '').trim();
-                        
-                        // Bersihkan angka dari koma desimal dan titik ribuan
-                        // Contoh: "103,690.19" -> 103690.19
-                        let debitStr = String(row[7] || '0').replace(/[^\d.,-]/g, '').replace(',', '.');
-                        let kreditStr = String(row[8] || '0').replace(/[^\d.,-]/g, '').replace(',', '.');
-                        
-                        let debit = parseFloat(debitStr) || 0;
-                        let kredit = parseFloat(kreditStr) || 0;
-
-                        // Isi Form Utama hanya sekali di baris pertama import
-                        if (i === 0) {
-                            document.getElementById('purDate').value = fixedDate;
-                            document.getElementById('noBukti').value = noBukti;
-                            document.getElementById('keterangan').value = keterangan;
-                        }
-
-                        // Cari COA code jika yang terbaca hanya nama
-                        let finalCode = kodeAkun;
-                        if (!/^\d/.test(finalCode) && namaAkun) {
-                            const found = coaData.find(c => c.name.toLowerCase() === namaAkun.toLowerCase());
-                            if(found) finalCode = found.code;
-                        }
-
-                        // Tambahkan baris ke tabel jurnal
-                        addJournalRow(finalCode, namaAkun, debit, kredit);
-                        importedCount++;
-                    }
-
-                    calcBalance();
-                    showNotification(`Berhasil mengimpor ${importedCount} baris transaksi!`, "success");
-
-                } catch(err) {
-                    console.error(err);
-                    showNotification("Gagal membaca file Excel: " + err.message, "error");
-                }
-            };
-            reader.readAsArrayBuffer(file);
-            input.value = ''; // Reset input agar bisa upload file sama lagi
-        }
-
-        // ==========================================
-        // JOURNAL ROW MANAGEMENT
-        // ==========================================
-        function addJournalRow(code='', name='', debit='', credit='') {
-            const tbody = document.getElementById('jurnalBody');
-            const row = document.createElement('tr');
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(localStorage.getItem('financeRajUser'));
+            if (!user) window.location.href = 'index.html';
             
-            let coaOptions = '<option value="">Pilih Akun...</option>';
-            coaData.forEach(acc => {
-                const selected = (acc.code === code) ? 'selected' : '';
-                coaOptions += `<option value="${acc.code}" data-name="${acc.name}" ${selected}>${acc.code} - ${acc.name}</option>`;
+            // Set default date to today in correct format
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('transDate').value = today;
+            
+            // Load COA & Generate No Bukti Awal
+            await refreshCOA();
+            await generateNextNoBukti();
+            
+            // Event Listener untuk Tombol Generate Manual
+            document.getElementById('btnGenProof').addEventListener('click', async () => {
+                const btn = document.getElementById('btnGenProof');
+                const icon = btn.querySelector('i');
+                
+                // Animasi putar saat loading
+                icon.classList.add('fa-spin');
+                btn.disabled = true;
+                
+                await generateNextNoBukti();
+                
+                // Hapus animasi setelah selesai
+                setTimeout(() => {
+                    icon.classList.remove('fa-spin');
+                    btn.disabled = false;
+                }, 500);
             });
 
-            // Format angka untuk tampilan input
-            const displayDebit = debit ? new Intl.NumberFormat('id-ID').format(debit) : '';
-            const displayCredit = credit ? new Intl.NumberFormat('id-ID').format(credit) : '';
+            // Event Listener untuk perubahan Jenis Bukti (Dropdown)
+            document.getElementById('proofType').addEventListener('change', async () => {
+                await generateNextNoBukti();
+            });
+            
+            window.addEntryRow();
+            window.addEntryRow();
+        });
+
+        // FUNGSI REFRESH COA DENGAN AUTO-FIX FORMAT TANGGAL
+        async function refreshCOA() {
+            console.log("Memuat data COA dari server...");
+            try {
+                const res = await fetch(`${GAS_URL}?action=getCOA`);
+                const data = await res.json();
+                
+                if(data.status === 'success' && data.accounts && data.accounts.length > 0) {
+                    coaData = data.accounts.map(acc => {
+                        let code = String(acc.code || '').trim();
+                        let name = String(acc.name || '').trim();
+                        
+                        // Deteksi jika code adalah string tanggal rusak
+                        if (code.match(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+Jan/) || /^\d{4}-\d{2}-\d{2}/.test(code)) {
+                            console.warn(`Kode akun rusak terdeteksi: "${code}". Nama: ${name}`);
+                        }
+                        return { code, name };
+                    }).filter(acc => acc.name !== '');
+                    
+                    console.log(`✅ Berhasil memuat ${coaData.length} akun.`);
+                } else {
+                    console.warn("Data COA kosong dari server");
+                    coaData = [];
+                }
+            } catch(e) { 
+                console.error("Gagal load COA:", e); 
+                coaData = [];
+            }
+        }
+
+        // FUNGSI GENERATE NO BUKTI (DIPANGGIL OLEH TOMBOL & DROPDOWN)
+        async function generateNextNoBukti() {
+            try {
+                const proofType = document.getElementById('proofType').value;
+                const res = await fetch(`${GAS_URL}?action=getNextProofNumber&type=${proofType}`);
+                const data = await res.json();
+                
+                if(data.status === 'success') {
+                    const nextNum = String(data.nextNum).padStart(3, '0');
+                    const now = new Date();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const year = now.getFullYear();
+                    document.getElementById('refNumber').value = `${proofType}/${month}/${year}/${nextNum}`;
+                }
+            } catch (e) {
+                console.error("Gagal generate no bukti:", e);
+                const proofType = document.getElementById('proofType').value;
+                const now = new Date();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+                document.getElementById('refNumber').value = `${proofType}/${month}/${year}/001`;
+            }
+        }
+
+        window.formatInputRupiah = function(angka) {
+            if (!angka) return '';
+            let number_string = angka.toString().replace(/[^,\d]/g, '').toString();
+            let split = number_string.split(',');
+            let sisa = split[0].length % 3;
+            let rupiah = split[0].substr(0, sisa);
+            let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+            if (ribuan) { let separator = sisa ? '.' : ''; rupiah += separator + ribuan.join('.'); }
+            rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+            return rupiah;
+        }
+
+        window.unformatRupiah = function(rupiah) {
+            if (!rupiah) return 0;
+            return parseFloat(rupiah.toString().replace(/\./g, '').replace(/,/g, '.')) || 0;
+        }
+
+        // FUNGSI TOGGLE PPN ON-DEMAND
+        window.togglePpnInput = function(btn) {
+            const wrapper = btn.nextElementSibling;
+            const input = wrapper.querySelector('.ppn-input');
+            
+            if (wrapper.classList.contains('show')) {
+                wrapper.classList.remove('show');
+                btn.classList.remove('active');
+                input.value = ''; // Reset nilai
+            } else {
+                wrapper.classList.add('show');
+                btn.classList.add('active');
+                input.focus();
+            }
+            window.updateBalance(); // Recalculate balance state
+        }
+
+        window.addEntryRow = function() {
+            const container = document.getElementById('journalEntries');
+            const row = document.createElement('div');
+            row.className = 'entry-row';
+            
+            let options = '<option value="">-- Pilih Akun --</option>';
+            
+            const sortedCOA = [...coaData].sort((a, b) => {
+                const aValid = /^\d+-\d+$/.test(a.code);
+                const bValid = /^\d+-\d+$/.test(b.code);
+                if (aValid && !bValid) return -1;
+                if (!aValid && bValid) return 1;
+                return a.code.localeCompare(b.code);
+            });
+
+            sortedCOA.forEach(acc => {
+                let displayCode = acc.code;
+                if (!/^\d+-\d+$/.test(displayCode) && displayCode.includes('Jan')) {
+                    displayCode = "???"; 
+                }
+                options += `<option value="${acc.code}">${displayCode} - ${acc.name}</option>`;
+            });
+            
+            options += `<option value="FREE_TEXT">-- LAINNYA (Ketik Manual) --</option>`;
+
+            const isMobile = window.innerWidth <= 768;
+            const lblAkun = isMobile ? '<span class="mobile-label">Akun</span>' : '';
+            const lblDebit = isMobile ? '<span class="mobile-label">Debit (Rp)</span>' : '';
+            const lblKredit = isMobile ? '<span class="mobile-label">Kredit (Rp)</span>' : '';
+            const lblPpn = isMobile ? '<span class="mobile-label">PPN (%)</span>' : '';
 
             row.innerHTML = `
-                <td>
-                    <select class="account-select" onchange="updateAccountName(this)" required>${coaOptions}</select>
-                    <input type="hidden" class="account-name" value="${name}">
-                </td>
-                <td><input type="text" class="amount-debit" value="${displayDebit}" placeholder="0" oninput="formatRupiahInput(this); calcBalance()"></td>
-                <td><input type="text" class="amount-credit" value="${displayCredit}" placeholder="0" oninput="formatRupiahInput(this); calcBalance()"></td>
-                <td>
-                    <select class="trans-type">
-                        <option value="debit" ${debit > 0 ? 'selected' : ''}>Debit</option>
-                        <option value="kredit" ${credit > 0 ? 'selected' : ''}>Kredit</option>
-                    </select>
-                </td>
-                <td><button type="button" class="btn-remove" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+                <div>
+                    ${lblAkun}
+                    <select class="coa-select" onchange="window.handleAccountChange(this)">${options}</select>
+                    <div class="free-text-container">
+                        <div class="free-text-row">
+                            <div class="free-label">Kode Akun:</div>
+                            <input type="text" class="free-code-input form-control" placeholder="Cth: 5-1700" style="padding:8px; font-size:13px;">
+                        </div>
+                        <div class="free-text-row">
+                            <div class="free-label">Nama Akun:</div>
+                            <input type="text" class="free-name-input form-control" placeholder="Cth: Beban Bunga Bank" style="padding:8px; font-size:13px;">
+                        </div>
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="addToCOACheck_${Date.now()}">
+                            <label for="addToCOACheck_${Date.now()}">Simpan permanen ke daftar COA</label>
+                        </div>
+                    </div>
+                </div>
+                <div>${lblDebit}<input type="text" class="debit-input" placeholder="0" oninput="this.value=window.formatInputRupiah(this.value); window.updateBalance()" onfocus="this.select()" inputmode="numeric"></div>
+                <div>${lblKredit}<input type="text" class="credit-input" placeholder="0" oninput="this.value=window.formatInputRupiah(this.value); window.updateBalance()" onfocus="this.select()" inputmode="numeric"></div>
+                
+                <!-- KOLOM BARU: TOGGLE PPN & AKSI -->
+                <div class="ppn-action-col">
+                    ${lblPpn}
+                    <button class="btn-toggle-ppn" onclick="window.togglePpnInput(this)" title="Tambah PPN">
+                        <i class="fas fa-percent"></i> <span style="font-size:10px;">PPN</span>
+                    </button>
+                    <div class="ppn-input-wrapper">
+                        <input type="number" class="ppn-input" placeholder="11" min="0" max="100" step="0.01" onchange="window.updateBalance()">
+                        <span class="ppn-label">%</span>
+                    </div>
+                    
+                    <div class="action-buttons" style="margin-top:4px;">
+                        <button class="btn-action btn-edit" title="Edit Baris" onclick="window.editRow(this)"><i class="fas fa-pen"></i></button>
+                        <button class="btn-action btn-delete" title="Hapus Baris" onclick="this.closest('.entry-row').remove(); window.updateBalance();"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
             `;
-            tbody.appendChild(row);
+            container.appendChild(row);
+        }
+
+        window.editRow = function(btn) {
+            const row = btn.closest('.entry-row');
+            const select = row.querySelector('.coa-select');
             
-            if(debit || credit) calcBalance();
-        }
-
-        function removeRow(btn) {
-            btn.closest('tr').remove();
-            calcBalance();
-        }
-
-        function updateAccountName(select) {
-            const option = select.options[select.selectedIndex];
-            const nameInput = select.parentElement.querySelector('.account-name');
-            if(option.value) {
-                nameInput.value = option.getAttribute('data-name');
-            } else {
-                nameInput.value = '';
-            }
-        }
-
-        // ==========================================
-        // RUPIAH FORMATTING & BALANCE CHECK
-        // ==========================================
-        function formatRupiahInput(input) {
-            let val = input.value.replace(/[^\d]/g, '');
-            if (val === '') {
-                input.value = '';
+            if(btn.classList.contains('btn-save')) {
+                btn.classList.remove('btn-save');
+                btn.classList.add('btn-edit');
+                btn.innerHTML = '<i class="fas fa-pen"></i>';
+                select.disabled = false;
+                row.querySelectorAll('input').forEach(inp => inp.disabled = false);
+                row.querySelector('.btn-delete').disabled = false;
                 return;
             }
-            input.value = new Intl.NumberFormat('id-ID').format(val);
+
+            btn.classList.remove('btn-edit');
+            btn.classList.add('btn-save');
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            select.disabled = false;
+            row.querySelectorAll('input').forEach(inp => inp.disabled = false);
+            row.querySelector('.btn-delete').disabled = false;
         }
 
-        function parseRupiah(str) {
-            if (!str) return 0;
-            return Number(String(str).replace(/\./g, '').replace(',', '.')) || 0;
+        window.handleAccountChange = function(selectEl) {
+            const freeContainer = selectEl.nextElementSibling;
+            if (selectEl.value === 'FREE_TEXT') { 
+                freeContainer.style.display = 'block'; 
+                freeContainer.querySelector('.free-code-input').focus();
+            } else { 
+                freeContainer.style.display = 'none'; 
+            }
+            window.updateBalance();
         }
 
-        function calcBalance() {
-            let totalDebit = 0;
-            let totalCredit = 0;
+        window.updateBalance = function() {
+            let totalDebit = 0, totalCredit = 0;
+            document.querySelectorAll('.debit-input').forEach(i => totalDebit += window.unformatRupiah(i.value));
+            document.querySelectorAll('.credit-input').forEach(i => totalCredit += window.unformatRupiah(i.value));
             
-            document.querySelectorAll('#jurnalBody tr').forEach(row => {
-                totalDebit += parseRupiah(row.querySelector('.amount-debit').value);
-                totalCredit += parseRupiah(row.querySelector('.amount-credit').value);
+            const diff = Math.abs(totalDebit - totalCredit);
+            const isBalanced = diff < 0.01 && totalDebit > 0;
+            
+            const statusEl = document.getElementById('balanceStatus');
+            const diffEl = document.getElementById('diffAmount');
+            const btn = document.getElementById('btnSave');
+            
+            if (isBalanced) {
+                statusEl.textContent = "SEIMBANG"; statusEl.className = "status-badge status-balanced";
+                diffEl.textContent = "Rp 0"; btn.disabled = false;
+            } else {
+                statusEl.textContent = "TIDAK SEIMBANG"; statusEl.className = "status-badge status-unbalanced";
+                diffEl.textContent = formatRupiah(diff); btn.disabled = true;
+            }
+        }
+
+        window.saveJournal = async function() {
+            const btn = document.getElementById('btnSave');
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+            const items = [];
+            let isValid = true;
+
+            document.querySelectorAll('.entry-row').forEach(row => {
+                const select = row.querySelector('.coa-select');
+                const freeContainer = row.querySelector('.free-text-container');
+                let code, name, addToCOA = false;
+
+                if (select.value === 'FREE_TEXT') {
+                    code = row.querySelector('.free-code-input').value.trim();
+                    name = row.querySelector('.free-name-input').value.trim();
+                    addToCOA = row.querySelector('input[type="checkbox"]').checked; 
+                    
+                    if (!code || !name || !/^\d+-\d+$/.test(code)) {
+                        isValid = false;
+                        row.querySelector('.free-code-input').style.borderColor = 'red';
+                    }
+                } else {
+                    code = select.value;
+                    name = select.options[select.selectedIndex].text;
+                    if (code.includes('Wed') || code.includes('Jan') || code === '???') {
+                        isValid = false;
+                        alert("⚠️ Akun yang dipilih memiliki kode rusak. Mohon pilih akun lain.");
+                    }
+                }
+                
+                const debit = window.unformatRupiah(row.querySelector('.debit-input').value);
+                const credit = window.unformatRupiah(row.querySelector('.credit-input').value);
+
+                // AMBIL NILAI PPN JIKA INPUT TERLIHAT
+                const ppnWrapper = row.querySelector('.ppn-input-wrapper');
+                const ppnPercent = (ppnWrapper && ppnWrapper.classList.contains('show')) 
+                                   ? parseFloat(row.querySelector('.ppn-input').value) || 0 
+                                   : 0;
+
+                if ((debit > 0 || credit > 0) && code && isValid) {
+                    items.push({ 
+                        code, name, debit, credit, 
+                        type: debit > 0 ? 'debit' : 'kredit', 
+                        amount: debit > 0 ? debit : credit, 
+                        addToCOA,
+                        ppnPercent: ppnPercent // KIRIM KE BACKEND
+                    });
+                }
             });
 
-            const diff = Math.abs(totalDebit - totalCredit);
-            const statusEl = document.getElementById('balanceStatus');
-            const diffEl = document.getElementById('diffDisplay');
-            const btnSubmit = document.getElementById('btnSubmit');
-
-            diffEl.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(diff);
-
-            if (diff < 0.01 && (totalDebit > 0 || totalCredit > 0)) {
-                statusEl.textContent = 'Seimbang (Balanced)';
-                statusEl.className = 'balance-status balance-ok';
-                btnSubmit.disabled = false;
-            } else {
-                statusEl.textContent = 'Belum Seimbang';
-                statusEl.className = 'balance-status balance-error';
-                btnSubmit.disabled = true;
-            }
-        }
-
-        // ==========================================
-        // ADD NEW ACCOUNT MODAL
-        // ==========================================
-        function openAddAccountModal() {
-            document.getElementById('addAccountModal').classList.add('active');
-        }
-
-        function closeAddAccountModal() {
-            document.getElementById('addAccountModal').classList.remove('active');
-            document.getElementById('newAccCode').value = '';
-            document.getElementById('newAccName').value = '';
-        }
-
-        async function saveNewAccount() {
-            const code = document.getElementById('newAccCode').value.trim();
-            const name = document.getElementById('newAccName').value.trim();
-            
-            if (!code || !name) {
-                showNotification("Kode dan Nama Akun wajib diisi!", "error");
+            if (!isValid) {
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Jurnal';
                 return;
             }
 
+            const user = JSON.parse(localStorage.getItem('financeRajUser'));
+            
+            // Gunakan Smart Date Parser sebelum kirim ke backend
+            const fixedDate = normalizeDate(document.getElementById('transDate').value);
+
+            const journalData = {
+                tanggal: fixedDate,
+                noBukti: document.getElementById('refNumber').value,
+                keterangan: document.getElementById('description').value,
+                inputBy: user.email, inputByName: user.fullName, items: items, createdAt: new Date().toISOString()
+            };
+
             try {
-                // Panggil fungsi autoAddToCOA di backend
-                const payload = {
-                    action: 'autoAddToCOA',
-                    code: code,
-                    name: name
-                };
-
-                const res = await fetch(GAS_URL, { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload) 
-                });
-                
-                const result = await res.json();
-                
-                if(result.status === 'success') {
-                    // Tambahkan ke array lokal dan refresh dropdown
-                    coaData.push({ code: code, name: name });
-                    coaData.sort((a, b) => a.code.localeCompare(b.code));
-                    
-                    // Refresh semua dropdown yang ada
-                    document.querySelectorAll('.account-select').forEach(select => {
-                        const currentVal = select.value;
-                        let options = '<option value="">Pilih Akun...</option>';
-                        coaData.forEach(acc => {
-                            const selected = (acc.code === currentVal) ? 'selected' : '';
-                            options += `<option value="${acc.code}" data-name="${acc.name}" ${selected}>${acc.code} - ${acc.name}</option>`;
-                        });
-                        select.innerHTML = options;
-                    });
-
-                    showNotification(`Akun ${code} berhasil ditambahkan!`, "success");
-                    closeAddAccountModal();
-                } else {
-                    throw new Error(result.message);
-                }
-
-            } catch(err) {
-                showNotification(err.message, "error");
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'addJurnalFromWeb', data: journalData }) });
+                await refreshCOA();
+                showNotification("✅ Jurnal berhasil disimpan!", "success");
+                setTimeout(() => window.location.href = 'dashboard.html', 1500);
+            } catch(e) {
+                console.error(e);
+                showNotification('Gagal menyimpan: ' + e.message, "error");
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Simpan Jurnal';
             }
         }
 
-        // ==========================================
-        // SUBMIT JOURNAL
-        // ==========================================
-        async function submitJournal() {
-            const btn = document.getElementById('btnSubmit');
-            btn.disabled = true; 
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-
-            try {
-                const items = [];
-                let isValid = true;
-
-                document.querySelectorAll('#jurnalBody tr').forEach(row => {
-                    const select = row.querySelector('.account-select');
-                    const code = select.value;
-                    const name = row.querySelector('.account-name').value;
-                    const debit = parseRupiah(row.querySelector('.amount-debit').value);
-                    const credit = parseRupiah(row.querySelector('.amount-credit').value);
-                    
-                    if (!code) isValid = false;
-                    if (debit > 0 || credit > 0) {
-                        items.push({
-                            code: code,
-                            name: name || select.options[select.selectedIndex].text,
-                            debit: debit,
-                            credit: credit,
-                            type: debit > 0 ? 'debit' : 'kredit'
-                        });
-                    }
-                });
-
-                if (!isValid || items.length === 0) throw new Error("Mohon lengkapi semua baris akun dan nominal!");
-
-                const payload = {
-                    action: 'addJurnalFromWeb',
-                    data: {
-                        tanggal: normalizeDate(document.getElementById('purDate').value),
-                        noBukti: document.getElementById('noBukti').value.trim(),
-                        keterangan: document.getElementById('keterangan').value.trim(),
-                        inputBy: 'iin@rezekiamanahjaya.com', 
-                        inputByName: 'IIN SEPATAN',
-                        items: items
-                    }
-                };
-
-                const res = await fetch(GAS_URL, { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload) 
-                });
-                
-                const result = await res.json();
-                
-                if(result.status === 'success') {
-                    showNotification(`Jurnal berhasil disimpan! ID: ${result.journalId}`, "success");
-                    document.getElementById('noBukti').value = '';
-                    document.getElementById('keterangan').value = '';
-                    document.getElementById('jurnalBody').innerHTML = '';
-                    addJournalRow();
-                    calcBalance();
-                } else {
-                    throw new Error(result.message);
-                }
-
-            } catch(err) {
-                showNotification(err.message, "error");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save"></i> Simpan Jurnal';
-            }
-        }
-
+        function formatRupiah(num) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num); }
+        
         function showNotification(message, type) {
-            const notif = document.getElementById('notification');
-            notif.className = `notification ${type}`;
-            notif.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
-            notif.classList.add('show');
-            setTimeout(() => notif.classList.remove('show'), 5000);
+            // Simple notification implementation since original didn't have one
+            const notif = document.createElement('div');
+            notif.style.position = 'fixed';
+            notif.style.bottom = '24px';
+            notif.style.right = '24px';
+            notif.style.padding = '16px 20px';
+            notif.style.borderRadius = '12px';
+            notif.style.color = 'white';
+            notif.style.fontWeight = '600';
+            notif.style.fontSize = '14px';
+            notif.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)';
+            notif.style.zIndex = '1000';
+            notif.style.background = type === 'success' ? '#10b981' : '#ef4444';
+            notif.innerHTML = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 4000);
         }
     </script>
 </body>
