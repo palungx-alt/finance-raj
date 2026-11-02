@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FinanceRAJ - Input Jurnal & Import Excel v3.0</title>
+    <title>FinanceRAJ - Input Jurnal & Import Excel v3.5</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Library SheetJS untuk membaca Excel -->
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- Library SheetJS versi stabil via jsDelivr -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <style>
         :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-sec: #64748b; --border: #e2e8f0; --radius: 16px; --success: #10b981; --danger: #ef4444; }
@@ -68,6 +68,18 @@
         .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
         .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         
+        /* MODAL ADD NEW ACCOUNT */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; padding: 24px; border-radius: 16px; width: 90%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-header h3 { font-size: 16px; font-weight: 700; }
+        .btn-close-modal { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sec); }
+        .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+        .btn-modal { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-modal-primary { background: var(--primary); color: white; }
+        .btn-modal-secondary { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border); }
+        
         /* NOTIFICATION */
         .notification { position: fixed; bottom: 24px; right: 24px; padding: 16px 20px; border-radius: 12px; color: white; font-weight: 600; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); transform: translateY(100px); opacity: 0; transition: 0.3s ease; z-index: 1000; display: flex; align-items: center; gap: 10px; max-width: 400px; }
         .notification.show { transform: translateY(0); opacity: 1; }
@@ -85,7 +97,7 @@
         <div class="brand-area">
             <button onclick="window.location.href='dashboard.html'" class="btn-back"><i class="fas fa-arrow-left"></i></button>
             <div class="page-title">
-                <h1>Input Jurnal & Import Excel v3.0</h1>
+                <h1>Input Jurnal & Import Excel v3.5</h1>
                 <p>CV Rezeki Amanah Jaya Group</p>
             </div>
         </div>
@@ -97,7 +109,7 @@
             <div class="upload-area" id="excelUploadArea" onclick="document.getElementById('excelInput').click()">
                 <i class="fas fa-file-excel"></i>
                 <p>Klik atau Drag & Drop File Excel (.xlsx)</p>
-                <span>Sistem akan otomatis membaca Tanggal, Akun, Debit, dan Kredit</span>
+                <span>Mendukung format JURNAL RAJ UPDATE 20.10.xlsx (Tanggal Serial & Angka Koma)</span>
                 <input type="file" id="excelInput" accept=".xlsx, .xls" onchange="handleExcelImport(this)">
             </div>
         </div>
@@ -135,7 +147,10 @@
                     <tbody id="jurnalBody"></tbody>
                 </table>
             </div>
-            <button type="button" class="btn-add-item" onclick="addJournalRow()"><i class="fas fa-plus"></i> Tambah Baris Akun</button>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <button type="button" class="btn-add-item" onclick="addJournalRow()" style="flex: 2;"><i class="fas fa-plus"></i> Tambah Baris Akun</button>
+                <button type="button" class="btn-add-item" onclick="openAddAccountModal()" style="flex: 1; background: #eff6ff; border-color: var(--primary);"><i class="fas fa-user-plus"></i> Akun Baru</button>
+            </div>
 
             <div class="total-section">
                 <div>
@@ -148,6 +163,28 @@
             <button type="button" class="btn-submit" id="btnSubmit" onclick="submitJournal()" disabled>
                 <i class="fas fa-save"></i> Simpan Jurnal
             </button>
+        </div>
+    </div>
+
+    <!-- MODAL ADD NEW ACCOUNT -->
+    <div class="modal-overlay" id="addAccountModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Tambah Akun Baru ke COA</h3>
+                <button class="btn-close-modal" onclick="closeAddAccountModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Kode Akun</label>
+                <input type="text" id="newAccCode" placeholder="Contoh: 5-2900">
+            </div>
+            <div class="form-group">
+                <label>Nama Akun</label>
+                <input type="text" id="newAccName" placeholder="Contoh: Beban Lain-lain">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-modal-secondary" onclick="closeAddAccountModal()">Batal</button>
+                <button class="btn-modal btn-modal-primary" onclick="saveNewAccount()">Simpan Akun</button>
+            </div>
         </div>
     </div>
 
@@ -176,39 +213,44 @@
                 }
             } catch(e) {
                 console.error(e);
-                showNotification("Error koneksi ke server", "error");
+                showNotification("Error koneksi ke server COA", "error");
             }
         };
 
         // ==========================================
-        // SMART DATE PARSER (SAMA DENGAN BACKEND v21.8)
+        // SMART DATE PARSER (KHUSUS EXCEL SERIAL NUMBER)
         // ==========================================
         function normalizeDate(val) {
             if (!val) return '';
             let strVal = String(val).trim();
             
-            // Handle Angka Serial Excel (misal: 46294)
+            // 1. Handle Angka Serial Excel (misal: 46294)
             if (/^\d{5}$/.test(strVal) && Number(strVal) > 40000 && Number(strVal) < 60000) {
                 try {
-                    const excelEpoch = new Date(1899, 11, 30); 
+                    const excelEpoch = new Date(Date.UTC(1899, 11, 30)); 
                     const dateObj = new Date(excelEpoch.getTime() + (Number(strVal) * 86400000));
-                    const y = dateObj.getFullYear();
-                    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-                    const d = String(dateObj.getDate()).padStart(2, '0');
+                    const y = dateObj.getUTCFullYear();
+                    const m = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+                    const d = String(dateObj.getUTCDate()).padStart(2, '0');
                     return `${y}-${m}-${d}`;
                 } catch(e) {}
             }
 
+            // 2. Jika sudah format YYYY-MM-DD
             if (/^\d{4}-\d{2}-\d{2}$/.test(strVal)) return strVal;
             
+            // 3. Bersihkan karakter aneh
             strVal = strVal.replace(/['"]/g, '').replace(/\s+/g, ' ').trim();
             
+            // 4. Format DD/MM/YYYY atau DD-MM-YYYY
             let matchDMY = strVal.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
             if (matchDMY) return `${matchDMY[3]}-${matchDMY[2].padStart(2,'0')}-${matchDMY[1].padStart(2,'0')}`;
             
+            // 5. Format YYYY/MM/DD
             let matchYMD = strVal.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
             if (matchYMD) return `${matchYMD[1]}-${matchYMD[2].padStart(2,'0')}-${matchYMD[3].padStart(2,'0')}`;
             
+            // 6. Fallback Date Object
             try {
                 const d = new Date(strVal);
                 if (!isNaN(d.getTime())) {
@@ -232,50 +274,65 @@
         }
 
         // ==========================================
-        // EXCEL IMPORT LOGIC
+        // EXCEL IMPORT LOGIC (FIXED FOR NO HEADER & COMMA NUMBERS)
         // ==========================================
         function handleExcelImport(input) {
             const file = input.files[0];
             if (!file) return;
 
+            // Cek apakah library SheetJS sudah dimuat
+            if (typeof XLSX === 'undefined') {
+                showNotification("Library Excel belum siap. Mohon refresh halaman.", "error");
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
+                    // cellDates: false agar serial number terbaca sebagai angka mentah
+                    const workbook = XLSX.read(data, {type: 'array', cellDates: false}); 
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
                     
                     // Konversi sheet ke JSON array of arrays
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                    // defval: '' memastikan sel kosong tetap terbaca
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ''});
                     
                     if(jsonData.length < 2) {
                         showNotification("File Excel kosong atau tidak memiliki data", "error");
                         return;
                     }
 
-                    // Asumsi Header Excel: [Tanggal, No_Bukti, Keterangan, Email, Nama, Kode_Akun, Nama_Akun, Debit, Kredit]
-                    // Kita mulai loop dari index 1 (melewati header)
+                    // Mapping Kolom Excel JURNAL RAJ UPDATE 20.10.xlsx (Tanpa Header):
+                    // [0] Tanggal Serial, [1] No_Bukti, [2] Keterangan, [3] Email, [4] Nama, 
+                    // [5] Kode_Akun, [6] Nama_Akun, [7] Debit, [8] Kredit
                     let importedCount = 0;
                     
-                    for(let i = 1; i < jsonData.length; i++) {
+                    // Loop mulai dari index 0 karena tidak ada header
+                    for(let i = 0; i < jsonData.length; i++) {
                         const row = jsonData[i];
                         if(!row || row.length === 0) continue;
 
-                        // Mapping kolom Excel ke form
+                        // Normalisasi Tanggal Serial Excel
                         const rawDate = row[0]; 
-                        const noBukti = row[1] || '';
-                        const keterangan = row[2] || '';
+                        const fixedDate = normalizeDate(rawDate);
+                        
+                        const noBukti = String(row[1] || '').trim();
+                        const keterangan = String(row[2] || '').trim();
                         const kodeAkun = String(row[5] || '').trim();
                         const namaAkun = String(row[6] || '').trim();
-                        let debit = parseFloat(row[7]) || 0;
-                        let kredit = parseFloat(row[8]) || 0;
-
-                        // Normalisasi Tanggal
-                        const fixedDate = normalizeDate(rawDate);
+                        
+                        // Bersihkan angka dari koma desimal dan titik ribuan
+                        // Contoh: "103,690.19" -> 103690.19
+                        let debitStr = String(row[7] || '0').replace(/[^\d.,-]/g, '').replace(',', '.');
+                        let kreditStr = String(row[8] || '0').replace(/[^\d.,-]/g, '').replace(',', '.');
+                        
+                        let debit = parseFloat(debitStr) || 0;
+                        let kredit = parseFloat(kreditStr) || 0;
 
                         // Isi Form Utama hanya sekali di baris pertama import
-                        if (i === 1) {
+                        if (i === 0) {
                             document.getElementById('purDate').value = fixedDate;
                             document.getElementById('noBukti').value = noBukti;
                             document.getElementById('keterangan').value = keterangan;
@@ -398,6 +455,71 @@
                 statusEl.textContent = 'Belum Seimbang';
                 statusEl.className = 'balance-status balance-error';
                 btnSubmit.disabled = true;
+            }
+        }
+
+        // ==========================================
+        // ADD NEW ACCOUNT MODAL
+        // ==========================================
+        function openAddAccountModal() {
+            document.getElementById('addAccountModal').classList.add('active');
+        }
+
+        function closeAddAccountModal() {
+            document.getElementById('addAccountModal').classList.remove('active');
+            document.getElementById('newAccCode').value = '';
+            document.getElementById('newAccName').value = '';
+        }
+
+        async function saveNewAccount() {
+            const code = document.getElementById('newAccCode').value.trim();
+            const name = document.getElementById('newAccName').value.trim();
+            
+            if (!code || !name) {
+                showNotification("Kode dan Nama Akun wajib diisi!", "error");
+                return;
+            }
+
+            try {
+                // Panggil fungsi autoAddToCOA di backend
+                const payload = {
+                    action: 'autoAddToCOA',
+                    code: code,
+                    name: name
+                };
+
+                const res = await fetch(GAS_URL, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload) 
+                });
+                
+                const result = await res.json();
+                
+                if(result.status === 'success') {
+                    // Tambahkan ke array lokal dan refresh dropdown
+                    coaData.push({ code: code, name: name });
+                    coaData.sort((a, b) => a.code.localeCompare(b.code));
+                    
+                    // Refresh semua dropdown yang ada
+                    document.querySelectorAll('.account-select').forEach(select => {
+                        const currentVal = select.value;
+                        let options = '<option value="">Pilih Akun...</option>';
+                        coaData.forEach(acc => {
+                            const selected = (acc.code === currentVal) ? 'selected' : '';
+                            options += `<option value="${acc.code}" data-name="${acc.name}" ${selected}>${acc.code} - ${acc.name}</option>`;
+                        });
+                        select.innerHTML = options;
+                    });
+
+                    showNotification(`Akun ${code} berhasil ditambahkan!`, "success");
+                    closeAddAccountModal();
+                } else {
+                    throw new Error(result.message);
+                }
+
+            } catch(err) {
+                showNotification(err.message, "error");
             }
         }
 
